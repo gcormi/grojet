@@ -1,11 +1,10 @@
 pages:
   stage: deploy
   script:
-  - mkdir .public
-  - cp -r * .public
-  - mv .public public
+    - mkdir public
+    - cp -r "generateur de cours"/* public/
   artifacts:
     paths:
-    - public
+      - public
   rules:
-  - if: $CI_COMMIT_BRANCH == "main"
+    - if: $CI_COMMIT_BRANCH == "main"
