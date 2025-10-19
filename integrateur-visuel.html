@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mon Atelier Web : Éditeur Visuel de Pages</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.7.1/jszip.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .image-item { 
+            position: relative; 
+            aspect-ratio: 1; 
+            border-radius: 6px; 
+            overflow: hidden; 
+            cursor: pointer; 
+            transition: transform 0.2s ease; 
+            border: 2px solid transparent; 
+            background: #f0f0f0; 
+        }
+        .image-item:hover { transform: scale(1.02); }
+        .image-item img { width: 100%; height: 100%; object-fit: cover; }
+        .image-item.selected {
+            border: 3px solid #3b82f6;
+            transform: scale(1.05);
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.5);
+        }
+        .inserted-image {
+            display: block;
+            margin: 10px 0;
+            border: 2px solid transparent;
+            border-radius: 8px;
+            cursor: pointer;
+            position: relative;
+            max-width: 100%;
+            height: auto;
+        }
+        
+        /* Toolbar styles */
+        .editor-toolbar {
+            background: #f3f4f6;
+            border-bottom: 1px solid #e5e7eb;
+            padding: 10px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+        .toolbar-group {
+            display: flex;
+            gap: 5px;
+            padding: 0 5px;
+            border-right: 1px solid #d1d5db;
+        }
+        .toolbar-group:last-child {
+            border-right: none;
+        }
+        .toolbar-btn-small {
+            background: white;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            padding: 6px 10px;
+            cursor: pointer;
+            font-size: 14px;
+            color: #4b5563;
+            transition: all 0.2s;
+        }
+        .toolbar-btn-small:hover {
+            background: #e5e7eb;
+            color: #1f2937;
+        }
+        .toolbar-btn-small.active {
+            background: #3b82f6;
+            color: white;
+            border-color: #3b82f6;
+        }
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #10b981;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transform: translateX(120%);
+            transition: transform 0.3s ease;
+        }
+        .notification.show {
+            transform: translateX(0);
+        }
+        .notification.error {
+            background: #ef4444;
+        }
+        
+        /* Drag and drop styles */
+        .drag-over {
+            background-color: #dbeafe !important;
+            border: 2px dashed #3b82f6 !important;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <div class="notification" id="notification">
+        <i class="fas fa-info-circle" id="notificationIcon"></i>
+        <span id="notificationText">Message</span>
+    </div>
+
+    <div class="flex flex-col h-screen">
+        <header class="bg-white shadow p-4">
+            <div class="container mx-auto flex justify-between items-center">
+                <h1 class="text-2xl font-bold text-gray-700">Mon Atelier Web : Éditeur Visuel de Pages</h1>
+                <div class="flex items-center gap-4">
+                    <input type="file" id="htmlFile" accept=".html" class="hidden">
+                    <button onclick="loadHTML()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                        <i class="fas fa-upload mr-2"></i> Charger HTML
+                    </button>
+                    <button onclick="exportHTML()" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+                        <i class="fas fa-download mr-2"></i> Exporter HTML
+                    </button>
+                    <button onclick="exportSeparateFiles()" class="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700">
+                        <i class="fas fa-download mr-2"></i> Télécharger avec Images
+                    </button>
+                </div>
+            </div>
+        </header>
+        
+        <div class="editor-toolbar bg-white">
+            <div class="toolbar-group">
+                <button onclick="formatText('bold')" class="toolbar-btn-small" title="Gras">
+                    <i class="fas fa-bold"></i>
+                </button>
+                <button onclick="formatText('italic')" class="toolbar-btn-small" title="Italique">
+                    <i class="fas fa-italic"></i>
+                </button>
+                <button onclick="formatText('underline')" class="toolbar-btn-small" title="Souligné">
+                    <i class="fas fa-underline"></i>
+                </button>
+            </div>
+            
+            <div class="toolbar-group">
+                <button onclick="formatText('justifyLeft')" class="toolbar-btn-small" title="Aligner à gauche">
+                    <i class="fas fa-align-left"></i>
+                </button>
+                <button onclick="formatText('justifyCenter')" class="toolbar-btn-small" title="Centrer">
+                    <i class="fas fa-align-center"></i>
+                </button>
+                <button onclick="formatText('justifyRight')" class="toolbar-btn-small" title="Aligner à droite">
+                    <i class="fas fa-align-right"></i>
+                </button>
+            </div>
+            
+            <div class="toolbar-group">
+                <button onclick="undo()" class="toolbar-btn-small" title="Annuler">
+                    <i class="fas fa-undo"></i>
+                </button>
+                <button onclick="redo()" class="toolbar-btn-small" title="Refaire">
+                    <i class="fas fa-redo"></i>
+                </button>
+            </div>
+        </div>
+
+        <main class="flex-grow flex gap-4 p-4">
+            <div class="w-1/3 bg-white rounded-lg shadow-lg p-4 flex flex-col">
+                <h2 class="text-lg font-semibold mb-4">Palette d'Images</h2>
+                <input type="file" id="imageFiles" accept="image/*" multiple class="hidden">
+                <button onclick="document.getElementById('imageFiles').click()" 
+                        class="w-full p-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 mb-4">
+                    <i class="fas fa-plus mr-2"></i> Ajouter des images
+                </button>
+                <button onclick="pasteImageFromClipboard()" 
+                        class="w-full p-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 mb-4">
+                    <i class="fas fa-paste mr-2"></i> Coller image (Ctrl+V)
+                </button>
+                <div class="text-xs text-gray-500 mb-4 p-2 bg-blue-50 rounded">
+                    💡 <strong>Images depuis internet :</strong><br>
+                    1. Clic droit sur une image → "Copier l'image"<br>
+                    2. Cliquez "Coller image" ci-dessus<br>
+                </div>
+                <div id="imageGrid" class="grid grid-cols-3 gap-2 flex-grow overflow-y-auto">
+                    </div>
+            </div>
+
+            <div class="flex-grow bg-white rounded-lg shadow-lg p-4">
+                <h2 class="text-lg font-semibold mb-4">Éditeur</h2>
+                <iframe id="editorFrame" style="width: 100%; height: calc(100% - 40px); border: 1px solid #e5e7eb; border-radius: 8px;"></iframe>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Global variables
+        const editorFrame = document.getElementById('editorFrame');
+        let images = [];
+        let insertionMode = false;
+        let selectedImage = null;
+        let editingImage = null;
+        let isResizing = false;
+        let originalHtmlContent = null;
+        let originalHtmlDocument = null;
+        let history = [];
+        let historyStep = -1;
+
+        // --- Initial content for the iframe ---
+        editorFrame.onload = () => {
+            const initialContent = `<div style="color: #333; font-family: sans-serif; padding: 20px;">
+                <p style="margin: 0 0 1em 0;">Chargez un fichier HTML pour commencer. <strong>Mon Atelier Web</strong> est votre outil tout-en-un pour mettre à jour textes et images sur n'importe quelle page HTML.</p>
+                <p style="margin: 0 0 1em 0;">Chargez votre fichier, effectuez vos changements de manière visuelle et téléchargez votre page mise à jour, prête à être mise en ligne.</p>
+            </div>`;
+            editorFrame.contentDocument.body.innerHTML = initialContent;
+            editorFrame.contentDocument.designMode = 'on';
+            saveHistory();
+        };
+
+
+        // Notification function
+        function showMessage(text, type = 'success') {
+            const notification = document.getElementById('notification');
+            const icon = document.getElementById('notificationIcon');
+            
+            notification.className = 'notification';
+            
+            switch(type) {
+                case 'error':
+                    notification.classList.add('error');
+                    icon.className = 'fas fa-exclamation-circle';
+                    break;
+                default:
+                    icon.className = 'fas fa-check-circle';
+            }
+            
+            document.getElementById('notificationText').textContent = text;
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        // Handle image files with automatic compression
+        document.getElementById('imageFiles').addEventListener('change', function(e) {
+            Array.from(e.target.files).forEach(async (file) => {
+                if (file.type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    reader.onload = async function(e) {
+                        try {
+                            const originalDataUrl = e.target.result;
+                            const compressedDataUrl = await compressImage(originalDataUrl, 0.9, 1600);
+                            
+                            const image = {
+                                name: file.name,
+                                dataUrl: compressedDataUrl
+                            };
+                            images.push(image);
+                            renderImageGrid();
+                            showMessage(`Image ${file.name} ajoutée et optimisée`);
+                        } catch (error) {
+                            const image = {
+                                name: file.name,
+                                dataUrl: e.target.result
+                            };
+                            images.push(image);
+                            renderImageGrid();
+                            showMessage(`Image ${file.name} ajoutée`);
+                        }
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+        });
+
+        function renderImageGrid() {
+            const grid = document.getElementById('imageGrid');
+            grid.innerHTML = '';
+            
+            images.forEach((image) => {
+                const div = document.createElement('div');
+                div.className = 'image-item';
+                div.innerHTML = `<img src="${image.dataUrl}" alt="${image.name}" title="${image.name}">`;
+                
+                div.addEventListener('click', function() {
+                    selectedImage = image;
+                    insertionMode = true;
+                    
+                    document.querySelectorAll('.image-item').forEach(item => {
+                        item.classList.remove('selected');
+                    });
+                    this.classList.add('selected');
+                    
+                    editorFrame.contentDocument.body.style.cursor = 'crosshair';
+                    showMessage('Cliquez dans l\'éditeur pour insérer l\'image');
+                });
+                
+                grid.appendChild(div);
+            });
+        }
+
+        function injectEditorStyles(doc) {
+            const style = doc.createElement('style');
+            style.textContent = `
+                .inserted-image:hover {
+                    border-color: #3b82f6 !important;
+                }
+                .resize-handle {
+                    position: absolute; width: 12px; height: 12px; background: #3b82f6;
+                    border: 2px solid white; border-radius: 50%; z-index: 101;
+                    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+                }
+                .resize-handle:hover { background: #2563eb; transform: scale(1.1); }
+                .resize-handle-tl { top: -6px; left: -6px; cursor: nw-resize; }
+                .resize-handle-tr { top: -6px; right: -6px; cursor: ne-resize; }
+                .resize-handle-bl { bottom: -6px; left: -6px; cursor: sw-resize; }
+                .resize-handle-br { bottom: -6px; right: -6px; cursor: se-resize; }
+                .image-toolbar {
+                    position: absolute; top: -50px; left: 0; background: rgba(59, 130, 246, 0.9);
+                    border-radius: 8px; padding: 8px; display: flex; gap: 4px;
+                    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); z-index: 1000;
+                }
+                .toolbar-btn {
+                    background: rgba(255, 255, 255, 0.2); border: none; color: white;
+                    padding: 6px 10px; border-radius: 4px; cursor: pointer;
+                    font-size: 14px; transition: background 0.2s;
+                }
+                .toolbar-btn:hover { background: rgba(255, 255, 255, 0.3); }
+                .image-edit-container { position: relative; display: inline-block; outline: 2px solid #3b82f6; outline-offset: 2px; }
+            `;
+            doc.head.appendChild(style);
+        }
+
+        function setupIframeListeners() {
+            const doc = editorFrame.contentDocument;
+
+            doc.body.addEventListener('click', function(e) {
+                if (insertionMode && selectedImage) {
+                    e.preventDefault();
+                    
+                    const img = doc.createElement('img');
+                    img.src = selectedImage.dataUrl;
+                    img.alt = selectedImage.name;
+                    img.className = 'inserted-image';
+                    
+                    setupImageEditing(img);
+                    
+                    const selection = doc.getSelection();
+                    if (selection.rangeCount > 0) {
+                        const range = selection.getRangeAt(0);
+                        range.insertNode(img);
+                        
+                        range.setStartAfter(img);
+                        range.collapse(true);
+                        selection.removeAllRanges();
+                        selection.addRange(range);
+                    } else {
+                        doc.body.appendChild(img);
+                    }
+                    
+                    insertionMode = false;
+                    selectedImage = null;
+                    doc.body.style.cursor = '';
+                    
+                    document.querySelectorAll('.image-item').forEach(item => {
+                        item.classList.remove('selected');
+                    });
+                    
+                    showMessage('Image insérée avec succès!');
+                    saveHistory();
+                    
+                } else if (e.target.tagName === 'IMG' && !insertionMode) {
+                    e.preventDefault();
+                    startImageEditing(e.target);
+                } else if (editingImage && !e.target.closest('.image-toolbar') && !e.target.classList.contains('resize-handle')) {
+                    stopImageEditing();
+                }
+            });
+
+            // Save history on input
+            doc.body.addEventListener('input', saveHistory);
+        }
+
+        function setupImageEditing(img) {
+            img.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                startImageEditing(this);
+            });
+        }
+
+        function startImageEditing(img) {
+            stopImageEditing();
+            const doc = editorFrame.contentDocument;
+            
+            editingImage = img;
+            
+            const container = doc.createElement('div');
+            container.className = 'image-edit-container';
+            
+            img.parentNode.insertBefore(container, img);
+            container.appendChild(img);
+            
+            const toolbar = doc.createElement('div');
+            toolbar.className = 'image-toolbar';
+            toolbar.innerHTML = `
+                <button class="toolbar-btn" data-align="left">←</button>
+                <button class="toolbar-btn" data-align="center">●</button>
+                <button class="toolbar-btn" data-align="right">→</button>
+                <button class="toolbar-btn" data-delete="true">🗑</button>
+            `;
+            
+            toolbar.addEventListener('click', (e) => {
+                if (e.target.dataset.align) alignImage(e.target.dataset.align);
+                if (e.target.dataset.delete) deleteImage();
+            });
+
+            ['tl', 'tr', 'bl', 'br'].forEach(position => {
+                const resizeHandle = doc.createElement('div');
+                resizeHandle.className = `resize-handle resize-handle-${position}`;
+                resizeHandle.addEventListener('mousedown', (e) => startResize(e, position));
+                container.appendChild(resizeHandle);
+            });
+            
+            container.appendChild(toolbar);
+        }
+
+        function stopImageEditing() {
+            if (editingImage) {
+                const container = editingImage.closest('.image-edit-container');
+                if (container) {
+                    container.parentNode.insertBefore(editingImage, container);
+                    container.remove();
+                }
+                editingImage = null;
+            }
+        }
+
+        function alignImage(alignment) {
+            if (!editingImage) return;
+            
+            editingImage.style.display = 'block';
+            editingImage.style.float = 'none'; 
+            switch(alignment) {
+                case 'left':
+                    editingImage.style.marginLeft = '0';
+                    editingImage.style.marginRight = 'auto';
+                    break;
+                case 'center':
+                    editingImage.style.marginLeft = 'auto';
+                    editingImage.style.marginRight = 'auto';
+                    break;
+                case 'right':
+                    editingImage.style.marginLeft = 'auto';
+                    editingImage.style.marginRight = '0';
+                    break;
+            }
+            showMessage(`Image alignée`);
+        }
+
+        function deleteImage() {
+            if (!editingImage) return;
+            
+            if (confirm('Voulez-vous vraiment supprimer cette image ?')) {
+                const container = editingImage.closest('.image-edit-container');
+                if (container) container.remove();
+                else editingImage.remove();
+                editingImage = null;
+                showMessage('Image supprimée');
+                saveHistory();
+            }
+        }
+
+        function startResize(e, position) {
+            if (!editingImage) return;
+            
+            isResizing = true;
+            const doc = editorFrame.contentDocument;
+            const startX = e.clientX;
+            const currentWidth = editingImage.offsetWidth;
+            const currentHeight = editingImage.offsetHeight;
+            const aspectRatio = currentHeight / currentWidth;
+            
+            function doResize(e) {
+                if (!isResizing) return;
+                const deltaX = e.clientX - startX;
+                let newWidth = currentWidth;
+                
+                if (position.includes('r')) newWidth = currentWidth + deltaX;
+                else if (position.includes('l')) newWidth = currentWidth - deltaX;
+                
+                newWidth = Math.max(50, newWidth);
+                
+                editingImage.style.width = newWidth + 'px';
+                editingImage.style.height = (newWidth * aspectRatio) + 'px';
+            }
+            
+            function stopResize() {
+                isResizing = false;
+                doc.removeEventListener('mousemove', doResize);
+                doc.removeEventListener('mouseup', stopResize);
+                showMessage(`Image redimensionnée`);
+                saveHistory();
+            }
+            
+            doc.addEventListener('mousemove', doResize);
+            doc.addEventListener('mouseup', stopResize);
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        function loadHTML() {
+            document.getElementById('htmlFile').click();
+        }
+
+        document.getElementById('htmlFile').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    originalHtmlContent = e.target.result;
+                    
+                    const parser = new DOMParser();
+                    originalHtmlDocument = parser.parseFromString(originalHtmlContent, 'text/html');
+                    
+                    // Load the content into the iframe
+                    editorFrame.srcdoc = originalHtmlContent;
+
+                    // Wait for the iframe to load the new content
+                    editorFrame.onload = () => {
+                        const doc = editorFrame.contentDocument;
+                        // Enable editing mode
+                        doc.designMode = 'on';
+                        // Inject necessary styles for the editor tools
+                        injectEditorStyles(doc);
+                        // Setup event listeners inside the iframe
+                        setupIframeListeners();
+                        // Setup editing for existing images
+                        doc.querySelectorAll('img').forEach(img => {
+                            img.classList.add('inserted-image');
+                            setupImageEditing(img);
+                        });
+                        saveHistory();
+                    };
+
+                    showMessage('Fichier HTML chargé avec succès!');
+                };
+                reader.readAsText(file);
+            }
+        });
+
+        function formatText(command) {
+            editorFrame.contentDocument.execCommand(command, false, null);
+        }
+
+        function saveHistory() {
+            const currentContent = editorFrame.contentDocument?.body?.innerHTML;
+            if (currentContent === undefined || (history.length > 0 && history[history.length -1] === currentContent) ) return;
+
+            historyStep++;
+            if (historyStep < history.length) {
+                history.length = historyStep;
+            }
+            history.push(currentContent);
+            
+            if (history.length > 50) {
+                history.shift();
+                historyStep--;
+            }
+        }
+
+        function undo() {
+            if (historyStep > 0) {
+                historyStep--;
+                editorFrame.contentDocument.body.innerHTML = history[historyStep];
+                editorFrame.contentDocument.querySelectorAll('img').forEach(img => setupImageEditing(img));
+            }
+        }
+
+        function redo() {
+            if (historyStep < history.length - 1) {
+                historyStep++;
+                editorFrame.contentDocument.body.innerHTML = history[historyStep];
+                editorFrame.contentDocument.querySelectorAll('img').forEach(img => setupImageEditing(img));
+            }
+        }
+
+        function compressImage(dataUrl, quality = 0.8, maxWidth = 1200) {
+            return new Promise((resolve, reject) => {
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                const img = new Image();
+                img.onload = function() {
+                    let { width, height } = img;
+                    if (width > maxWidth) {
+                        height = (height * maxWidth) / width;
+                        width = maxWidth;
+                    }
+                    canvas.width = width;
+                    canvas.height = height;
+                    ctx.drawImage(img, 0, 0, width, height);
+                    const compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
+                    resolve(compressedDataUrl);
+                };
+                img.onerror = reject;
+                img.src = dataUrl;
+            });
+        }
+
+        async function exportHTML() {
+            stopImageEditing();
+            showMessage('Préparation de l\'exportation...', 'info');
+            
+            let finalDoc = originalHtmlDocument.cloneNode(true);
+            finalDoc.body.innerHTML = editorFrame.contentDocument.body.innerHTML;
+
+            let content = finalDoc.documentElement.outerHTML;
+            
+            const base64Images = content.match(/data:image\/[^;]+;base64,[^"'\s]+/g) || [];
+            
+            for (const originalDataUrl of base64Images) {
+                try {
+                    const compressedDataUrl = await compressImage(originalDataUrl, 0.85, 1200);
+                    content = content.replace(originalDataUrl, compressedDataUrl);
+                } catch (error) {
+                    console.error('Image compression error:', error);
+                }
+            }
+            
+            const blob = new Blob([content], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'document-edite.html';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            showMessage(`Document exporté !`);
+        }
+
+        async function exportSeparateFiles() {
+            if (!originalHtmlContent) {
+                showMessage('Aucun fichier HTML chargé', 'error');
+                return;
+            }
+            stopImageEditing();
+            showMessage('Préparation des fichiers séparés...', 'info');
+            
+            const now = new Date();
+            const projectName = `site-${now.getFullYear()}-${(now.getMonth()+1).toString().padStart(2,'0')}-${now.getDate().toString().padStart(2,'0')}_${now.getHours().toString().padStart(2,'0')}-${now.getMinutes().toString().padStart(2,'0')}`;
+            
+            let finalDoc = originalHtmlDocument.cloneNode(true);
+            finalDoc.body.innerHTML = editorFrame.contentDocument.body.innerHTML;
+            
+            let finalHtml = finalDoc.documentElement.outerHTML;
+            let imageCounter = 1;
+            const filesToDownload = [];
+            
+            const imgElements = Array.from(finalDoc.querySelectorAll('img'));
+            
+            for (const img of imgElements) {
+                const src = img.src;
+                if (src.startsWith('data:')) {
+                    try {
+                        const compressedDataUrl = await compressImage(src, 0.85, 1200);
+                        const compressedMatch = compressedDataUrl.match(/^data:image\/([^;]+);base64,(.+)$/);
+                        
+                        if (compressedMatch) {
+                            const compressedBase64 = compressedMatch[2];
+                            const filename = `${projectName}_image_${imageCounter}.jpg`;
+                            
+                            const byteCharacters = atob(compressedBase64);
+                            const byteNumbers = new Array(byteCharacters.length);
+                            for (let i = 0; i < byteCharacters.length; i++) {
+                                byteNumbers[i] = byteCharacters.charCodeAt(i);
+                            }
+                            const byteArray = new Uint8Array(byteNumbers);
+                            const blob = new Blob([byteArray], { type: 'image/jpeg' });
+                            
+                            filesToDownload.push({ filename, blob });
+                            
+                            // Replace in the HTML string, not in the live document
+                            finalHtml = finalHtml.replace(src, filename);
+                            imageCounter++;
+                        }
+                    } catch (error) {
+                        console.error('Compression error:', error);
+                    }
+                }
+            }
+            
+            const htmlBlob = new Blob([finalHtml], { type: 'text/html' });
+            filesToDownload.unshift({ filename: `${projectName}.html`, blob: htmlBlob });
+            
+            showMessage(`Téléchargement de ${filesToDownload.length} fichiers...`, 'info');
+            
+            filesToDownload.forEach((file, i) => {
+                setTimeout(() => {
+                    const url = URL.createObjectURL(file.blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = file.filename;
+                    a.style.display = 'none';
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                    
+                    if (i === filesToDownload.length - 1) {
+                        setTimeout(() => showMessage(`✅ ${filesToDownload.length} fichiers téléchargés !`, 'success'), 500);
+                    }
+                }, i * 500);
+            });
+        }
+
+        async function pasteImageFromClipboard() {
+            try {
+                const clipboardItems = await navigator.clipboard.read();
+                for (const clipboardItem of clipboardItems) {
+                    for (const type of clipboardItem.types) {
+                        if (type.startsWith('image/')) {
+                            const blob = await clipboardItem.getType(type);
+                            const reader = new FileReader();
+                            reader.onload = async (e) => {
+                                const compressedDataUrl = await compressImage(e.target.result, 0.9, 1600);
+                                const image = {
+                                    name: `image-collée-${Date.now()}.jpg`,
+                                    dataUrl: compressedDataUrl
+                                };
+                                images.push(image);
+                                renderImageGrid();
+                                showMessage('Image collée et optimisée !');
+                            };
+                            reader.readAsDataURL(blob);
+                            return;
+                        }
+                    }
+                }
+                showMessage('Aucune image trouvée dans le presse-papiers', 'error');
+            } catch (err) {
+                showMessage('Erreur : Copiez d\'abord une image.', 'error');
+            }
+        }
+    </script>
+</body>
+</html>
+
