@@ -29,9 +29,18 @@
         }
     </style>
 </head>
-<body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
+<body class="bg-gray-100 flex items-center justify-center min-h-screen p-4 relative">
 
-    <div class="w-full max-w-3xl bg-white rounded-xl shadow-lg p-6 md:p-8 space-y-6">
+    <!-- --- AJOUT DE LA FLÈCHE DE RETOUR --- -->
+    <a href="index.html" class="absolute top-4 left-4 sm:top-6 sm:left-6 lg:top-8 lg:left-8 flex items-center gap-2 text-gray-500 hover:text-blue-600 font-semibold transition-colors z-10">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+        </svg>
+        Retour
+    </a>
+    <!-- --- FIN DE L'AJOUT --- -->
+
+    <div class="w-full max-w-3xl bg-white rounded-xl shadow-lg p-6 md:p-8 space-y-6 mt-16 sm:mt-0"> <!-- Ajout de mt-16 pour mobile -->
         <!-- Titre de l'application -->
         <h1 class="text-3xl md:text-4xl font-bold text-center text-blue-600">
             Éditeur de Code avec Prévisualisation & Export
