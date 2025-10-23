@@ -3,229 +3,492 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Générateur de Cours avec une API IA</title>
-    <!-- Chargement de Tailwind CSS pour un design moderne -->
+    <title>Interface IA Multi-Modèle</title>
+    <!-- Chargement de Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Utilisation de la police Inter pour une meilleure typographie -->
+    <!-- Ajout de Font Awesome pour l'icône retour -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Police Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        /* CSS additionnel pour peaufiner le style */
+        /* Définition de la police Inter par défaut */
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #f8fafc; /* Gris très clair de Tailwind */
         }
-        /* Style pour le placeholder de la zone de texte */
-        textarea::placeholder {
-            color: #9ca3af;
+        /* Style simple pour le spinner de chargement */
+        #loading-spinner {
+            border: 4px solid rgba(0, 0, 0, .1);
+            border-left-color: #09f;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
         }
-        /* Style pour l'iframe de prévisualisation */
-        #preview-frame {
-            border: 1px solid #e5e7eb;
-            border-radius: 0.5rem;
-            min-height: 500px;
-            width: 100%;
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        /* Style pour la zone de texte brut (préserve les sauts de ligne) */
+        #raw-output {
+            white-space: pre-wrap; 
+            word-wrap: break-word;
+            font-family: monospace; /* Police mono pour le code/texte brut */
         }
     </style>
 </head>
-<body class="text-gray-800">
-    <div class="container mx-auto p-4 sm:p-6 lg:p-8 max-w-4xl">
+<body class="bg-gray-100 min-h-screen flex items-center justify-center p-4">
 
-        <!-- Section d'en-tête et de description -->
-        <header class="text-center mb-8">
-            <h1 class="text-3xl sm:text-4xl font-bold text-blue-600 mb-2">Générateur de Cours avec une API IA</h1>
-            <p class="text-md sm:text-lg text-gray-600">
-                Cette application utilise votre clé d'API personnelle (Google Gemini) pour transformer une description de cours en une page web complète. Vous pouvez visualiser le résultat directement sur cette page avant de le télécharger. Le cours généré est au format HTML, prêt à être utilisé dans n'importe quel navigateur web.
-            </p>
-        </header>
+    <!-- Ajout de "relative" pour positionner la flèche -->
+    <div class="bg-white w-full max-w-3xl p-6 sm:p-8 rounded-xl shadow-lg relative">
+        
+        <!-- Flèche de retour vers index.html -->
+        <a href="index.html" title="Retour à l'accueil" class="absolute top-5 left-6 text-gray-400 hover:text-gray-600 transition-colors">
+            <i class="fas fa-arrow-left text-xl"></i>
+        </a>
 
-        <!-- Conteneur principal pour les contrôles et la sortie -->
-        <div class="bg-white p-6 sm:p-8 rounded-xl shadow-lg space-y-6">
+        <h1 class="text-2xl sm:text-3xl font-bold text-gray-800 mb-6 text-center">Interface IA 🤖</h1>
 
-            <!-- Groupe de saisie pour la clé API -->
-            <div class="input-group">
-                <label for="api-key" class="block mb-2 font-semibold text-gray-700">1. Votre Clé d'API Gemini</label>
-                <input type="password" id="api-key" placeholder="Collez votre clé d'API ici"
-                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
-            </div>
+        <!-- Section pour la configuration de l'IA (cachée si déjà sauvegardée) -->
+        <div id="config-section">
+            <h2 class="text-lg font-semibold text-gray-700 mb-3">Configuration de l'IA</h2>
+            <p class="text-sm text-gray-600 mb-4">Choisissez votre fournisseur d'IA et entrez votre clé API. Elle sera sauvegardée dans votre navigateur.</p>
             
-            <!-- NOUVEAU : Groupe de saisie pour le nom du modèle -->
-            <div class="input-group">
-                <label for="model-name" class="block mb-2 font-semibold text-gray-700">2. Modèle Gemini à utiliser</label>
-                <input type="text" id="model-name" value="gemini-1.5-flash-latest"
-                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
-            </div>
+            <label for="ai-selector" class="block text-sm font-medium text-gray-700 mb-1">Fournisseur d'IA</label>
+            <select id="ai-selector" class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4">
+                <option value="gemini">Google (Gemini)</option>
+                <option value="chatgpt">OpenAI (ChatGPT)</option>
+                <option value="mistral">Mistral</option>
+                <option value="claude">Anthropic (Claude)</option>
+            </select>
 
-            <!-- Groupe de saisie pour le prompt du cours -->
-            <div class="input-group">
-                <label for="course-prompt" class="block mb-2 font-semibold text-gray-700">3. Description détaillée du cours</label>
-                <textarea id="course-prompt" rows="8"
-                          placeholder="Collez ici la description (le 'prompt') générée par l'outil principal de création de cours. Par exemple : Crée un cours d'introduction au HTML pour débutants. Inclus une section sur les balises de base (titres, paragraphes), une sur les listes ordonnées et non ordonnées, et un petit quiz simple à la fin pour tester les connaissances."
-                          class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"></textarea>
-            </div>
-
-            <!-- Bouton de génération -->
-            <div class="flex justify-center">
-                <button id="generate-btn"
-                        class="w-full sm:w-auto bg-blue-600 text-white font-bold py-3 px-8 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-300 transition-transform transform hover:scale-105 disabled:bg-gray-400 disabled:cursor-not-allowed">
-                    Générer le cours
+            <label for="api-key-input" class="block text-sm font-medium text-gray-700 mb-1">Clé API</label>
+            <div class="flex flex-col sm:flex-row gap-3">
+                <input type="password" id="api-key-input" placeholder="Entrez votre clé API ici..." class="flex-grow p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <button id="save-key-button" class="bg-blue-600 text-white font-semibold py-3 px-5 rounded-lg shadow-md hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                    Sauvegarder
                 </button>
             </div>
-
-            <!-- Conteneur pour les actions post-génération (comme l'export) -->
-            <div id="actions-container" class="flex justify-center mt-4"></div>
+            <p class="text-xs text-gray-500 mt-3">⚠️ Votre clé est stockée localement. Ne l'utilisez pas sur un appareil public.</p>
         </div>
 
-        <!-- Section de prévisualisation -->
-        <div id="output-container" class="mt-8">
-             <h2 class="text-2xl font-bold text-center mb-4 text-gray-800">Prévisualisation</h2>
-             <div id="output-placeholder" class="bg-gray-100 p-8 rounded-lg text-center text-gray-500">
-                Le cours généré apparaîtra ici...
-             </div>
-             <iframe id="preview-frame" class="hidden"></iframe>
+        <!-- Section pour le prompt (cachée si pas de clé) -->
+        <div id="prompt-section" class="hidden">
+            <div class="flex justify-between items-center mb-4">
+                <h2 id="config-status-text" class="text-lg font-semibold text-green-700"></h2>
+                <button id="change-ai-button" class="text-sm text-blue-600 hover:text-blue-800 hover:underline">Changer d'IA</button>
+            </div>
+
+            <label for="prompt-input" class="block text-sm font-medium text-gray-700 mb-2">Votre Message :</label>
+            <textarea id="prompt-input" rows="8" class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Entrez votre question ou instruction ici... (ex: 'Donne-moi un cours en HTML sur les volcans' ou 'Explique-moi la photosynthèse')"></textarea>
+            
+            <button id="generate-button" class="w-full bg-green-600 text-white font-bold py-3 px-5 rounded-lg shadow-md hover:bg-green-700 transition-colors mt-4 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2">
+                Envoyer
+            </button>
         </div>
+
+        <!-- Section pour les résultats -->
+        <div id="results-section" class="mt-6 hidden">
+            <!-- Spinner de chargement -->
+            <div id="loading-spinner" class="mx-auto my-4 hidden"></div>
+
+            <!-- Onglets pour basculer entre l'aperçu et le texte brut -->
+            <div class="flex border-b border-gray-200">
+                <button id="tab-preview" class="py-2 px-4 font-semibold text-blue-600 border-b-2 border-blue-600">Aperçu</button>
+                <button id="tab-raw" class="py-2 px-4 font-semibold text-gray-500">Texte Brut</button>
+            </div>
+
+            <!-- Contenu de l'aperçu -->
+            <div id="preview-output" class="mt-4 p-4 border border-gray-200 rounded-lg min-h-[150px] bg-gray-50">
+                <!-- Le HTML généré sera injecté ici -->
+            </div>
+
+            <!-- Contenu du texte brut -->
+            <div id="raw-output-container" class="mt-4 hidden">
+                <pre class="bg-gray-900 text-white p-4 rounded-lg overflow-x-auto"><code id="raw-output" class="text-sm"></code></pre>
+                <button id="copy-text-button" class="mt-2 bg-gray-600 text-white text-xs font-medium py-1 px-3 rounded-md hover:bg-gray-700">Copier le texte</button>
+            </div>
+        </div>
+
     </div>
 
     <script>
-        const apiKeyInput = document.getElementById('api-key');
-        const modelNameInput = document.getElementById('model-name'); // Récupérer le nouvel input
-        const coursePromptInput = document.getElementById('course-prompt');
-        const generateBtn = document.getElementById('generate-btn');
-        const outputContainer = document.getElementById('output-container');
-        const outputPlaceholder = document.getElementById('output-placeholder');
-        const previewFrame = document.getElementById('preview-frame');
-        const actionsContainer = document.getElementById('actions-container');
+        // Clés pour le localStorage
+        const STORAGE_SELECTED_AI = 'selectedAI';
+        const STORAGE_GEMINI_KEY = 'geminiApiKey';
+        const STORAGE_CHATGPT_KEY = 'chatgptApiKey';
+        const STORAGE_MISTRAL_KEY = 'mistralApiKey';
+        const STORAGE_CLAUDE_KEY = 'claudeApiKey';
 
-        let generatedHtmlContent = '';
+        // --- Références aux éléments du DOM ---
+        const configSection = document.getElementById('config-section');
+        const promptSection = document.getElementById('prompt-section');
+        const aiSelector = document.getElementById('ai-selector');
+        const apiKeyInput = document.getElementById('api-key-input');
+        const saveKeyButton = document.getElementById('save-key-button');
+        
+        const configStatusText = document.getElementById('config-status-text');
+        const changeAiButton = document.getElementById('change-ai-button');
+        const promptInput = document.getElementById('prompt-input');
+        const generateButton = document.getElementById('generate-button');
+        
+        const resultsSection = document.getElementById('results-section');
+        const loadingSpinner = document.getElementById('loading-spinner');
+        
+        // Références aux onglets et aux sorties
+        const tabPreview = document.getElementById('tab-preview');
+        const tabRaw = document.getElementById('tab-raw');
+        const previewOutput = document.getElementById('preview-output');
+        const rawOutputContainer = document.getElementById('raw-output-container');
+        const rawOutput = document.getElementById('raw-output');
+        const copyTextButton = document.getElementById('copy-text-button');
 
-        // Fonction pour mettre en pause l'exécution (utilisée pour l'attente entre les tentatives)
-        const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
-        generateBtn.addEventListener('click', async () => {
-            const apiKey = apiKeyInput.value.trim();
-            const modelName = modelNameInput.value.trim(); // Lire la valeur du champ du modèle
-            const userPrompt = coursePromptInput.value.trim();
+        // --- Configuration des différentes API ---
+        
+        // Instruction système générale
+        const systemPrompt = "Tu es un assistant IA polyvalent et serviable. Réponds à la demande de l'utilisateur de manière claire, concise et précise. Si l'utilisateur demande explicitement du code HTML, génère uniquement le code HTML brut.";
 
-            if (!apiKey || !modelName || !userPrompt) {
-                outputPlaceholder.textContent = "Veuillez fournir votre clé d'API, un nom de modèle et une description pour le cours.";
-                outputPlaceholder.style.display = 'block';
-                previewFrame.classList.add('hidden');
-                return;
+        const AI_CONFIGS = {
+            'gemini': {
+                name: "Google (Gemini)",
+                storageKey: STORAGE_GEMINI_KEY,
+                getApiUrl: (cleApi) => `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${cleApi}`,
+                getHeaders: (cleApi) => ({ 'Content-Type': 'application/json' }),
+                getPayload: (prompt) => ({
+                    contents: [{ parts: [{ text: prompt }] }],
+                    systemInstruction: { parts: [{ text: systemPrompt }] },
+                    generationConfig: { responseMimeType: "text/plain" }
+                }),
+                parseResponse: (result) => {
+                    if (!result.candidates || !result.candidates[0].content.parts[0].text) {
+                        throw new Error("Réponse de l'API Gemini invalide ou bloquée.");
+                    }
+                    return result.candidates[0].content.parts[0].text;
+                }
+            },
+            'chatgpt': {
+                name: "OpenAI (ChatGPT)",
+                storageKey: STORAGE_CHATGPT_KEY,
+                getApiUrl: () => 'https://api.openai.com/v1/chat/completions',
+                getHeaders: (cleApi) => ({
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${cleApi}`
+                }),
+                getPayload: (prompt) => ({
+                    model: 'gpt-4o', 
+                    messages: [
+                        { role: 'system', content: systemPrompt }, 
+                        { role: 'user', content: prompt }
+                    ]
+                }),
+                parseResponse: (result) => {
+                    if (!result.choices || !result.choices[0].message.content) {
+                        throw new Error("Réponse de l'API OpenAI invalide.");
+                    }
+                    return result.choices[0].message.content;
+                }
+            },
+            'mistral': {
+                name: "Mistral",
+                storageKey: STORAGE_MISTRAL_KEY,
+                getApiUrl: () => 'https://api.mistral.ai/v1/chat/completions',
+                getHeaders: (cleApi) => ({
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${cleApi}`
+                }),
+                getPayload: (prompt) => ({
+                    model: 'mistral-large-latest',
+                    messages: [
+                        { role: 'system', content: systemPrompt }, 
+                        { role: 'user', content: prompt }
+                    ]
+                }),
+                parseResponse: (result) => {
+                    if (!result.choices || !result.choices[0].message.content) {
+                        throw new Error("Réponse de l'API Mistral invalide.");
+                    }
+                    return result.choices[0].message.content;
+                }
+            },
+            'claude': {
+                name: "Anthropic (Claude)",
+                storageKey: STORAGE_CLAUDE_KEY,
+                getApiUrl: () => 'https://api.anthropic.com/v1/messages',
+                getHeaders: (cleApi) => ({
+                    'Content-Type': 'application/json',
+                    'x-api-key': cleApi,
+                    'anthropic-version': '2023-06-01'
+                }),
+                getPayload: (prompt) => ({
+                    model: 'claude-3-haiku-20240307', 
+                    system: systemPrompt, 
+                    messages: [ { role: 'user', content: prompt } ],
+                    max_tokens: 4096
+                }),
+                parseResponse: (result) => {
+                     if (!result.content || !result.content[0].text) {
+                        throw new Error("Réponse de l'API Anthropic invalide.");
+                    }
+                    return result.content[0].text;
+                }
+            }
+        };
+
+        /**
+         * Fonction principale d'appel API (inchangée)
+         */
+        async function callGenerationAPI(promptUtilisateur, cleApi, aiType) {
+            const config = AI_CONFIGS[aiType];
+            if (!config) {
+                throw new Error(`Configuration AI non trouvée pour: ${aiType}`);
             }
 
-            generateBtn.disabled = true;
-            generateBtn.textContent = 'Génération en cours...';
-            previewFrame.classList.add('hidden');
-            outputPlaceholder.textContent = 'Génération en cours, veuillez patienter...';
-            outputPlaceholder.style.display = 'block';
-            actionsContainer.innerHTML = '';
+            const API_URL = config.getApiUrl(cleApi);
+            const headers = config.getHeaders(cleApi);
+            const payload = config.getPayload(promptUtilisateur);
 
-            const fullPrompt = `
-                Génère un fichier HTML complet et autonome pour un cours basé sur la description suivante.
-                Le fichier DOIT inclure tout le CSS et le JavaScript nécessaires DANS le fichier HTML lui-même (pas de fichiers externes).
-                Utilise un design moderne et responsive avec Tailwind CSS. Le contenu doit être clair, bien structuré et pédagogique.
-                Voici la description du cours : "${userPrompt}"
-            `;
-            
-            const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
-
-            try {
-                // --- NOUVELLE LOGIQUE AVEC TENTATIVES ---
-                let responseData;
-                const maxRetries = 5;
-                let currentDelay = 1000; // Commence avec 1 seconde d'attente
-
-                for (let attempt = 1; attempt <= maxRetries; attempt++) {
-                    const response = await fetch(API_URL, {
+            // Gestion de l'API avec exponentiel backoff
+            let response;
+            let delay = 1000; // 1 seconde
+            for (let i = 0; i < 5; i++) { // 5 tentatives max
+                try {
+                    response = await fetch(API_URL, {
                         method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            contents: [{ parts: [{ text: fullPrompt }] }]
-                        })
+                        headers: headers,
+                        body: JSON.stringify(payload)
                     });
 
                     if (response.ok) {
-                        responseData = await response.json();
-                        break; // Succès, on sort de la boucle
-                    }
-
-                    // Si la réponse indique une surcharge et que ce n'est pas la dernière tentative
-                    if (response.status === 429 || response.status === 503) {
-                         if (attempt === maxRetries) {
-                            throw new Error(`Erreur de l'API: Le modèle est toujours surchargé après ${maxRetries} tentatives.`);
-                        }
-                        outputPlaceholder.textContent = `Modèle surchargé. Nouvelle tentative dans ${currentDelay / 1000}s... (Essai ${attempt}/${maxRetries})`;
-                        await sleep(currentDelay);
-                        currentDelay *= 2; // Double le délai pour la prochaine tentative (backoff exponentiel)
+                        const result = await response.json();
+                        // Chaque IA a sa propre façon de parser la réponse
+                        return config.parseResponse(result);
+                    } else if (response.status === 429) { // Too Many Requests
+                        await new Promise(resolve => setTimeout(resolve, delay));
+                        delay *= 2; // Double le délai
                     } else {
-                        // Pour les autres erreurs, on les lance immédiatement
-                        const errorData = await response.json();
-                        const errorMessage = errorData.error?.message || `Erreur HTTP ${response.status}`;
-                        throw new Error(`Erreur de l'API: ${errorMessage}`);
+                        // Erreur non récupérable
+                        const errorBody = await response.text();
+                        throw new Error(`Erreur API: ${response.status} ${response.statusText}. Détails: ${errorBody}`);
                     }
+                } catch (error) {
+                    if (i === 4) { // Dernière tentative
+                        throw error;
+                    }
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                    delay *= 2;
                 }
+            }
+            throw new Error("Échec de l'appel API après plusieurs tentatives.");
+        }
+
+        // --- Logique de l'application ---
+
+        // (Fonctions basculerSections, updateApiKeyInput, sauvegarderCle, changerIA sont inchangées)
+        function basculerSections(cleExiste, aiType = '') {
+            if (cleExiste && aiType) {
+                configSection.classList.add('hidden');
+                promptSection.classList.remove('hidden');
+                const aiName = AI_CONFIGS[aiType]?.name || aiType;
+                configStatusText.innerHTML = `Connecté à : <strong class="text-gray-900">${aiName}</strong>`;
+            } else {
+                configSection.classList.remove('hidden');
+                promptSection.classList.add('hidden');
+                resultsSection.classList.add('hidden'); 
+                updateApiKeyInput(); 
+            }
+        }
+
+        function updateApiKeyInput() {
+            const selectedAI = aiSelector.value;
+            const config = AI_CONFIGS[selectedAI];
+            const cleSauvegardee = localStorage.getItem(config.storageKey);
+            
+            apiKeyInput.value = cleSauvegardee || '';
+            apiKeyInput.placeholder = `Entrez votre clé API pour ${config.name}...`;
+        }
+        
+        function sauvegarderCle() {
+            const selectedAI = aiSelector.value;
+            const config = AI_CONFIGS[selectedAI];
+            const cle = apiKeyInput.value.trim();
+            
+            if (cle) {
+                localStorage.setItem(config.storageKey, cle);
+                localStorage.setItem(STORAGE_SELECTED_AI, selectedAI);
+                basculerSections(true, selectedAI);
+            } else {
+                alert("Veuillez entrer une clé API valide.");
+            }
+        }
+        
+        function changerIA() {
+            basculerSections(false);
+        }
+
+        // Gérer la génération de la réponse
+        async function gererGeneration() {
+            const prompt = promptInput.value.trim();
+            const activeAI = localStorage.getItem(STORAGE_SELECTED_AI);
+            
+            if (!activeAI) {
+                alert("Erreur : Aucune IA sélectionnée.");
+                basculerSections(false);
+                return;
+            }
+            
+            const config = AI_CONFIGS[activeAI];
+            const cleApi = localStorage.getItem(config.storageKey);
+
+            if (!prompt) {
+                alert("Veuillez entrer un message.");
+                return;
+            }
+            if (!cleApi) {
+                alert(`Erreur : Clé API non trouvée pour ${config.name}.`);
+                basculerSections(false);
+                return;
+            }
+
+            // Afficher le chargement et vider les anciennes réponses
+            loadingSpinner.classList.remove('hidden');
+            resultsSection.classList.remove('hidden');
+            previewOutput.innerHTML = ''; 
+            rawOutput.textContent = ''; 
+            generateButton.disabled = true;
+            generateButton.textContent = "Envoi en cours...";
+
+            try {
+                // Appeler la fonction de génération
+                const textContent = (await callGenerationAPI(prompt, cleApi, activeAI)).trim();
                 
-                if (!responseData) {
-                    throw new Error("La requête a échoué après plusieurs tentatives.");
+                // Nettoyer le HTML (l'IA ajoute parfois ````html` au début/fin)
+                const cleanHtml = textContent
+                    .replace(/^```html\n?/, '')
+                    .replace(/```$/, '')
+                    .trim();
+
+                // Toujours remplir le texte brut
+                rawOutput.textContent = cleanHtml;
+
+                // Détecter si la réponse est du HTML
+                const isHtml = cleanHtml.startsWith('<') && cleanHtml.endsWith('>');
+
+                if (isHtml) {
+                    // Afficher l'aperçu HTML
+                    previewOutput.innerHTML = cleanHtml;
+                    afficherOnglet('preview');
+                } else {
+                    // Afficher le texte brut
+                    previewOutput.innerHTML = `<p class="text-gray-500 italic">(La réponse n'est pas au format HTML)</p>`;
+                    afficherOnglet('raw');
                 }
-                
-                if (!responseData.candidates || !responseData.candidates[0].content || !responseData.candidates[0].content.parts || !responseData.candidates[0].content.parts[0].text) {
-                    throw new Error("La réponse de l'API est invalide ou ne contient pas de texte généré.");
-                }
-
-                let textContent = responseData.candidates[0].content.parts[0].text;
-
-                const htmlMatch = textContent.match(/```html\s*([\s\S]*?)\s*```/);
-                generatedHtmlContent = htmlMatch ? htmlMatch[1] : textContent;
-
-                outputPlaceholder.style.display = 'none';
-                previewFrame.srcdoc = generatedHtmlContent;
-                previewFrame.classList.remove('hidden');
-
-                displayExportButton();
 
             } catch (error) {
                 console.error("Erreur lors de la génération :", error);
-                generatedHtmlContent = '';
-                previewFrame.classList.add('hidden');
-                outputPlaceholder.textContent = `Erreur : ${error.message}. Vérifiez la console pour plus de détails.`;
-                outputPlaceholder.style.display = 'block';
+                rawOutput.textContent = `Erreur : ${error.message}`;
+                previewOutput.innerHTML = `<p class="text-red-600 font-semibold">Erreur :</p><p class="text-red-500 text-sm">${error.message}</p>`;
+                afficherOnglet('raw'); // Afficher l'erreur dans l'onglet brut
             } finally {
-                generateBtn.disabled = false;
-                generateBtn.textContent = 'Générer le cours';
+                // Cacher le chargement et réactiver le bouton
+                loadingSpinner.classList.add('hidden');
+                generateButton.disabled = false;
+                generateButton.textContent = "Envoyer";
+            }
+        }
+
+        // Gérer l'affichage des onglets
+        function afficherOnglet(type) {
+            if (type === 'preview') {
+                previewOutput.classList.remove('hidden');
+                rawOutputContainer.classList.add('hidden');
+                tabPreview.classList.add('text-blue-600', 'border-blue-600');
+                tabPreview.classList.remove('text-gray-500');
+                tabRaw.classList.add('text-gray-500');
+                tabRaw.classList.remove('text-blue-600', 'border-blue-600');
+            } else { // type === 'raw'
+                previewOutput.classList.add('hidden');
+                rawOutputContainer.classList.remove('hidden');
+                tabRaw.classList.add('text-blue-600', 'border-blue-600');
+                tabRaw.classList.remove('text-gray-500');
+                tabPreview.classList.add('text-gray-500');
+                tabPreview.classList.remove('text-blue-600', 'border-blue-600');
+            }
+        }
+
+        // Copier le texte brut
+        function copierTexte() {
+            const text = rawOutput.textContent;
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(text).then(() => {
+                    copyTextButton.textContent = "Copié !";
+                    setTimeout(() => { copyTextButton.textContent = "Copier le texte"; }, 2000);
+                }).catch(err => {
+                    fallbackCopyTextToClipboard(text);
+                });
+            } else {
+                fallbackCopyTextToClipboard(text);
+            }
+        }
+        
+        function fallbackCopyTextToClipboard(text) {
+            try {
+                const textArea = document.createElement("textarea");
+                textArea.value = text;
+                textArea.style.position = "fixed";
+                textArea.style.top = 0;
+                textArea.style.left = 0;
+                document.body.appendChild(textArea);
+                textArea.focus();
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                
+                copyTextButton.textContent = "Copié !";
+                setTimeout(() => { copyTextButton.textContent = "Copier le texte"; }, 2000);
+            } catch (e) {
+                alert("La copie a échoué. Veuillez copier manuellement.");
+            }
+        }
+
+
+        // --- Écouteurs d'événements ---
+        
+        // Au chargement de la page
+        document.addEventListener('DOMContentLoaded', () => {
+            const selectedAI = localStorage.getItem(STORAGE_SELECTED_AI) || 'gemini';
+            aiSelector.value = selectedAI;
+            
+            const config = AI_CONFIGS[selectedAI];
+            const cleSauvegardee = localStorage.getItem(config.storageKey);
+
+            if (cleSauvegardee) {
+                basculerSections(true, selectedAI);
+            } else {
+                basculerSections(false);
             }
         });
 
-        function displayExportButton() {
-            actionsContainer.innerHTML = '';
+        // Changement du sélecteur d'IA
+        aiSelector.addEventListener('change', updateApiKeyInput);
 
-            const exportBtn = document.createElement('button');
-            exportBtn.textContent = 'Exporter en Fichier HTML 💾';
-            exportBtn.className = 'bg-green-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-green-700 focus:outline-none focus:ring-4 focus:ring-green-300 transition-transform transform hover:scale-105';
+        // Clic sur "Sauvegarder"
+        saveKeyButton.addEventListener('click', sauvegarderCle);
 
-            actionsContainer.appendChild(exportBtn);
+        // Clic sur "Changer d'IA"
+        changeAiButton.addEventListener('click', changerIA);
 
-            exportBtn.addEventListener('click', () => {
-                const userFileName = window.prompt("Entrez un nom pour le fichier HTML :", "mon-cours.html");
-                
-                if (userFileName) {
-                    let fileName = userFileName;
-                    if (!fileName.toLowerCase().endsWith('.html')) {
-                        fileName += '.html';
-                    }
+        // Clic sur "Envoyer"
+        generateButton.addEventListener('click', gererGeneration);
+        
+        // Clic sur les onglets
+        tabPreview.addEventListener('click', () => afficherOnglet('preview'));
+        tabRaw.addEventListener('click', () => afficherOnglet('raw'));
+        
+        // Clic sur "Copier"
+        copyTextButton.addEventListener('click', copierTexte);
 
-                    const blob = new Blob([generatedHtmlContent], { type: 'text/html;charset=utf-8' });
-                    const link = document.createElement('a');
-                    link.href = URL.createObjectURL(blob);
-                    link.download = fileName;
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
-                    URL.revokeObjectURL(link.href);
-                }
-            });
-        }
     </script>
 </body>
 </html>
+
