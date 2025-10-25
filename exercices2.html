@@ -105,11 +105,9 @@
                     
                     <h2 class="text-2xl font-bold text-slate-800">Générateurs XML pour Moodle</h2>
                     <p class="text-slate-600 mt-2">Créez des exercices directement importables dans <strong>Léia/Néo</strong>.</p>
-                    <!-- ##### MODIFICATIONS EFFECTUÉES ICI ##### -->
                     <p class="text-slate-600 mt-4">Insérez le fichier Moodle généré en cliquant sur la roue dentée suivante :</p>
                     <img src="exercicesimportés.jpg" alt="Importer un fichier Moodle" class="mt-4 mx-auto rounded-lg shadow-md border border-slate-300" style="max-width: 400px; width: 100%;">
-                    <!-- ##### FIN DES MODIFICATIONS ##### -->
-                </div>
+                    </div>
 
                 <div class="form-group mb-8">
                     <label for="courseContentXml" class="text-md font-semibold text-slate-700 block mb-2">Contenu du cours (base pour les exercices)</label>
@@ -270,6 +268,10 @@
                 document.body.removeChild(a);
             }
             
+            // ######################################################################
+            // ##### DÉBUT DE LA MODIFICATION APPORTÉE À LA FONCTION getPrompt #####
+            // ######################################################################
+            
             function getPrompt(type, params) {
                 const { courseContent } = params;
                 if (!courseContent) {
@@ -278,29 +280,84 @@
                 }
                 switch (type) {
                     case 'mcq':
+                        // PROMPT CORRIGÉ POUR LE QCM
+                        // Modification :
+                        // 1. Changé fraction="100" en fraction="100.00000"
+                        // 2. Supprimé <answernumbering>abc</answernumbering> de l'exemple
+                        // 3. Ajout de <answernumbering> à la liste des balises interdites
                         return `Tu es un expert en création d'exercices pédagogiques. En te basant strictement sur le contenu de cours suivant, crée ${params.numQuestions} questions à choix multiples (QCM) au format Moodle XML.
 
 CONTENU DU COURS :
 ${courseContent}
 
-INSTRUCTIONS PRÉCISES :
-1. Chaque QCM doit avoir exactement ${params.numChoices} propositions de réponse.
-2. Une seule bonne réponse par question.
-3. Les questions doivent couvrir les points essentiels du cours.
-4. Utilise le format Moodle XML standard avec les balises appropriées.
-5. Assure-toi que le XML est bien formé et valide.`;
+INSTRUCTIONS PRÉCISES POUR LE FORMAT XML (IMPORTANT) :
+Tu dois générer un format Moodle XML **simplifié** pour être compatible avec l'ENT Néo/Léia, en respectant le format des exemples qui fonctionnent.
+1.  **Format CDATA** : TOUT le texte dans les balises <text> (noms, questions, réponses) doit être encapsulé dans \`<![CDATA[...]]>\`.
+2.  **Balises Absentes** : N'inclus PAS les balises <defaultgrade>, <penalty>, <hidden>, <idnumber>, ou <answernumbering>.
+3.  **Attributs Absents** : N'ajoute AUCUN attribut \`format="moodle_auto_format"\`.
+4.  **Mélange** : Utilise \`<shuffleanswers>1</shuffleanswers>\` (le chiffre 1).
+5.  **Réponse Unique** : Utilise \`<single>true</single>\`.
+6.  **Bonne Réponse** : La seule bonne réponse doit avoir l'attribut \`<answer fraction="100.00000">\`.
+7.  **Mauvaises Réponses** : Les ${params.numChoices - 1} mauvaises réponses doivent avoir l'attribut \`<answer fraction="0">\`.
+8.  **Structure globale** : Le fichier doit commencer par <quiz> et se terminer par </quiz>.
+
+EXEMPLE DE STRUCTURE POUR UN QCM (Note : Pas de <answernumbering>) :
+<quiz>
+  <question type="multichoice">
+    <name><text><![CDATA[Titre du QCM]]></text></name>
+    <questiontext><text><![CDATA[La question posée ?]]></text></questiontext>
+    <shuffleanswers>1</shuffleanswers>
+    <single>true</single>
+    <answer fraction="100.00000">
+      <text><![CDATA[La bonne réponse]]></text>
+    </answer>
+    <answer fraction="0">
+      <text><![CDATA[Une mauvaise réponse]]></text>
+    </answer>
+    <answer fraction="0">
+      <text><![CDATA[Une autre mauvaise réponse]]></text>
+    </answer>
+  </question>
+</quiz>`;
                     case 'matching':
+                        // PROMPT POUR L'ASSOCIATION (DÉJÀ CORRECT)
+                        // Ce prompt correspond bien à l'exemple ...1433_moodle.xml
                         return `Tu es un expert en création d'exercices pédagogiques. En te basant strictement sur le contenu de cours suivant, crée ${params.numGroups} exercice(s) d'association au format Moodle XML.
 
 CONTENU DU COURS :
 ${courseContent}
 
-INSTRUCTIONS PRÉCISES :
-1. Crée ${params.numGroups} question(s) de type "matching" (association).
-2. Chaque question doit contenir exactement ${params.numMatches} paires à associer.
-3. Les associations doivent être basées sur le contenu du cours fourni.
-4. Utilise le format Moodle XML standard.`;
+INSTRUCTIONS PRÉCISES POUR LE FORMAT XML (IMPORTANT) :
+Tu dois générer un format Moodle XML **simplifié** pour être compatible avec l'ENT Néo/Léia.
+1.  **Format CDATA** : TOUT le texte dans les balises <text> (noms, questions, sous-questions, réponses) doit être encapsulé dans \`<![CDATA[...]]>\`.
+2.  **Balises Absentes** : N'inclus PAS les balises <defaultgrade>, <penalty>, <hidden>, ou <idnumber>.
+3.  **Attributs Absents** : N'ajoute AUCUN attribut \`format="moodle_auto_format"\` (ni sur <questiontext> ni sur <subquestion>).
+4.  **Mélange** : Utilise \`<shuffleanswers>1</shuffleanswers>\` (le chiffre 1, pas "true").
+5.  **Paires** : Chaque question doit contenir exactement ${params.numMatches} paires à associer (donc ${params.numMatches} balises <subquestion>).
+6.  **Structure globale** : Le fichier doit commencer par <quiz> et se terminer par </quiz>.
+
+EXEMPLE DE STRUCTURE POUR UNE QUESTION D'ASSOCIATION :
+<quiz>
+  <question type="matching">
+    <name><text><![CDATA[Titre de la question]]></text></name>
+    <questiontext><text><![CDATA[Consigne de la question]]></text></questiontext>
+    <shuffleanswers>1</shuffleanswers>
+    <subquestion>
+      <text><![CDATA[Terme 1]]></text>
+      <answer><text><![CDATA[Définition 1]]></text></answer>
+    </subquestion>
+    <subquestion>
+      <text><![CDATA[Terme 2]]></text>
+      <answer><text><![CDATA[Définition 2]]></text></answer>
+    </subquestion>
+    <subquestion>
+      <text><![CDATA[Terme 3]]></text>
+      <answer><text><![CDATA[Définition 3]]></text></answer>
+    </subquestion>
+  </question>
+</quiz>`;
                     case 'summary':
+                        // (Cette partie est inchangée)
                         return `Tu es un expert en pédagogie. En te basant strictement sur le contenu de cours suivant, crée un résumé pédagogique d'environ ${params.numWords} mots.
 
 CONTENU DU COURS :
@@ -311,6 +368,7 @@ INSTRUCTIONS PRÉCISES :
 2. Il doit couvrir les points essentiels du cours.
 3. Utilise un vocabulaire adapté aux élèves.`;
                     case 'definitions':
+                        // (Cette partie est inchangée)
                         return `Tu es un expert en création de supports pédagogiques. En te basant strictement sur le contenu de cours suivant, identifie et définis ${params.numDefinitions} mots-clés essentiels.
 
 CONTENU DU COURS :
@@ -324,6 +382,10 @@ INSTRUCTIONS PRÉCISES :
                         return '';
                 }
             }
+            
+            // ####################################################################
+            // ##### FIN DE LA MODIFICATION APPORTÉE À LA FONCTION getPrompt #####
+            // ####################################################################
 
             // --- LOGIQUE POUR L'ONGLET XML ---
             document.getElementById('generateMCQXmlBtn').addEventListener('click', () => {
