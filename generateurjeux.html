@@ -192,6 +192,7 @@ ${timerMinutes ? `- Chronomètre dégressif de ${timerMinutes} minutes` : ''}
 - Modale de victoire révélant le mot magique "${magicWord}"
 `,
 
+    // --- MODIFICATION "INTRUS" - V2 (CORRIGÉE) ---
     intrus: ({ numSets, timerMinutes, magicWord }) => `
 **Mot magique à révéler en cas de succès :** ${magicWord}
 
@@ -199,21 +200,33 @@ Créez un jeu "Trouve l'intrus" avec ${numSets} séries d'éléments.
 ${timerMinutes ? `**Chronomètre :** ${timerMinutes} minutes maximum.` : ''}
 
 **Instructions :**
-- Créez ${numSets} groupes de 4-5 éléments chacun
-- Dans chaque groupe, un élément ne correspond pas aux autres (l'intrus)
-- Les éléments doivent être tirés du contenu du cours
-- L'élève doit identifier l'intrus dans chaque série
-- Le jeu est gagné si tous les intrus sont trouvés
-- Incluez un bouton "Passer" qui révèle la solution sans donner le mot magique
+- Créez ${numSets} groupes de 4-5 éléments chacun (vous pouvez choisir 4 ou 5 éléments par groupe).
+- Dans chaque groupe, un élément ne correspond pas aux autres (l'intrus).
+- Les éléments doivent être tirés du contenu du cours.
+
+**Logique de jeu (Important) :**
+- Le jeu ne doit pas donner de feedback immédiat (pas de couleur rouge/verte au simple clic).
+- L'élève doit sélectionner un intrus dans chaque série. Un clic sur un item le marque comme "sélectionné" (avec un style visuel distinct, comme une bordure ou un fond coloré). L'élève peut changer son choix tant qu'il n'a pas validé.
+- Ajoutez un bouton "Vérifier" sous les séries.
+- L'élève doit avoir sélectionné exactement un intrus dans chacune des ${numSets} séries pour pouvoir cliquer sur "Vérifier".
+- Au clic sur "Vérifier" :
+    - **Si les ${numSets} intrus sont corrects :** Le jeu est gagné. Affichez la modale de victoire avec le mot magique.
+    - **S'il y a une ou plusieurs erreurs :**
+        - Le jeu doit afficher un message de statut (ex: "Tu as X / ${numSets} bonnes réponses. Essaye encore !").
+        - **IMPORTANT : NE PAS colorer les réponses.** Ne pas indiquer quelles sont les bonnes ou mauvaises sélections.
+        - Le bouton "Vérifier" doit disparaître et être remplacé par un bouton "Recommencer".
+- Le bouton "Recommencer" doit réinitialiser les sélections de l'élève (effacer les choix visuels), ré-afficher le bouton "Vérifier" et cacher le bouton "Recommencer", pour permettre une nouvelle tentative.
+- Incluez un bouton "Passer" qui révèle la solution sans donner le mot magique.
 
 **Format attendu :**
-- Interface avec ${numSets} groupes d'éléments cliquables
-- Compteur de séries résolues
-- Feedback immédiat (correct/incorrect)
-- Bouton "Passer le jeu"
+- Interface avec ${numSets} groupes d'éléments cliquables (pour sélection).
+- Un message de statut pour le feedback (ex: "Sélectionne ${numSets} intrus", "Tu as 2 / ${numSets} bonnes réponses...").
+- Boutons "Vérifier" et "Recommencer" (ce dernier est caché au début).
+- Bouton "Passer le jeu".
 ${timerMinutes ? `- Chronomètre dégressif de ${timerMinutes} minutes` : ''}
 - Modale de victoire révélant le mot magique "${magicWord}"
 `,
+    // --- FIN MODIFICATION "INTRUS" ---
 
     association: ({ numZones, numItemsPerZone, timerMinutes, magicWord }) => `
 **Mot magique à révéler en cas de succès :** ${magicWord}
@@ -241,17 +254,18 @@ ${timerMinutes ? `- Chronomètre dégressif de ${timerMinutes} minutes` : ''}
     motsmeles: ({ numWords, words, forcedWords, timerMinutes, magicWord }) => `
 **Mot magique à révéler en cas de succès :** ${magicWord}
 
-Créez une grille de mots mêlés avec les mots suivants : ${words.join(', ')}.
+Créez une grille de mots mêlés avec les ${numWords} mots importants suivants, tirés du cours : ${words.join(', ')}.
 ${timerMinutes ? `**Chronomètre :** ${timerMinutes} minutes maximum.` : ''}
 ${forcedWords ? `**Mots forcés inclus :** ${forcedWords}` : ''}
 
 **Instructions :**
-- Utilisez une grille 12x12 pour cacher les ${numWords} mots
-- Les mots peuvent être horizontaux, verticaux ou diagonaux
-- Remplissez les cases vides avec des lettres aléatoires
-- L'élève doit sélectionner les mots en cliquant-glissant
-- Le jeu est gagné quand tous les mots sont trouvés
-- Incluez un bouton "Passer" qui révèle la solution sans donner le mot magique
+- Utilisez une grille 12x12 pour cacher les ${numWords} mots (qui sont des mots importants du cours).
+- **Contrainte :** Les mots doivent être placés uniquement à l'horizontale ou à la verticale (pas de diagonales).
+- **Contrainte :** Ils peuvent être écrits dans les quatre sens : de gauche à droite, de droite à gauche, de haut en bas, ou de bas en haut.
+- Remplissez les cases vides avec des lettres aléatoires.
+- L'élève doit sélectionner les mots en cliquant-glissant.
+- Le jeu est gagné quand tous les mots sont trouvés.
+- Incluez un bouton "Passer" qui révèle la solution sans donner le mot magique.
 
 **Format attendu :**
 - Grille interactive 12x12 avec sélection par clic-glissé
@@ -734,4 +748,3 @@ root.render(React.createElement(App));
 </script>
 </body>
 </html>
-
