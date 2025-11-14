@@ -79,6 +79,9 @@
             <label for="prompt-input" class="block text-sm font-medium text-gray-700 mb-2">Votre Message :</label>
             <textarea id="prompt-input" rows="8" class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Entrez votre question ou instruction ici... (ex: 'Donne-moi un cours en HTML sur les volcans' ou 'Explique-moi la photosynthèse')"></textarea>
             
+            <p class="text-sm text-yellow-700 mt-3 text-center">
+                ⚠️ **Note sur les coûts :** Demander un contenu long (comme un cours complet) consommera plus de tokens et augmentera le coût de votre requête API.
+            </p>
             <button id="generate-button" class="w-full bg-green-600 text-white font-bold py-3 px-5 rounded-lg shadow-md hover:bg-green-700 transition-colors mt-4 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2">
                 Envoyer
             </button>
@@ -153,7 +156,7 @@
                     systemInstruction: { parts: [{ text: systemPrompt }] },
                     generationConfig: { 
                         responseMimeType: "text/plain",
-                        maxOutputTokens: 8192 // Ajout d'une limite par sécurité
+                        maxOutputTokens: 32768 // MODIFICATION : Limite augmentée
                     }
                 }),
                 parseResponse: (result) => {
@@ -177,7 +180,7 @@
                         { role: 'system', content: systemPrompt }, 
                         { role: 'user', content: prompt }
                     ],
-                    max_tokens: 4096 // Ajout d'une limite
+                    max_tokens: 32768 // MODIFICATION : Limite augmentée
                 }),
                 parseResponse: (result) => {
                     if (!result.choices || !result.choices[0].message.content) {
@@ -200,7 +203,7 @@
                         { role: 'system', content: systemPrompt }, 
                         { role: 'user', content: prompt }
                     ],
-                    max_tokens: 4096 // <-- MODIFICATION AJOUTÉE
+                    max_tokens: 32768 // MODIFICATION : Limite augmentée
                 }),
                 parseResponse: (result) => {
                     if (!result.choices || !result.choices[0].message.content) {
@@ -222,7 +225,7 @@
                     model: 'claude-3-haiku-20240307', 
                     system: systemPrompt, 
                     messages: [ { role: 'user', content: prompt } ],
-                    max_tokens: 4096 // Limite déjà présente ici
+                    max_tokens: 32768 // MODIFICATION : Limite augmentée
                 }),
                 parseResponse: (result) => {
                      if (!result.content || !result.content[0].text) {
@@ -245,7 +248,7 @@
                         { role: 'system', content: systemPrompt }, 
                         { role: 'user', content: prompt }
                     ],
-                    max_tokens: 4096 // <-- MODIFICATION AJOUTÉE
+                    max_tokens: 32768 // MODIFICATION : Limite augmentée
                 }),
                 parseResponse: (result) => {
                     if (!result.choices || !result.choices[0].message.content) {
@@ -268,7 +271,7 @@
                         { role: 'system', content: systemPrompt }, 
                         { role: 'user', content: prompt }
                     ],
-                    max_tokens: 4096 // <-- MODIFICATION AJOUTÉE
+                    max_tokens: 32768 // MODIFICATION : Limite augmentée
                 }),
                 parseResponse: (result) => {
                     if (!result.choices || !result.choices[0].message.content) {

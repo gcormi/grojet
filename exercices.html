@@ -6,7 +6,7 @@
     <title>Générateur d'Exercices - Assistant Pédagogique</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" xintegrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="https://unpkg.com/docx@8.5.0/build/index.js"></script>
+    <!-- Script DOCX supprimé -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     
@@ -586,9 +586,7 @@
                     <button id="exportPngBtn" class="btn btn-secondary">
                         <i class="fas fa-image"></i> Exporter en PNG
                     </button>
-                    <button id="exportDocxBtn" class="btn btn-primary">
-                        <i class="fas fa-file-word"></i> Exporter en DOCX
-                    </button>
+                    <!-- Bouton DOCX supprimé -->
                     <button id="exportPdfBtn" class="btn btn-danger">
                         <i class="fas fa-file-pdf"></i> Exporter en PDF
                     </button>
@@ -618,8 +616,10 @@
             const processFeedbackEl = document.getElementById('processFeedback');
             const exercisePreviewEl = document.getElementById('exercisePreview');
             const exportPngBtn = document.getElementById('exportPngBtn');
-            const exportDocxBtn = document.getElementById('exportDocxBtn');
+            // Variable exportDocxBtn supprimée
             const exportPdfBtn = document.getElementById('exportPdfBtn');
+            // Récupérer l'élément de feedback d'export
+            const exportFeedbackEl = document.getElementById('exportFeedback');
 
             // Exercise Configurations
             const exerciseConfigs = {
@@ -685,7 +685,9 @@
                 const difficulty = document.getElementById('difficulty').value;
 
                 if (!courseContent || !exerciseType) {
-                    alert("Veuillez fournir un contenu de cours et sélectionner un type d'exercice.");
+                    // Utilisation d'un feedback non bloquant au lieu de alert()
+                    processFeedbackEl.textContent = "Veuillez fournir un contenu de cours et sélectionner un type d'exercice.";
+                    processFeedbackEl.className = 'feedback-message error show';
                     return;
                 }
 
@@ -729,9 +731,16 @@
             // 4. Copy prompt to clipboard
             const copyPrompt = () => {
                 generatedPromptEl.select();
-                document.execCommand('copy');
-                copyFeedbackEl.textContent = 'Prompt copié !';
-                copyFeedbackEl.className = 'feedback-message success show';
+                // Utilisation de document.execCommand pour compatibilité (comme demandé dans les instructions)
+                try {
+                    document.execCommand('copy');
+                    copyFeedbackEl.textContent = 'Prompt copié !';
+                    copyFeedbackEl.className = 'feedback-message success show';
+                } catch (err) {
+                    copyFeedbackEl.textContent = 'Erreur lors de la copie.';
+                    copyFeedbackEl.className = 'feedback-message error show';
+                }
+                
                 setTimeout(() => {
                     copyFeedbackEl.className = 'feedback-message success';
                 }, 2000);
@@ -819,6 +828,16 @@
             };
 
             const exportToPdf = () => {
+                // Vérifier si la bibliothèque jspdf est chargée
+                if (typeof window.jspdf === 'undefined' || typeof window.jspdf.jsPDF === 'undefined') {
+                    console.error("La bibliothèque jsPDF n'est pas encore chargée.");
+                    if(exportFeedbackEl) {
+                        exportFeedbackEl.textContent = "Erreur : La bibliothèque PDF est en cours de chargement. Veuillez réessayer.";
+                        exportFeedbackEl.className = 'feedback-message error show';
+                    }
+                    return;
+                }
+
                 const { jsPDF } = window.jspdf;
                 const doc = new jsPDF();
                 const element = getPreviewElementForExport();
@@ -834,67 +853,8 @@
                 });
             };
 
-            const exportToDocx = () => {
-                if (!currentExercise) return;
-
-                const { Document, Packer, Paragraph, TextRun, HeadingLevel } = docx;
-                const doc = new Document({
-                    sections: [{
-                        children: [
-                            new Paragraph({
-                                text: currentExercise.title || "Exercice",
-                                heading: HeadingLevel.HEADING_1,
-                                alignment: 'center'
-                            }),
-                            new Paragraph({
-                                children: [new TextRun({ text: currentExercise.instructions || "", italics: true })]
-                            }),
-                            new Paragraph({ text: "" }), // Spacer
-                        ]
-                    }]
-                });
-
-                const section = doc.sections[0];
-                if (currentExercise.questions) {
-                    currentExercise.questions.forEach((q, index) => {
-                        section.addParagraph(new Paragraph({
-                            children: [new TextRun({ text: `${index + 1}. ${q.question}` })],
-                            numbering: { reference: "my-numbering", level: 0 }
-                        }));
-                        if (q.options) {
-                            q.options.forEach(opt => {
-                                const isAnswer = opt === q.answer && document.getElementById('includeCorrections').checked;
-                                section.addParagraph(new Paragraph({
-                                    children: [new TextRun({ text: `- ${opt}`, bold: isAnswer, color: isAnswer ? "22c55e" : "000000" })],
-                                    indent: { left: 720 }
-                                }));
-                            });
-                        } else if (document.getElementById('includeCorrections').checked) {
-                             section.addParagraph(new Paragraph({
-                                children: [
-                                    new TextRun({ text: "Réponse : ", bold: true }),
-                                    new TextRun({ text: q.answer, color: "3b82f6" })
-                                ],
-                                indent: { left: 720 }
-                            }));
-                        }
-                        section.addParagraph(new Paragraph("")); // Spacer
-                    });
-                } else if (currentExercise.text) {
-                     // For DOCX, we don't have an easy way to inline answers, so we'll just list them at the end.
-                     section.addParagraph(new Paragraph(currentExercise.text));
-                     if(document.getElementById('includeCorrections').checked) {
-                        section.addParagraph(new Paragraph(""));
-                        section.addParagraph(new Paragraph({ children: [new TextRun({text: "Réponses :", bold: true})]}))
-                        section.addParagraph(new Paragraph(currentExercise.answers.join(", ")));
-                     }
-                }
-
-                Packer.toBlob(doc).then(blob => {
-                    saveAs(blob, "exercice.docx");
-                });
-            };
-
+            // Fonction exportToDocx supprimée
+            
 
             // Event Listeners
             courseContentEl.addEventListener('input', checkFormValidity);
@@ -908,7 +868,7 @@
 
             exportPngBtn.addEventListener('click', exportToPng);
             exportPdfBtn.addEventListener('click', exportToPdf);
-            exportDocxBtn.addEventListener('click', exportToDocx);
+            // Listener pour exportDocxBtn supprimé
 
             // Re-render preview when checking/unchecking export options
             document.getElementById('includeCorrections').addEventListener('change', () => renderPreview(document.getElementById('includeCorrections').checked, document.getElementById('includeInstructions').checked));
