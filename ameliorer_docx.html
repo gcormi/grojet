@@ -57,9 +57,8 @@
     </style>
 </head>
 <body>
-<!-- Bouton retour fixe en haut à gauche -->
 <div style="position: fixed; top: 20px; left: 20px; z-index: 1000;">
-    <a href="index.html" style="
+    <a href="boite.html" style="
         display: inline-flex;
         align-items: center;
         gap: 0.75rem;
@@ -84,7 +83,7 @@
         <header class="page-header">
             <h1><i class="fas fa-file-word icon"></i> Atelier d'Amélioration - DOCX</h1>
         </header>
-        <p class="page-header-subtitle">Améliorez vos cours générés au format DOCX en les re-générant avec vos modifications.</p>
+        <p class="page-header-subtitle">Cette action sert à prendre un cours au format Texte brut (DOCX), de définir des modifications (ajouts de paragraphes, exercices, médias) et de générer un prompt pour qu'une IA réécrive l'intégralité du texte en appliquant ces changements.</p>
     </div>
 
     <section class="section">
@@ -113,7 +112,6 @@
         <div class="sub-section">
             <h3><i class="fas fa-photo-video"></i> Intégration de Médias</h3>
             
-            <!-- Vidéos -->
             <div class="form-group">
                 <label class="label-text">Ajouter des vidéos (Optionnel) :</label>
                 <div id="videoContainer"></div>
@@ -122,7 +120,6 @@
                 </button>
             </div>
 
-            <!-- Images -->
             <div class="form-group">
                 <label class="label-text">Ajouter des images (Optionnel) :</label>
                 <div id="imageContainer"></div>
@@ -131,7 +128,6 @@
                 </button>
             </div>
 
-            <!-- Audio -->
             <div class="form-group">
                 <label class="label-text">Ajouter des fichiers audio (Optionnel) :</label>
                 <div id="audioContainer"></div>

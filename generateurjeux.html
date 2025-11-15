@@ -611,11 +611,11 @@ ${courseText}
     return (
         // --- MODIFICATION : Ajout de "relative" ---
         React.createElement('div', { className: "min-h-screen font-sans p-4 sm:p-6 lg:p-8 bg-gradient-to-br from-indigo-50 via-white to-blue-50 relative" },
-            // --- AJOUT DU LIEN RETOUR ---
-            React.createElement('a', { href: "index.html", className: "absolute top-4 left-4 sm:top-6 sm:left-6 lg:top-8 lg:left-8 flex items-center gap-2 text-slate-500 hover:text-blue-600 font-semibold transition-colors z-10" },
+            // --- AJOUT DU LIEN RETOUR (MODIFIÉ) ---
+            React.createElement('a', { href: "boite.html", className: "absolute top-4 left-4 sm:top-6 sm:left-6 lg:top-8 lg:left-8 flex items-center gap-2 text-slate-500 hover:text-blue-600 font-semibold transition-colors z-10" },
                 React.createElement(ArrowLeftIcon, { className: 'w-5 h-5'}), 'Retour'
             ),
-            // --- FIN DE L'AJOUT ---
+            // --- FIN DE LA MODIFICATION ---
             React.createElement('div', { className: "max-w-3xl mx-auto space-y-8" },
                 React.createElement('header', { className: "text-center py-10" }, // py-10 pour laisser de l'espace
                     React.createElement('div', {className: 'inline-block bg-white p-4 rounded-2xl mb-6 shadow-md border border-slate-100'}, 
