@@ -579,4 +579,433 @@
                 <div class="option-group">
                     <label>Taille police</label>
                     <select id="fontSize">
-                        <option 
+                        <option value="80">Petite</option>
+                        <option value="90">Moyenne</option>
+                        <option value="100" selected>Normale</option>
+                        <option value="110">Grande</option>
+                        <option value="120">Très grande</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="dimensions-info" id="dimensionsInfo">
+                <div class="dimensions-row">
+                    <div class="dimension-item">
+                        📐 Largeur : <strong id="displayWidth">297</strong> mm
+                    </div>
+                    <div class="dimension-item">
+                        📏 Hauteur : <strong id="displayHeight">—</strong> mm
+                    </div>
+                    <div class="height-adjust">
+                        <label>Ajuster hauteur :</label>
+                        <input type="number" id="heightAdjust" value="0" step="10" placeholder="0">
+                        <span>mm</span>
+                        <button onclick="recalculate()">↻</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="actions">
+                <button class="btn btn-secondary" onclick="previewFile()">👁️ Aperçu</button>
+                <button class="btn btn-primary" onclick="generatePDF()">📥 Générer PDF</button>
+            </div>
+        </div>
+
+        <div class="instructions" id="instructions">
+            <h4>📋 Pour enregistrer en PDF :</h4>
+            <ol>
+                <li>Destination → <strong>Enregistrer au format PDF</strong></li>
+                <li>Plus de paramètres → Marges : <strong>Aucune</strong></li>
+                <li>Cliquez sur <strong>Enregistrer</strong></li>
+            </ol>
+        </div>
+
+        <div class="preview-section" id="previewSection">
+            <div class="preview-header">
+                <h3>Aperçu</h3>
+                <button class="btn btn-primary" onclick="generatePDF()">📥 Générer PDF</button>
+            </div>
+            <iframe class="preview-frame" id="previewFrame"></iframe>
+        </div>
+
+        <!-- Section Aide -->
+        <div class="help-section">
+            <button class="help-toggle" onclick="toggleHelp()">
+                <span>❓</span> Comment ça marche ?
+            </button>
+
+            <div class="help-content" id="helpContent">
+                <h3>Guide d'utilisation</h3>
+                
+                <div class="help-grid">
+                    <div class="help-card">
+                        <h4>🎯 Objectif</h4>
+                        <p>
+                            Cet outil convertit vos fichiers HTML (cours, documentation, notes) 
+                            en PDF <strong>sans coupure de page</strong>. Le PDF généré est une 
+                            seule longue page continue, idéale pour la lecture sur écran.
+                        </p>
+                        <p style="margin-top: 10px;">
+                            ✅ Texte sélectionnable et copiable<br>
+                            ✅ Pas de texte coupé entre deux pages<br>
+                            ✅ Fichier léger<br>
+                            ✅ 100% local (aucune donnée envoyée)
+                        </p>
+                    </div>
+
+                    <div class="help-card">
+                        <h4>📋 Étapes</h4>
+                        <ol>
+                            <li><strong>Charger</strong> — Glissez ou sélectionnez votre fichier HTML</li>
+                            <li><strong>Configurer</strong> — Choisissez la largeur, les marges et la taille de police</li>
+                            <li><strong>Aperçu</strong> — Vérifiez le rendu (optionnel)</li>
+                            <li><strong>Générer</strong> — Cliquez sur "Générer PDF"</li>
+                            <li><strong>Enregistrer</strong> — Dans la boîte d'impression, choisissez "Enregistrer au format PDF"</li>
+                        </ol>
+                    </div>
+
+                    <div class="help-card">
+                        <h4>⚙️ Options</h4>
+                        <table class="help-table">
+                            <tr>
+                                <th>Option</th>
+                                <th>Description</th>
+                            </tr>
+                            <tr>
+                                <td><strong>Largeur</strong></td>
+                                <td>Largeur du PDF. Plus c'est large, plus le texte tient sur une ligne.</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Marges</strong></td>
+                                <td>Espace autour du contenu. "Aucune" maximise l'espace utilisable.</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Taille police</strong></td>
+                                <td>Ajuste la taille de tout le texte (100% = taille originale).</td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <div class="help-card">
+                        <h4>📏 Dimensions de la page</h4>
+                        <p>
+                            L'outil mesure automatiquement la hauteur de votre document et crée 
+                            une page PDF à la taille exacte du contenu.
+                        </p>
+                        <ul>
+                            <li><strong>Largeur</strong> — La largeur choisie dans les options</li>
+                            <li><strong>Hauteur</strong> — Calculée automatiquement selon votre contenu</li>
+                            <li><strong>Ajuster</strong> — Correction manuelle si besoin :
+                                <ul>
+                                    <li>Valeur <strong>négative</strong> (-50) : réduit l'espace vide en bas</li>
+                                    <li>Valeur <strong>positive</strong> (+50) : ajoute de l'espace si contenu coupé</li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="help-card">
+                        <h4>⚠️ Important</h4>
+                        <p>
+                            Dans la boîte de dialogue d'impression du navigateur :
+                        </p>
+                        <ol>
+                            <li>Choisissez <strong>"Enregistrer au format PDF"</strong> comme destination</li>
+                            <li>Cliquez sur <strong>"Plus de paramètres"</strong></li>
+                            <li>Mettez les marges sur <strong>"Aucune"</strong></li>
+                            <li>Décochez "En-têtes et pieds de page" si présent</li>
+                        </ol>
+                        <p style="margin-top: 10px; color: #b45309;">
+                            💡 Si les marges ne sont pas sur "Aucune", le navigateur 
+                            peut réintroduire des coupures de page.
+                        </p>
+                    </div>
+
+                    <div class="help-card">
+                        <h4>🔧 Problèmes fréquents</h4>
+                        <table class="help-table">
+                            <tr>
+                                <th>Problème</th>
+                                <th>Solution</th>
+                            </tr>
+                            <tr>
+                                <td>Espace vide en bas</td>
+                                <td>Ajuster avec une valeur négative (-50, -100...)</td>
+                            </tr>
+                            <tr>
+                                <td>Contenu coupé</td>
+                                <td>Ajuster avec une valeur positive (+50, +100...)</td>
+                            </tr>
+                            <tr>
+                                <td>Popup bloquée</td>
+                                <td>Autoriser les popups pour ce site</td>
+                            </tr>
+                            <tr>
+                                <td>Images manquantes</td>
+                                <td>Vérifier que les images sont en chemins absolus ou base64</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+    <iframe id="measureFrame" style="position:absolute;left:-9999px;visibility:hidden;"></iframe>
+
+    <footer>
+        💡 100% local — Aucune donnée envoyée sur internet
+    </footer>
+
+    <script>
+        let htmlContent = '';
+        let measuredHeight = 0;
+
+        const uploadZone = document.getElementById('uploadZone');
+        const fileInput = document.getElementById('fileInput');
+
+        uploadZone.addEventListener('click', () => fileInput.click());
+        
+        uploadZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadZone.classList.add('drag-over');
+        });
+
+        uploadZone.addEventListener('dragleave', () => {
+            uploadZone.classList.remove('drag-over');
+        });
+
+        uploadZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadZone.classList.remove('drag-over');
+            if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length) handleFile(e.target.files[0]);
+        });
+
+        function handleFile(file) {
+            if (!file.name.match(/\.(html|htm)$/i)) {
+                showToast('Sélectionnez un fichier HTML', 'error');
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                htmlContent = e.target.result;
+                document.getElementById('fileName').textContent = file.name;
+                document.getElementById('fileInfo').classList.add('show');
+                document.getElementById('uploadZone').style.display = 'none';
+                document.getElementById('heightAdjust').value = 0;
+                showToast('Fichier chargé', 'success');
+                measureContent();
+            };
+            reader.readAsText(file);
+        }
+
+        function removeFile() {
+            htmlContent = '';
+            measuredHeight = 0;
+            fileInput.value = '';
+            document.getElementById('fileInfo').classList.remove('show');
+            document.getElementById('previewSection').classList.remove('show');
+            document.getElementById('instructions').classList.remove('show');
+            document.getElementById('dimensionsInfo').classList.remove('show');
+            document.getElementById('uploadZone').style.display = 'block';
+        }
+
+        function getPageWidth() {
+            return parseInt(document.getElementById('pageWidth').value);
+        }
+
+        function getBaseCSS() {
+            const fontSize = document.getElementById('fontSize').value;
+            const margins = document.getElementById('margins').value;
+
+            return `
+                <style>
+                    * { box-sizing: border-box; }
+                    html { font-size: ${fontSize}% !important; }
+                    body { 
+                        margin: 0 !important;
+                        padding: ${margins}mm !important;
+                        background: white !important;
+                    }
+                    h1, h2, h3, h4, h5, h6 {
+                        break-after: avoid !important;
+                        page-break-after: avoid !important;
+                    }
+                    h1, h2, h3, h4, h5, h6, p, li, pre, code, 
+                    table, tr, figure, img, blockquote, ul, ol,
+                    section, article, div {
+                        break-inside: avoid !important;
+                        page-break-inside: avoid !important;
+                    }
+                    img { max-width: 100% !important; height: auto !important; }
+                    pre, code { white-space: pre-wrap !important; word-wrap: break-word !important; }
+                    @media print {
+                        html, body {
+                            -webkit-print-color-adjust: exact !important;
+                            print-color-adjust: exact !important;
+                        }
+                    }
+                </style>
+            `;
+        }
+
+        function injectCSS(html, css) {
+            if (html.includes('</head>')) {
+                return html.replace('</head>', css + '</head>');
+            } else if (html.includes('<body')) {
+                return html.replace('<body', css + '<body');
+            }
+            return css + html;
+        }
+
+        function measureContent() {
+            const iframe = document.getElementById('measureFrame');
+            const pageWidth = getPageWidth();
+            iframe.style.width = pageWidth + 'mm';
+            
+            const doc = iframe.contentDocument || iframe.contentWindow.document;
+            doc.open();
+            doc.write(injectCSS(htmlContent, getBaseCSS()));
+            doc.close();
+
+            const finalize = () => {
+                const body = doc.body;
+                if (body) {
+                    const height = Math.max(
+                        body.scrollHeight, 
+                        body.offsetHeight, 
+                        doc.documentElement.scrollHeight, 
+                        doc.documentElement.offsetHeight
+                    );
+                    measuredHeight = Math.ceil(height * 0.264583);
+                    
+                    document.getElementById('displayWidth').textContent = pageWidth;
+                    document.getElementById('displayHeight').textContent = measuredHeight;
+                    document.getElementById('dimensionsInfo').classList.add('show');
+                }
+            };
+
+            // Attendre le chargement des images
+            setTimeout(() => {
+                const images = doc.images;
+                if (images.length === 0) {
+                    finalize();
+                } else {
+                    let loaded = 0;
+                    const checkDone = () => {
+                        loaded++;
+                        if (loaded >= images.length) finalize();
+                    };
+                    for (let img of images) {
+                        if (img.complete) {
+                            checkDone();
+                        } else {
+                            img.onload = img.onerror = checkDone;
+                        }
+                    }
+                }
+            }, 300);
+        }
+
+        function recalculate() {
+            const adjust = parseInt(document.getElementById('heightAdjust').value) || 0;
+            const finalHeight = measuredHeight + adjust;
+            document.getElementById('displayHeight').textContent = finalHeight;
+            showToast(`Hauteur ajustée : ${finalHeight} mm`, 'info');
+        }
+
+        function previewFile() {
+            if (!htmlContent) {
+                showToast('Chargez un fichier d\'abord', 'error');
+                return;
+            }
+
+            measureContent();
+            
+            const iframe = document.getElementById('previewFrame');
+            const doc = iframe.contentDocument || iframe.contentWindow.document;
+            doc.open();
+            doc.write(injectCSS(htmlContent, getBaseCSS()));
+            doc.close();
+
+            document.getElementById('previewSection').classList.add('show');
+            document.getElementById('previewSection').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function generatePDF() {
+            if (!htmlContent) {
+                showToast('Chargez un fichier d\'abord', 'error');
+                return;
+            }
+
+            const pageWidth = getPageWidth();
+            const adjust = parseInt(document.getElementById('heightAdjust').value) || 0;
+            const finalHeight = (measuredHeight || 5000) + adjust;
+            
+            const pageCSS = `
+                <style>
+                    @page {
+                        size: ${pageWidth}mm ${finalHeight}mm !important;
+                        margin: 0 !important;
+                    }
+                    @media print {
+                        html, body {
+                            width: ${pageWidth}mm !important;
+                            min-height: ${finalHeight}mm !important;
+                        }
+                    }
+                </style>
+            `;
+
+            document.getElementById('instructions').classList.add('show');
+
+            const printWindow = window.open('', '_blank');
+            
+            if (!printWindow) {
+                showToast('Autorisez les popups', 'error');
+                return;
+            }
+
+            printWindow.document.write(injectCSS(htmlContent, getBaseCSS() + pageCSS));
+            printWindow.document.close();
+
+            printWindow.onload = () => {
+                setTimeout(() => {
+                    printWindow.focus();
+                    printWindow.print();
+                }, 500);
+            };
+
+            showToast('Impression en cours...', 'info');
+        }
+
+        function showToast(message, type) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = `toast ${type} show`;
+            setTimeout(() => toast.classList.remove('show'), 2500);
+        }
+
+        function toggleHelp() {
+            const content = document.getElementById('helpContent');
+            content.classList.toggle('show');
+            if (content.classList.contains('show')) {
+                content.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
+
+        // Recalculer si options changent
+        ['pageWidth', 'fontSize', 'margins'].forEach(id => {
+            document.getElementById(id).addEventListener('change', () => {
+                if (htmlContent) measureContent();
+            });
+        });
+    </script>
+</body>
+</html>
