@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HTML → PDF</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: #ffffff;
+            min-height: 100vh;
+            color: #333;
+        }
+
+        /* Bouton Retour */
+        .back-btn {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 10px 16px;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            color: #2563eb;
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.2s;
+            z-index: 1000;
+        }
+
+        .back-btn:hover {
+            background: #eff6ff;
+            border-color: #bfdbfe;
+        }
+
+        .container {
+            max-width: 750px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        /* Header */
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        header h1 {
+            font-size: 2rem;
+            color: #2563eb;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        header p {
+            color: #6b7280;
+            font-size: 1rem;
+        }
+
+        /* Upload Zone */
+        .upload-zone {
+            border: 2px dashed #93c5fd;
+            border-radius: 16px;
+            padding: 50px 30px;
+            text-align: center;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            background: #f0f7ff;
+            margin-bottom: 30px;
+        }
+
+        .upload-zone:hover, .upload-zone.drag-over {
+            border-color: #2563eb;
+            background: #e0edff;
+        }
+
+        .upload-zone .icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+        }
+
+        .upload-zone h2 {
+            font-size: 1.2rem;
+            color: #1e40af;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .upload-zone p {
+            color: #6b7280;
+            font-size: 0.9rem;
+        }
+
+        .upload-zone input {
+            display: none;
+        }
+
+        /* File Info */
+        .file-info {
+            display: none;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .file-info.show {
+            display: block;
+        }
+
+        .file-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .file-name {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 500;
+            color: #1e40af;
+        }
+
+        .file-name .icon {
+            font-size: 1.3rem;
+        }
+
+        .remove-btn {
+            background: none;
+            color: #ef4444;
+            border: 1px solid #fecaca;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+
+        .remove-btn:hover {
+            background: #fef2f2;
+        }
+
+        /* Options */
+        .options {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .option-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 0.85rem;
+            color: #6b7280;
+            font-weight: 500;
+        }
+
+        .option-group select, 
+        .option-group input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            background: white;
+            color: #333;
+            font-size: 0.9rem;
+            transition: border-color 0.2s;
+        }
+
+        .option-group select:focus, 
+        .option-group input:focus {
+            outline: none;
+            border-color: #2563eb;
+        }
+
+        /* Dimensions Info */
+        .dimensions-info {
+            display: none;
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .dimensions-info.show {
+            display: block;
+        }
+
+        .dimensions-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .dimension-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+            color: #1e40af;
+        }
+
+        .dimension-item strong {
+            font-size: 1.1rem;
+            color: #2563eb;
+        }
+
+        .height-adjust {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.85rem;
+            color: #6b7280;
+        }
+
+        .height-adjust input {
+            width: 70px;
+            padding: 6px 10px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            text-align: center;
+        }
+
+        .height-adjust input:focus {
+            outline: none;
+            border-color: #2563eb;
+        }
+
+        .height-adjust button {
+            padding: 6px 10px;
+            border: none;
+            border-radius: 6px;
+            background: #2563eb;
+            color: white;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: background 0.2s;
+        }
+
+        .height-adjust button:hover {
+            background: #1d4ed8;
+        }
+
+        /* Buttons */
+        .actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 14px 20px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-secondary {
+            background: #f1f5f9;
+            color: #475569;
+            border: 1px solid #e2e8f0;
+        }
+
+        .btn-secondary:hover {
+            background: #e2e8f0;
+        }
+
+        .btn-primary {
+            background: #2563eb;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #1d4ed8;
+        }
+
+        /* Instructions */
+        .instructions {
+            background: #fffbeb;
+            border: 1px solid #fcd34d;
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            display: none;
+            font-size: 0.9rem;
+        }
+
+        .instructions.show {
+            display: block;
+        }
+
+        .instructions h4 {
+            color: #b45309;
+            margin-bottom: 10px;
+            font-size: 0.95rem;
+        }
+
+        .instructions ol {
+            margin-left: 20px;
+            color: #78350f;
+        }
+
+        .instructions li {
+            margin: 5px 0;
+        }
+
+        /* Preview */
+        .preview-section {
+            display: none;
+            margin-top: 30px;
+        }
+
+        .preview-section.show {
+            display: block;
+        }
+
+        .preview-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .preview-header h3 {
+            font-size: 1rem;
+            color: #374151;
+            font-weight: 500;
+        }
+
+        .preview-frame {
+            width: 100%;
+            height: 450px;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            background: white;
+        }
+
+        /* Help Section */
+        .help-section {
+            margin-top: 50px;
+            padding-top: 30px;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .help-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            background: none;
+            border: 1px solid #e2e8f0;
+            padding: 10px 20px;
+            border-radius: 8px;
+            color: #6b7280;
+            cursor: pointer;
+            font-size: 0.9rem;
+            margin: 0 auto;
+            transition: all 0.2s;
+        }
+
+        .help-toggle:hover {
+            background: #f8fafc;
+            color: #2563eb;
+            border-color: #bfdbfe;
+        }
+
+        .help-content {
+            display: none;
+            margin-top: 25px;
+        }
+
+        .help-content.show {
+            display: block;
+        }
+
+        .help-content h3 {
+            color: #2563eb;
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .help-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .help-card {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        .help-card h4 {
+            color: #1e40af;
+            font-size: 1rem;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .help-card p, .help-card li {
+            color: #6b7280;
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+
+        .help-card ul, .help-card ol {
+            margin-left: 18px;
+            margin-top: 8px;
+        }
+
+        .help-card li {
+            margin: 6px 0;
+        }
+
+        .help-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            font-size: 0.85rem;
+        }
+
+        .help-table th, .help-table td {
+            padding: 8px 10px;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .help-table th {
+            color: #374151;
+            font-weight: 600;
+            background: #f1f5f9;
+        }
+
+        .help-table td {
+            color: #6b7280;
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            padding: 12px 20px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 500;
+            font-size: 0.9rem;
+            transform: translateX(150%);
+            transition: transform 0.3s ease;
+            z-index: 1000;
+        }
+
+        .toast.show {
+            transform: translateX(0);
+        }
+
+        .toast.success {
+            background: #10b981;
+        }
+
+        .toast.error {
+            background: #ef4444;
+        }
+
+        .toast.info {
+            background: #2563eb;
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 30px;
+            color: #9ca3af;
+            font-size: 0.85rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .back-btn {
+                top: 10px;
+                left: 10px;
+                padding: 8px 12px;
+                font-size: 0.85rem;
+            }
+            .options {
+                grid-template-columns: 1fr;
+            }
+            .actions {
+                flex-direction: column;
+            }
+            .dimensions-row {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .help-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Bouton Retour -->
+    <a href="boite.html" class="back-btn">← Retour</a>
+
+    <div class="container">
+        <header>
+            <h1>📄 HTML → PDF</h1>
+            <p>Convertissez vos cours en PDF sans coupure de page</p>
+        </header>
+
+        <div class="upload-zone" id="uploadZone">
+            <div class="icon">📁</div>
+            <h2>Glissez votre fichier HTML ici</h2>
+            <p>ou cliquez pour parcourir</p>
+            <input type="file" id="fileInput" accept=".html,.htm">
+        </div>
+
+        <div class="file-info" id="fileInfo">
+            <div class="file-header">
+                <div class="file-name">
+                    <span class="icon">📄</span>
+                    <span id="fileName">fichier.html</span>
+                </div>
+                <button class="remove-btn" onclick="removeFile()">✕ Retirer</button>
+            </div>
+
+            <div class="options">
+                <div class="option-group">
+                    <label>Largeur</label>
+                    <select id="pageWidth">
+                        <option value="210">A4 (210 mm)</option>
+                        <option value="250">Large (250 mm)</option>
+                        <option value="297" selected>A4 Paysage (297 mm)</option>
+                        <option value="350">Très large (350 mm)</option>
+                        <option value="400">Extra large (400 mm)</option>
+                    </select>
+                </div>
+                <div class="option-group">
+                    <label>Marges</label>
+                    <select id="margins">
+                        <option value="10" selected>Normales</option>
+                        <option value="5">Étroites</option>
+                        <option value="20">Larges</option>
+                        <option value="0">Aucune</option>
+                    </select>
+                </div>
+                <div class="option-group">
+                    <label>Taille police</label>
+                    <select id="fontSize">
+                        <option 
