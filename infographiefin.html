@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Générateur d'Infographie de Fin (Bilan & Glossaire)</title>
+    <title>Générateur d'Infographie de Fin (Bilan & Glossaire) V7</title>
     <style>
         :root {
-            --primary-color: #4f46e5; /* Bleu Indigo cohérent avec l'intro */
+            --primary-color: #4f46e5;
             --secondary-color: #818cf8;
             --bg-color: #f8fafc;
             --text-color: #1e293b;
@@ -153,6 +153,54 @@
             margin-top: 15px;
         }
         
+        /* --- Styles pour les Formats (Radio Buttons) --- */
+        .format-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+            margin-top: 15px;
+        }
+        .format-option {
+            display: flex;
+            align-items: center;
+            background: #f8fafc;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 12px 15px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .format-option:hover {
+            border-color: var(--secondary-color);
+            background: white;
+        }
+        .format-option input[type="radio"] {
+            margin-right: 15px;
+            accent-color: var(--primary-color);
+            width: 18px;
+            height: 18px;
+        }
+        .format-option input[type="radio"]:checked + .format-info {
+            color: var(--primary-color);
+        }
+        .format-option input[type="radio"]:checked ~ .format-icon {
+            opacity: 1;
+            color: var(--primary-color);
+        }
+        .format-info {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+        }
+        .format-title {
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+        .format-desc {
+            font-size: 0.8rem;
+            color: #64748b;
+        }
+
         /* --- Styles pour le Color Picker --- */
         .color-picker-wrapper {
             display: flex;
@@ -204,6 +252,26 @@
             padding-right: 2.5rem;
             -webkit-appearance: none;
             appearance: none;
+        }
+
+        /* --- NOUVEAU STYLE PALETTE MULTIPLE --- */
+        .palette-controls {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 10px;
+        }
+        .palette-inputs {
+            display: flex;
+            gap: 10px;
+        }
+        .palette-inputs input[type="color"] {
+            flex: 1;
+            height: 45px;
+        }
+        .palette-section.disabled {
+            opacity: 0.5;
+            pointer-events: none;
         }
 
         .btn-generate {
@@ -328,6 +396,33 @@
                     </optgroup>
                 </select>
             </div>
+
+            <!-- NOUVELLE SECTION PALETTE PRIORITAIRE (Gauche) -->
+            <div class="form-group optional-group" style="margin-top: 25px; border-left: 3px solid #6366f1; background-color: #e0e7ff; padding: 15px; border-radius: 8px;">
+                <label style="color: #4338ca; margin-bottom: 10px;">Palette Spécifique (Prioritaire)</label>
+                
+                <div class="palette-controls">
+                    <label class="checkbox-wrapper" style="margin:0;">
+                        <input type="checkbox" id="usePalette" onchange="togglePalette()">
+                        <span style="font-size: 0.9em; font-weight: bold;">Activer</span>
+                    </label>
+                    <select id="paletteCount" onchange="updatePaletteInputs()" disabled style="width: auto; padding: 5px 30px 5px 10px; font-size: 14px; height: 35px;">
+                        <option value="1">1 Couleur</option>
+                        <option value="2">2 Couleurs</option>
+                        <option value="3">3 Couleurs</option>
+                    </select>
+                </div>
+
+                <div id="paletteSection" class="palette-section disabled">
+                    <div class="palette-inputs">
+                        <input type="color" id="palColor1" value="#4f46e5" title="Couleur Principale">
+                        <input type="color" id="palColor2" value="#ec4899" style="display:none" title="Couleur Secondaire">
+                        <input type="color" id="palColor3" value="#10b981" style="display:none" title="Couleur Tertiaire">
+                    </div>
+                    <div class="helper-text" style="color: #4338ca;">Remplace l'ambiance choisie à droite.</div>
+                </div>
+            </div>
+
         </div>
 
         <!-- Colonne Droite -->
@@ -349,33 +444,90 @@
                 </select>
             </div>
 
-            <!-- Palette Visuelle -->
+            <!-- Ancienne Palette Visuelle (Simple) -->
             <div class="form-group optional-group">
-                <label style="margin-bottom: 8px;">Couleur Dominante Personnalisée :</label>
+                <label style="margin-bottom: 8px;">Couleur Dominante (Simple) :</label>
                 
                 <label class="checkbox-wrapper">
                     <input type="checkbox" id="useCustomColor" onchange="toggleColorPicker()">
-                    <span style="font-size: 0.9em; color: #475569;">Activer la couleur personnalisée</span>
+                    <span style="font-size: 0.9em; color: #475569;">Activer la couleur unique</span>
                 </label>
 
                 <div id="colorPickerContainer" class="color-picker-wrapper disabled">
-                    <input type="color" id="customColorPicker" value="#4f46e5" title="Cliquez pour choisir une couleur">
-                    <div class="helper-text">Cette couleur sera imposée à l'IA.</div>
+                    <input type="color" id="customColorPicker" value="#4f46e5">
                 </div>
             </div>
 
-            <!-- Volontés Design -->
-            <div class="form-group optional-group">
-                <label for="customDesign">Volontés Design <span class="optional-label">Optionnel</span> :</label>
-                <textarea id="customDesign" style="height: 80px;" placeholder="Ex: Faire ressembler le glossaire à des cartes Pokémon..."></textarea>
+            <!-- Volontés Design (Nouveau Style Prioritaire) -->
+            <div class="form-group optional-group" style="background-color: #fff7ed; border-color: #fdba74; padding: 15px; border-radius: 8px;">
+                <label for="customDesign" style="color: #c2410c;">Volontés Design & Overrides <span class="optional-label">Prioritaire</span> :</label>
+                <textarea id="customDesign" style="height: 80px; border-color: #fdba74;" placeholder="Ex: Je veux des formes très rondes, pas d'ombres. CECI PASSE AVANT LE RESTE."></textarea>
+                <div class="helper-text" style="color: #ea580c;">Si rempli, ce champ écrasera les styles et couleurs ci-dessus.</div>
             </div>
+        </div>
+    </div>
+
+    <!-- SECTION FORMAT -->
+    <h2><span>3</span> Format & Dimensions</h2>
+    <div class="form-group">
+        <label>Choisissez le format de sortie :</label>
+        <div class="format-grid">
+            
+            <label class="format-option">
+                <input type="radio" name="formatOption" value="blog" checked>
+                <div class="format-info">
+                    <span class="format-title">Infographie Longue</span>
+                    <span class="format-desc">Vertical (1:2.5) - Pour le défilement web et articles détaillés.</span>
+                </div>
+            </label>
+
+            <label class="format-option">
+                <input type="radio" name="formatOption" value="square">
+                <div class="format-info">
+                    <span class="format-title">Carré (1:1)</span>
+                    <span class="format-desc">Symétrique - Format universel et polyvalent.</span>
+                </div>
+            </label>
+
+            <label class="format-option">
+                <input type="radio" name="formatOption" value="portrait">
+                <div class="format-info">
+                    <span class="format-title">Portrait (4:5)</span>
+                    <span class="format-desc">Légèrement vertical - Optimisé pour une lecture mobile confortable.</span>
+                </div>
+            </label>
+
+            <label class="format-option">
+                <input type="radio" name="formatOption" value="mobile">
+                <div class="format-info">
+                    <span class="format-title">Plein Écran Vertical (9:16)</span>
+                    <span class="format-desc">Format Smartphone - Immersif et totalement vertical.</span>
+                </div>
+            </label>
+
+            <label class="format-option">
+                <input type="radio" name="formatOption" value="widescreen">
+                <div class="format-info">
+                    <span class="format-title">Paysage / Diapositive (16:9)</span>
+                    <span class="format-desc">Standard Écran - Pour présentations et vidéos.</span>
+                </div>
+            </label>
+
+            <label class="format-option">
+                <input type="radio" name="formatOption" value="banner">
+                <div class="format-info">
+                    <span class="format-title">Bannière Horizontale (3:1)</span>
+                    <span class="format-desc">Panoramique - Pour en-têtes de site ou couvertures.</span>
+                </div>
+            </label>
+
         </div>
     </div>
 
     <button class="btn-generate" onclick="generatePrompt()">Générer le Prompt de Synthèse</button>
 
     <div id="output-section">
-        <h2><span>3</span> Prompt "Zéro Questions"</h2>
+        <h2><span>4</span> Prompt "Zéro Questions"</h2>
         <div class="output-container">
             <textarea id="final-prompt" readonly></textarea>
             <button class="btn-copy" onclick="copyToClipboard()">Copier</button>
@@ -394,6 +546,38 @@
             container.classList.remove('disabled');
         } else {
             container.classList.add('disabled');
+        }
+    }
+
+    // --- NOUVELLES FONCTIONS PALETTE ---
+    function togglePalette() {
+        const checkbox = document.getElementById('usePalette');
+        const select = document.getElementById('paletteCount');
+        const section = document.getElementById('paletteSection');
+
+        if (checkbox.checked) {
+            select.disabled = false;
+            section.classList.remove('disabled');
+        } else {
+            select.disabled = true;
+            section.classList.add('disabled');
+        }
+    }
+
+    function updatePaletteInputs() {
+        const count = document.getElementById('paletteCount').value;
+        const col2 = document.getElementById('palColor2');
+        const col3 = document.getElementById('palColor3');
+
+        if (count === "1") {
+            col2.style.display = 'none';
+            col3.style.display = 'none';
+        } else if (count === "2") {
+            col2.style.display = 'block';
+            col3.style.display = 'none';
+        } else {
+            col2.style.display = 'block';
+            col3.style.display = 'block';
         }
     }
 
@@ -429,6 +613,16 @@
         "flashcards": "Flashcards/Deck Layout. The image looks like a collection of trading cards or study cards laid out on a table. Each glossary term is a separate 'card'."
     };
 
+    // --- 4. DESCRIPTIONS DES FORMATS ---
+    const formatDescriptions = {
+        "blog": "FORMAT/ASPECT RATIO: Vertical Long (approx 1:2.5 or 800x2000px). Optimized for long scrolling web pages. Vertical composition essential.",
+        "square": "FORMAT/ASPECT RATIO: Square (1:1). Balanced composition for universal display.",
+        "portrait": "FORMAT/ASPECT RATIO: Portrait (4:5). Slightly vertical composition, fills mobile screens comfortably without being too tall.",
+        "mobile": "FORMAT/ASPECT RATIO: Fullscreen Vertical (9:16). Native smartphone format. Very tall vertical composition.",
+        "widescreen": "FORMAT/ASPECT RATIO: Widescreen (16:9). Standard landscape composition for desktop screens or presentations.",
+        "banner": "FORMAT/ASPECT RATIO: Horizontal Banner (approx 3:1). Very wide and short panoramic composition. Suitable for headers or covers."
+    };
+
     function generatePrompt() {
         const conclusion = document.getElementById('conclusionText').value;
         const glossary = document.getElementById('glossaryList').value;
@@ -436,8 +630,18 @@
         const selectedColorKey = document.getElementById('colorSelect').value;
         const selectedLayoutKey = document.getElementById('layoutSelect').value;
         
+        const selectedFormatKey = document.querySelector('input[name="formatOption"]:checked').value;
+
         const useCustomColor = document.getElementById('useCustomColor').checked;
         const customColorValue = document.getElementById('customColorPicker').value;
+        
+        // --- LOGIQUE PALETTE PRIORITAIRE ---
+        const usePalette = document.getElementById('usePalette').checked;
+        const paletteCount = document.getElementById('paletteCount').value;
+        const c1 = document.getElementById('palColor1').value;
+        const c2 = document.getElementById('palColor2').value;
+        const c3 = document.getElementById('palColor3').value;
+
         const customDesign = document.getElementById('customDesign').value.trim();
 
         if (!conclusion.trim() || !glossary.trim()) {
@@ -445,16 +649,36 @@
             return;
         }
 
-        // --- CONSTRUCTION DU PROMPT AUTORITAIRE (Version Fin de Cours) ---
+        // --- CONSTRUCTION DU PROMPT ---
         let prompt = `!!! GÉNÉRATION D'IMAGE REQUISE - FICHE DE SYNTHÈSE !!!\n`;
         prompt += `INSTRUCTION CRITIQUE : Agis comme un générateur d'infographie aveugle. NE POSE AUCUNE QUESTION. Génère l'image directement.\n\n`;
         
+        // --- 0. OVERRIDES PRIORITAIRES (Si customDesign est rempli) ---
+        if (customDesign) {
+            prompt += `#######################################################\n`;
+            prompt += `### DIRECTIVE PRIORITAIRE ABSOLUE (OVERRIDES ALL) ###\n`;
+            prompt += `ATTENTION : L'utilisateur a spécifié une contrainte de design MAJEURE.\n`;
+            prompt += `DEMANDE : "${customDesign}"\n`;
+            prompt += `#######################################################\n\n`;
+        }
+
         prompt += `**Tâche :** Créer une "Fiche de Révision Visuelle" (Course Summary Infographic) qui combine une conclusion visuelle et un glossaire structuré.\n\n`;
         
         prompt += `--- 1. PARAMÈTRES VISUELS ---\n`;
+        
+        // Insertion du Format
+        prompt += `${formatDescriptions[selectedFormatKey]}\n`;
+
         prompt += `STYLE : ${styleDescriptions[selectedStyleKey]}\n`;
         
-        if (useCustomColor) {
+        // LOGIQUE DE COULEUR (Palette > Custom Single > Preset)
+        if (usePalette) {
+            prompt += `COULEURS : PALETTE FORCÉE ET IMPÉRATIVE. `;
+            if (paletteCount === "1") prompt += `Utiliser uniquement cette teinte principale : ${c1}.`;
+            if (paletteCount === "2") prompt += `Utiliser ce duo de couleurs : ${c1} (Primaire) et ${c2} (Secondaire/Accent).`;
+            if (paletteCount === "3") prompt += `Utiliser ce trio de couleurs : ${c1} (Dominante), ${c2} (Secondaire), ${c3} (Accent).`;
+            prompt += ` Ignorer toutes les autres ambiances.\n`;
+        } else if (useCustomColor) {
             prompt += `COULEURS : Utiliser IMPÉRATIVEMENT cette couleur hex : ${customColorValue}. Construire la palette autour.\n`;
         } else {
             prompt += `COULEURS : ${colorDescriptions[selectedColorKey]}\n`;
@@ -467,8 +691,7 @@
         prompt += `ZONE B (LE GLOSSAIRE) : Organise ces termes sous forme de liste visuelle, de cartes ou d'icônes avec légendes. C'est la "Boîte à Mots" : "${glossary}".\n\n`;
 
         if (customDesign) {
-             prompt += `--- 3. DEMANDES SPÉCIFIQUES ---\n`;
-             prompt += `IMPORTANT : ${customDesign}\n\n`;
+             prompt += `RAPPEL OVERRIDE : N'oublie pas la directive prioritaire : ${customDesign}\n\n`;
         }
 
         prompt += `--- 4. EXÉCUTION ---\n`;
