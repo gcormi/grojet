@@ -1,0 +1,957 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Générateur d'Articles LinkedIn - Expert EdTech</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            /* Palette Premium Dark EdTech */
+            --bg-dark: #0f172a;
+            --bg-card: #1e293b;
+            --bg-input: #334155;
+            --primary: #3b82f6;
+            /* Electric Blue */
+            --secondary: #8b5cf6;
+            /* Violet AI */
+            --accent: #06b6d4;
+            /* Cyan Tech */
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: #475569;
+            --glass: rgba(30, 41, 59, 0.7);
+
+            --gradient-main: linear-gradient(135deg, var(--primary), var(--secondary));
+            --shadow-glow: 0 0 20px rgba(59, 130, 246, 0.15);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            outline: none;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            background-image:
+                radial-gradient(circle at 10% 20%, rgba(59, 130, 246, 0.1) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(139, 92, 246, 0.1) 0%, transparent 40%);
+        }
+
+        /* Layout */
+        .app-container {
+            display: flex;
+            width: 100%;
+            max-width: 1440px;
+            margin: 0 auto;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 320px;
+            background: var(--bg-card);
+            border-right: 1px solid var(--border);
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+            overflow-y: auto;
+            z-index: 10;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: white;
+        }
+
+        .brand i {
+            background: var(--gradient-main);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-size: 2rem;
+        }
+
+        .user-profile {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 1.5rem;
+            border-radius: 1rem;
+            border: 1px solid var(--border);
+        }
+
+        .user-avatar {
+            width: 50px;
+            height: 50px;
+            background: var(--gradient-main);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+            box-shadow: var(--shadow-glow);
+        }
+
+        .user-name {
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .user-role {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            line-height: 1.4;
+        }
+
+        .settings-group {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .settings-group h3 {
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            padding: 2rem 4rem;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        header {
+            margin-bottom: 3rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        h1 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 2.5rem;
+            background: linear-gradient(to right, #fff, #94a3b8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Form Elements */
+        .card {
+            background: var(--glass);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--border);
+            border-radius: 1.5rem;
+            padding: 2.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            transition: transform 0.3s ease, border-color 0.3s ease;
+        }
+
+        .card:hover {
+            border-color: var(--primary);
+        }
+
+        .input-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 0.75rem;
+            font-weight: 500;
+            color: var(--text-main);
+        }
+
+        .input-field,
+        .textarea-field,
+        .select-field {
+            width: 100%;
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: 0.75rem;
+            padding: 1rem;
+            color: white;
+            font-family: inherit;
+            font-size: 1rem;
+            transition: all 0.2s;
+        }
+
+        .input-field:focus,
+        .textarea-field:focus,
+        .select-field:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+        }
+
+        .textarea-field {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        /* Options Grid */
+        .options-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .option-card {
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            padding: 1rem;
+            border-radius: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .option-card:hover {
+            background: var(--bg-card);
+        }
+
+        .option-card.selected {
+            background: rgba(59, 130, 246, 0.2);
+            border-color: var(--primary);
+        }
+
+        .option-icon {
+            color: var(--primary);
+            font-size: 1.2rem;
+        }
+
+        /* Button */
+        .btn-generate {
+            width: 100%;
+            padding: 1.25rem;
+            background: var(--gradient-main);
+            border: none;
+            border-radius: 0.75rem;
+            color: white;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: filter 0.2s, transform 0.1s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.75rem;
+            box-shadow: var(--shadow-glow);
+        }
+
+        .btn-generate:hover {
+            filter: brightness(110%);
+            transform: translateY(-2px);
+        }
+
+        .btn-generate:active {
+            transform: translateY(0);
+        }
+
+        /* Result Area */
+        .result-section {
+            margin-top: 2rem;
+            display: none;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .result-content {
+            background: var(--bg-card);
+            padding: 2rem;
+            border-radius: 1rem;
+            border: 1px solid var(--border);
+            line-height: 1.7;
+            white-space: pre-wrap;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        .btn-copy {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.2s;
+        }
+
+        .btn-copy:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--text-main);
+        }
+
+        /* API Key Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+
+        .modal {
+            background: var(--bg-card);
+            padding: 2rem;
+            border-radius: 1rem;
+            border: 1px solid var(--border);
+            width: 100%;
+            max-width: 500px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+
+        .modal h2 {
+            margin-bottom: 1rem;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        .modal p {
+            color: var(--text-muted);
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .btn-secondary {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            border: none;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+        }
+
+        /* Loading */
+        .loader {
+            display: none;
+            width: 24px;
+            height: 24px;
+            border: 3px solid #FFF;
+            border-bottom-color: transparent;
+            border-radius: 50%;
+            animation: rotation 1s linear infinite;
+        }
+
+        @keyframes rotation {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Highlight specific keywords in result */
+        .hashtag {
+            color: var(--primary);
+            font-weight: 600;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="brand">
+                <i class="fa-solid fa-brain"></i>
+                <span>EdTech Gen</span>
+            </div>
+
+            <div class="user-profile">
+                <div class="user-avatar" id="avatarInitials">G</div>
+                <div class="user-name" id="userNameDisplay">Gilles</div>
+                <div class="user-role" id="userRoleDisplay">Drane Adjoint Académie de Corse<br>Expert Numérique & IA
+                </div>
+            </div>
+
+            <!-- Configuration IA (Removed) -->
+            <div class="settings-group">
+
+                <h3>Mon Profil</h3>
+                <div class="input-group">
+                    <label style="font-size: 0.8rem; color: var(--text-muted);">Expertise</label>
+                    <textarea id="profileExpertise" class="textarea-field"
+                        style="min-height: 80px; font-size: 0.85rem;">Drane Adjoint Académie de Corse, Coordinateur Maison des Sciences Bastia, Enseignant Technologie. Passionné EdTech, IA, Transformation Digitale et Inclusion.</textarea>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header>
+                <div>
+                    <h1>Le Mixeur LinkedIn EdTech</h1>
+                    <p style="color: var(--text-muted); margin-top: 0.5rem;">Composez votre post en panachant vos thèmes
+                        d'expertises.</p>
+                </div>
+                <button class="btn-copy" onclick="resetForm()">
+                    <i class="fa-solid fa-arrows-rotate"></i> Réinitialiser
+                </button>
+            </header>
+
+            <!-- LE MIXEUR -->
+            <div class="card">
+                <div class="input-group">
+                    <label
+                        style="color: var(--accent); margin-bottom: 1rem; display:block; text-transform:uppercase; font-size:0.8rem; letter-spacing:1px; font-weight:700;">
+                        1. La Formule Magique (Le Mix)
+                    </label>
+                    <div class="options-grid" style="grid-template-columns: repeat(3, 1fr); gap: 1rem;">
+
+                        <!-- Col 1: Thème -->
+                        <div style="display:flex; flex-direction:column; gap:0.5rem;">
+                            <label style="font-size:0.9rem;">Le Thème (Quoi)</label>
+                            <select id="themeSelect" class="select-field">
+                                <option value="" disabled selected>Choisir un thème...</option>
+
+                                <optgroup label="1. Pédagogie & Inclusion (Cœur de métier)">
+                                    <option value="Différenciation pédagogique (Adapter aux élèves)">🎓 Différenciation
+                                        pédagogique</option>
+                                    <option value="Inclusion scolaire (ULIS, Dys, Accessibilité)">🤝 Inclusion (Dys,
+                                        ULIS)
+                                    </option>
+                                    <option value="Ingénierie pédagogique (Scénarios d'apprentissage)">📝 Ingénierie
+                                        Pédagogique</option>
+                                    <option value="Mentorat (Changement de posture enseignant)">� Mentorat & Posture
+                                    </option>
+                                </optgroup>
+
+                                <optgroup label="2. IA Éducative (Axe Innovation)">
+                                    <option value="IA Générative (LLM, ChatGPT, Claude en classe)">🤖 IA Générative (LLM
+                                        en
+                                        classe)</option>
+                                    <option value="Éthique & Souveraineté (Esprit critique, Data)">🛡️ Éthique &
+                                        Souveraineté</option>
+                                    <option value="Prompt Engineering Pédagogique (Dialoguer avec l'IA)">🗣️ Prompt
+                                        Engineering Pédagogique</option>
+                                </optgroup>
+
+                                <optgroup label="3. Stratégie & Institutionnel (Casquette DRANE)">
+                                    <option value="Déploiement à grande échelle (ENT, Tablettes)">🚀 Déploiement &
+                                        Équipement</option>
+                                    <option value="Politiques Publiques (Enjeux ministériels/territoriaux)">🏛️
+                                        Politiques
+                                        Publiques</option>
+                                    <option value="Cadre Technique & Juridique (GAR, RGPD, Interop)">⚖️ Cadre Technique
+                                        &
+                                        Juridique</option>
+                                </optgroup>
+
+                                <optgroup label="4. Usages & Terrain (Double Casquette)">
+                                    <option value="Expérience Utilisateur UX (Usage réel vs prescrit)">👀 UX & Usage
+                                        Réel
+                                    </option>
+                                    <option value="Accompagnement au changement (Former et rassurer)">� Accompagnement
+                                        au
+                                        Changement</option>
+                                    <option value="Hybridation (Présentiel / Distanciel)">🔄 Hybridation</option>
+                                </optgroup>
+                            </select>
+                        </div>
+
+                        <!-- Col 2: Angle -->
+                        <div style="display:flex; flex-direction:column; gap:0.5rem;">
+                            <label style="font-size:0.9rem;">L'Angle (Comment)</label>
+                            <select id="angleSelect" class="select-field">
+                                <option value="" disabled selected>Choisir un angle...</option>
+                                <option value="Le Contre-Pied (Mythe vs Réalité)">⚡ Le Contre-Pied (Mythe vs Réalité)
+                                </option>
+                                <option value="Le Cas Pratique (Terrain / Vécu)">📝 Le Cas Pratique (Terrain)</option>
+                                <option value="L'Urgence / L'Alerte">🚨 L'Urgence / L'Alerte</option>
+                                <option value="La Vision Stratégique (École de 2030)">🔭 La Vision Stratégique</option>
+                                <option value="La Simplification (Astuce simple)">💡 La Simplification</option>
+                            </select>
+                        </div>
+
+                        <!-- Col 3: Cible -->
+                        <div style="display:flex; flex-direction:column; gap:0.5rem;">
+                            <label style="font-size:0.9rem;">La Cible (Pour qui)</label>
+                            <select id="targetSelect" class="select-field">
+                                <option value="" disabled selected>Choisir une cible...</option>
+                                <option value="Les Enseignants (Ton empathique, conseils)">👩‍🏫 Les Enseignants
+                                </option>
+                                <option value="Les Décideurs / Recteurs (Ton stratégique, enjeux)">🏛️ Les Décideurs
+                                </option>
+                                <option value="Les Éditeurs EdTech (Ton expert UX, terrain)">💻 Les Éditeurs EdTech
+                                </option>
+                                <option value="Les Parents (Ton rassurant, explicatif)">👨‍👩‍👧 Les Parents</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CONTEXTE -->
+                <div class="input-group">
+                    <label for="topic"
+                        style="color: var(--accent); margin-bottom: 1rem; display:block; text-transform:uppercase; font-size:0.8rem; letter-spacing:1px; font-weight:700;">
+                        2. L'Abondement (Précisions)
+                    </label>
+                    <textarea id="topic" class="textarea-field" style="min-height: 80px;"
+                        placeholder="Ex: J'ai testé un prompt ce matin pour adapter un texte en 6ème. Ça a pris 10 secondes. (Laissez vide pour laisser l'IA improviser sur le thème)"></textarea>
+                </div>
+
+                <!-- MOTS CLES -->
+                <div class="input-group">
+                    <label
+                        style="color: var(--accent); margin-bottom: 1rem; display:block; text-transform:uppercase; font-size:0.8rem; letter-spacing:1px; font-weight:700;">
+                        3. Les Mots-Clés "Signature"
+                    </label>
+                    <div class="options-grid"
+                        style="grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1rem;">
+                        <label class="option-card" style="justify-content: flex-start; padding: 0.75rem;">
+                            <input type="checkbox" name="keywords" value="Prompt Engineering, LLM, Interopérabilité"
+                                checked>
+                            <span style="font-size:0.9rem;">Technique</span>
+                        </label>
+                        <label class="option-card" style="justify-content: flex-start; padding: 0.75rem;">
+                            <input type="checkbox" name="keywords" value="Remédiation, Différenciation, Mentorat"
+                                checked>
+                            <span style="font-size:0.9rem;">Pédagogie</span>
+                        </label>
+                        <label class="option-card" style="justify-content: flex-start; padding: 0.75rem;">
+                            <input type="checkbox" name="keywords" value="Équité, Inclusion, Souveraineté, Terrain"
+                                checked>
+                            <span style="font-size:0.9rem;">Valeurs</span>
+                        </label>
+                        <label class="option-card" style="justify-content: flex-start; padding: 0.75rem;">
+                            <input type="checkbox" name="keywords" value="Territoires, Ruralité, Corse, Proximité"
+                                checked>
+                            <span style="font-size:0.9rem;">Local / Corse</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label style="font-size: 0.9rem;"><i class="fa-solid fa-ruler-horizontal"></i> Longueur</label>
+                    <select id="length" class="select-field">
+                        <option value="Court et Percutant">Court & Percutant (100 mots)</option>
+                        <option value="Standard">Standard (150-200 mots)</option>
+                        <option value="Article de fond">Article de fond (400+ mots)</option>
+                    </select>
+                </div>
+
+                <button class="btn-generate" onclick="generatePost()">
+                    <span class="loader" id="loader"></span>
+                    <span id="btnText"><i class="fa-solid fa-wand-magic-sparkles"></i> Générer le Post</span>
+                </button>
+            </div>
+
+            <!-- NOUVEAU : GENERATEUR D'IMAGE NANO BANANA -->
+            <div class="card" style="border-color: var(--secondary);">
+                <div class="input-group">
+                    <label
+                        style="color: var(--secondary); margin-bottom: 1rem; display:block; text-transform:uppercase; font-size:0.8rem; letter-spacing:1px; font-weight:700;">
+                        4. L'Illustration (Pour Nano Banana)
+                    </label>
+                    <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:1.5rem;">
+                        Créez un prompt optimisé pour Nano Banana, avec une direction artistique et une colorimétrie
+                        précises.
+                    </p>
+
+                    <div class="options-grid" style="grid-template-columns: repeat(2, 1fr); gap: 1rem;">
+                        <!-- Style -->
+                        <div style="display:flex; flex-direction:column; gap:0.5rem;">
+                            <label style="font-size:0.9rem;">Style Graphique</label>
+                            <select id="imgStyle" class="select-field">
+                                <option
+                                    value="Minimalist 3D Render, isometric view, high-end toy aesthetic, clay render, soft lighting">
+                                    🧊 3D Minimaliste (Clean Tech)</option>
+                                <option
+                                    value="Abstract tech data visualization, network nodes, glowing connections, dark background, cybernetic">
+                                    🌐 Abstrait Data / Réseau</option>
+                                <option
+                                    value="Photorealistic, cinematic lighting, depth of field, professional education setting, soft focus">
+                                    📸 Photo Unsplash (Réaliste)</option>
+                                <option
+                                    value="Vector flat illustration, corporate memphis style, clean lines, vibrant colors">
+                                    🎨 Illustration Vectorielle (Moderne)</option>
+                                <option value="Cyberpunk futuristic interface, neon lights, holograms, dark mode UI">🔮
+                                    Futuriste / Cyberpunk</option>
+                                <option
+                                    value="Hand-drawn sketch on whiteboard, marker style, brainstorming concept, rough lines">
+                                    ✏️ Croquis / Whiteboard</option>
+                            </select>
+                        </div>
+
+                        <!-- Couleurs -->
+                        <div style="display:flex; flex-direction:column; gap:0.5rem;">
+                            <label style="font-size:0.9rem;">Palette Colorimétrique</label>
+                            <select id="imgColor" class="select-field">
+                                <optgroup label="Ambiance Tech & Pro">
+                                    <option value="Electric Blue and Violet gradient, neon accents">🔵 Tech Blue &
+                                        Violet ( Futuriste)</option>
+                                    <option value="Emerald Green and White, clean medical interface">🟢 Emerald Green &
+                                        White (Santé/Eco)</option>
+                                    <option value="Dark Mode, Navy Blue background, Cyan highlights">🌃 Dark Mode & Cyan
+                                        (Software)</option>
+                                    <option value="Monochromatic Grey, Silver details, minimalist">⚪ Monochrome Grid &
+                                        Silver (Sobre)</option>
+                                </optgroup>
+                                <optgroup label="Ambiance Chaleureuse & Humaine">
+                                    <option value="Warm Sunset tones, orange, gold, and soft yellow">🌅 Sunset & Gold
+                                        (Inspirant)</option>
+                                    <option value="Earthy tones, beige, terracotta, sage green">🍂 Earthy & Sage
+                                        (Organique/Humain)</option>
+                                    <option value="Pastel Palette, soft pink, mint, lavender">🍬 Pastels Soft
+                                        (Bienveillance)</option>
+                                </optgroup>
+                                <optgroup label="Ambiance Dynamique & Contrastée">
+                                    <option value="High Contrast Orange and Teal, cinematic look">🟠 Orange & Teal
+                                        (Cinéma/Impact)</option>
+                                    <option value="Vibrant Pop Art colors, red, yellow, blue">🎨 Pop Art Vibrant
+                                        (Créatif)</option>
+                                    <option value="Black and Gold, luxury aesthetic, sharp lighting">� Black & Gold
+                                        (Prestige)</option>
+                                </optgroup>
+                            </select>
+                        </div>
+                    </div>
+
+                    <button class="btn-generate" onclick="generateImagePrompt()"
+                        style="background: linear-gradient(135deg, var(--secondary), var(--accent));">
+                        <i class="fa-solid fa-image"></i> Générer le Prompt Image
+                    </button>
+                </div>
+            </div>
+
+            <div class="result-section" id="resultSection">
+                <div class="result-header">
+                    <h2 style="font-size: 1.5rem; font-family: 'Outfit';">Post Généré</h2>
+                    <div style="display: flex; gap: 1rem;">
+                        <button class="btn-copy" onclick="copyToClipboard()">
+                            <i class="fa-regular fa-copy"></i> Copier
+                        </button>
+                    </div>
+                </div>
+                <div class="result-content" id="outputContent">
+                    <!-- Result will implement here -->
+                </div>
+            </div>
+
+            <!-- RESULTAT IMAGE -->
+            <div class="result-section" id="imageResultSection" style="margin-top:2rem;">
+                <div class="result-header">
+                    <h2 style="font-size: 1.5rem; font-family: 'Outfit'; color: var(--secondary);">Prompt Image Généré
+                    </h2>
+                    <button class="btn-copy" onclick="copyImagePrompt()">
+                        <i class="fa-regular fa-copy"></i> Copier
+                    </button>
+                </div>
+                <div class="result-content" id="imageOutputContent" style="border-color: var(--secondary);">
+
+                </div>
+            </div>
+    </div>
+    </main>
+    </div>
+
+
+    <script>
+        // UI Helpers
+        function selectOption(group, value, element) {
+            // Deprecated in new design but kept for safety if repurposed
+        }
+
+        // Main Logic
+        async function generatePost() {
+            const theme = document.getElementById('themeSelect').value;
+
+            if (!theme) {
+                alert("Veuillez choisir au moins un Thème (Catégorie 1).");
+                return;
+            }
+
+            // Directement en mode prompt
+            usePromptMode();
+        }
+
+        function usePromptMode() {
+            // On combine l'instruction système (Persona) et le prompt utilisateur
+            const system = constructSystemInstruction();
+            const user = constructPrompt();
+
+            const fullPrompt = `${system}\n\n====================\n\n${user}`;
+
+            const promptDisplay = `--- ⚡ MODE PROMPT GÉNÉRÉ ---
+    Copiez TOUT le texte ci-dessous et collez-le dans ChatGPT / Claude / Gemini :
+
+    ${fullPrompt}`;
+
+            displayResult(promptDisplay);
+        }
+
+        function setLoading(isLoading) {
+            const btn = document.querySelector('.btn-generate');
+            const loader = document.getElementById('loader');
+            const p = document.getElementById('btnText');
+
+            if (isLoading) {
+                loader.style.display = 'block';
+                p.style.display = 'none';
+                btn.disabled = true;
+                btn.style.opacity = '0.7';
+            } else {
+                loader.style.display = 'none';
+                p.style.display = 'block';
+                btn.disabled = false;
+                btn.style.opacity = '1';
+            }
+        }
+
+        function constructSystemInstruction() {
+            const profile = document.getElementById('profileExpertise').value;
+            return `Tu es Gilles, ${profile}.
+    Expert Numérique & Pédagogie, Drane Adjoint en Corse.
+
+    TA MISSION GLOBALE :
+    Rédiger un post LinkedIn qui crédibilise ta stature d'Expert Institutionnel tout en restant connecté au terrain (la
+    classe, les élèves).
+
+    TON STYLE (Signature) :
+    - Professionnel, bienveillant mais sans concession sur l'exigence.
+    - Tu défends une vision HUMANISTE du numérique : l'outil au service de l'homme, pas l'inverse.
+    - Tu es ancré dans le RÉEL : tu parles de ce qui marche, pas de théorie fumeuse.
+    - Tu utilises la "Ruralité" (le contexte Corse) comme un atout d'innovation.
+    `;
+        }
+
+        function constructPrompt() {
+            // Récupération des variables du Mixeur
+            const theme = document.getElementById('themeSelect').value || "Sujet ouvert sur le numérique éducatif";
+            const angle = document.getElementById('angleSelect').value || "Analytique et Expert";
+            const target = document.getElementById('targetSelect').value || "Tout le réseau éducatif";
+            const context = document.getElementById('topic').value || "Pas de contexte spécifique fourni, improvise sur le thème.";
+            const length = document.getElementById('length').value;
+
+            // Récupération des Mots-Clés cochés
+            const checkboxes = document.querySelectorAll('input[name="keywords"]:checked');
+            let selectedKeywords = [];
+            checkboxes.forEach((checkbox) => {
+                selectedKeywords.push(checkbox.value);
+            });
+            const keywordsString = selectedKeywords.join(", ");
+
+            return `Agis comme un Expert du Numérique Éducatif et DRANE Adjoint.
+    Rédige un post LinkedIn ${length}.
+
+    --- PARAMÈTRES DU POST ---
+    📍 THÈME : ${theme}
+    📐 ANGLE D'ATTAQUE : ${angle}
+    🎯 CIBLE (LECTEUR) : ${target}
+    🗝️ MOTS-CLÉS OBLIGATOIRES A INCLURE : ${keywordsString}
+
+    📝 ABONDEMENT / CONTEXTE SPÉCIFIQUE :
+    "${context}"
+
+    --- STRUCTURE IMPÉRATIVE ---
+    1. Une Hook (Accroche) percutante qui déconstruit une idée reçue ou pose un constat fort. (Pas de "Bonjour").
+    2. Un corps de texte aéré (sauts de ligne) développant l'angle choisi.
+    3. Une conclusion qui ouvre sur l'avenir ou une valeur forte (inclusion, équité).
+    4. Une Question Ouverte à la fin pour générer des commentaires.
+    5. 3 hashtags précis.
+
+    Attention : Reste humble mais expert. Parle "Vrai".`;
+        }
+
+        async function callAI(key) {
+            const systemPrompt = constructSystemInstruction();
+            const userPrompt = constructPrompt();
+
+            // Determine if OpenAI or Gemini based on key format (simple heuristic)
+            // Gemini keys usually start with AIza...
+            // OpenAI keys usually start with sk-...
+
+            if (key.startsWith('sk-')) {
+                // Assume OpenAI
+                return await callOpenAI(key, systemPrompt, userPrompt);
+            } else {
+                // Assume Gemini
+                return await callGemini(key, systemPrompt, userPrompt);
+            }
+        }
+
+        async function callOpenAI(key, system, user) {
+            const response = await fetch('https://api.openai.com/v1/chat/completions', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${key}`
+                },
+                body: JSON.stringify({
+                    model: "gpt-4o", // Or gpt-3.5-turbo if 4 fails
+                    messages: [
+                        { role: "system", content: system },
+                        { role: "user", content: user }
+                    ],
+                    temperature: 0.7
+                })
+            });
+
+            const data = await response.json();
+            if (data.error) throw new Error(data.error.message);
+            return data.choices[0].message.content;
+        }
+
+        async function callGemini(key, system, user) {
+            // Gemini API structure
+            // Using logic safe for client side for this demo tool
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${key}`;
+
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    contents: [{
+                        parts: [{
+                            text: system + "\n\n" + user
+                        }]
+                    }]
+                })
+            });
+
+            const data = await response.json();
+            if (data.error) throw new Error(data.error.message);
+            return data.candidates[0].content.parts[0].text;
+        }
+
+        function displayResult(text) {
+            const container = document.getElementById('outputContent');
+            const section = document.getElementById('resultSection');
+
+            // Basic formatting for hashtags
+            const formattedText = text.replace(/#\w+/g, '<span class="hashtag">$&</span>');
+
+            container.innerHTML = formattedText;
+            section.style.display = 'block';
+
+            // Scroll to result
+            section.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function copyToClipboard() {
+            const text = document.getElementById('outputContent').innerText;
+            navigator.clipboard.writeText(text).then(() => {
+                alert("Texte du Post copié !");
+            });
+        }
+
+        function copyImagePrompt() {
+            const text = document.getElementById('imageOutputContent').innerText;
+            navigator.clipboard.writeText(text).then(() => {
+                alert("Prompt Image copié !");
+            });
+        }
+
+        function generateImagePrompt() {
+            const theme = document.getElementById('themeSelect').value || "Education Technology";
+            let cleanTheme = theme.replace(/[\u{1F600}-\u{1F64F}]/gu, "")
+                .replace(/[\u{1F300}-\u{1F5FF}]/gu, "")
+                .replace(/[\u{1F680}-\u{1F6FF}]/gu, "")
+                .replace(/[\u{2600}-\u{26FF}]/gu, "")
+                .replace(/[\u{2700}-\u{27BF}]/gu, "").trim();
+            cleanTheme = cleanTheme.split("(")[0].trim();
+
+            const style = document.getElementById('imgStyle').value;
+            const color = document.getElementById('imgColor').value;
+            const context = document.getElementById('topic').value;
+
+            // Prompt format for Nano Banana / Flux / SDXL
+            const prompt = `(Masterpiece, Best Quality), A conceptual illustration of "${cleanTheme}", ${context ? "featuring " + context + "," : ""} ${style}.
+Color Palette: ${color}.
+Lighting: Professional studio lighting, 8k resolution, highly detailed, sharp focus.`;
+
+            const container = document.getElementById('imageOutputContent');
+            const section = document.getElementById('imageResultSection');
+
+            container.innerText = prompt;
+            section.style.display = 'block';
+            section.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function resetForm() {
+            if (confirm("Tout effacer ?")) {
+                document.getElementById('themeSelect').selectedIndex = 0;
+                document.getElementById('angleSelect').selectedIndex = 0;
+                document.getElementById('targetSelect').selectedIndex = 0;
+                document.getElementById('topic').value = '';
+                document.getElementById('resultSection').style.display = 'none';
+            }
+        }
+    </script>
+</body>
+
+</html>
