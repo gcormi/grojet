@@ -466,87 +466,91 @@
                 <div class="input-group">
                     <label
                         style="color: var(--accent); margin-bottom: 1rem; display:block; text-transform:uppercase; font-size:0.8rem; letter-spacing:1px; font-weight:700;">
-                        1. La Formule Magique (Le Mix)
+                        1. La Formule Magique (Le Mix A + B + C)
                     </label>
-                    <div class="options-grid" style="grid-template-columns: repeat(3, 1fr); gap: 1rem;">
-
-                        <!-- Col 1: Thème -->
+                    
+                    <!-- NEW : 3 LISTES A, B, C -->
+                    <div class="options-grid" style="grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1.5rem;">
+                        
+                        <!-- List A -->
                         <div style="display:flex; flex-direction:column; gap:0.5rem;">
-                            <label style="font-size:0.9rem;">Le Thème (Quoi)</label>
-                            <select id="themeSelect" class="select-field">
-                                <option value="" disabled selected>Choisir un thème...</option>
-
-                                <optgroup label="1. Pédagogie & Inclusion (Cœur de métier)">
-                                    <option value="Différenciation pédagogique (Adapter aux élèves)">🎓 Différenciation
-                                        pédagogique</option>
-                                    <option value="Inclusion scolaire (ULIS, Dys, Accessibilité)">🤝 Inclusion (Dys,
-                                        ULIS)
-                                    </option>
-                                    <option value="Ingénierie pédagogique (Scénarios d'apprentissage)">📝 Ingénierie
-                                        Pédagogique</option>
-                                    <option value="Mentorat (Changement de posture enseignant)">� Mentorat & Posture
-                                    </option>
-                                </optgroup>
-
-                                <optgroup label="2. IA Éducative (Axe Innovation)">
-                                    <option value="IA Générative (LLM, ChatGPT, Claude en classe)">🤖 IA Générative (LLM
-                                        en
-                                        classe)</option>
-                                    <option value="Éthique & Souveraineté (Esprit critique, Data)">🛡️ Éthique &
-                                        Souveraineté</option>
-                                    <option value="Prompt Engineering Pédagogique (Dialoguer avec l'IA)">🗣️ Prompt
-                                        Engineering Pédagogique</option>
-                                </optgroup>
-
-                                <optgroup label="3. Stratégie & Institutionnel (Casquette DRANE)">
-                                    <option value="Déploiement à grande échelle (ENT, Tablettes)">🚀 Déploiement &
-                                        Équipement</option>
-                                    <option value="Politiques Publiques (Enjeux ministériels/territoriaux)">🏛️
-                                        Politiques
-                                        Publiques</option>
-                                    <option value="Cadre Technique & Juridique (GAR, RGPD, Interop)">⚖️ Cadre Technique
-                                        &
-                                        Juridique</option>
-                                </optgroup>
-
-                                <optgroup label="4. Usages & Terrain (Double Casquette)">
-                                    <option value="Expérience Utilisateur UX (Usage réel vs prescrit)">👀 UX & Usage
-                                        Réel
-                                    </option>
-                                    <option value="Accompagnement au changement (Former et rassurer)">� Accompagnement
-                                        au
-                                        Changement</option>
-                                    <option value="Hybridation (Présentiel / Distanciel)">🔄 Hybridation</option>
-                                </optgroup>
+                            <label style="font-size:0.85rem; color:var(--primary); font-weight:600;">🛠️ LISTE A : Tech (Déclencheur)</label>
+                            <select id="listA" class="select-field">
+                                <option value="" disabled selected>Choisir un outil/tech...</option>
+                                <option value="IA Générative de texte (ChatGPT, Claude...)">IA Générative de texte</option>
+                                <option value="IA Générative d'images (Midjourney, DALL-E)">IA Générative d'images</option>
+                                <option value="Prompt Engineering (Art de parler à la machine)">Prompt Engineering</option>
+                                <option value="Outils No-Code (Créer sans code)">Outils No-Code</option>
+                                <option value="ENT & Plateformes scolaires">ENT & Plateformes scolaires</option>
+                                <option value="Tablettes & BYOD (Équipement mobile)">Tablettes & BYOD</option>
+                                <option value="Ressources Éducatives Libres (REL)">Ressources Libres (REL)</option>
+                                <option value="Algorithmes de recommandation">Algorithmes de recommandation</option>
+                                <option value="Outils de visioconférence">Outils de visioconférence</option>
+                                <option value="Cybersécurité de base (Phishing, Mots de passe)">Cybersécurité de base</option>
                             </select>
                         </div>
 
-                        <!-- Col 2: Angle -->
+                        <!-- List B -->
                         <div style="display:flex; flex-direction:column; gap:0.5rem;">
-                            <label style="font-size:0.9rem;">L'Angle (Comment)</label>
+                            <label style="font-size:0.85rem; color:var(--secondary); font-weight:600;">🏫 LISTE B : Pédago (Sens)</label>
+                            <select id="listB" class="select-field">
+                                <option value="" disabled selected>Choisir un prisme...</option>
+                                <option value="Inclusion & Handicap (Dys, TDAH)">Inclusion & Handicap</option>
+                                <option value="Différenciation pédagogique">Différenciation pédagogique</option>
+                                <option value="Esprit Critique">Esprit Critique</option>
+                                <option value="Motivation & Engagement">Motivation & Engagement</option>
+                                <option value="Gain de temps enseignant">Gain de temps enseignant</option>
+                                <option value="Posture de l'enseignant">Posture de l'enseignant</option>
+                                <option value="Évaluation (Noter autrement)">Évaluation</option>
+                                <option value="Travail collaboratif">Travail collaboratif</option>
+                                <option value="Lutte contre le décrochage">Lutte contre le décrochage</option>
+                                <option value="Créativité scolaire">Créativité scolaire</option>
+                            </select>
+                        </div>
+
+                        <!-- List C -->
+                        <div style="display:flex; flex-direction:column; gap:0.5rem;">
+                            <label style="font-size:0.85rem; color:var(--accent); font-weight:600;">🔭 LISTE C : Stratégie (Vision)</label>
+                            <select id="listC" class="select-field">
+                                <option value="" disabled selected>Choisir une vision...</option>
+                                <option value="Souveraineté Numérique">Souveraineté Numérique</option>
+                                <option value="Ruralité & Isolement (Corse)">Ruralité & Isolement</option>
+                                <option value="Éthique des données">Éthique des données</option>
+                                <option value="Transformation des organisations">Transformation des organisations</option>
+                                <option value="Formation continue">Formation continue</option>
+                                <option value="Fracture numérique">Fracture numérique</option>
+                                <option value="Synergie Public/Privé">Synergie Public/Privé</option>
+                                <option value="Sobriété numérique">Sobriété numérique</option>
+                                <option value="Coût et Budget">Coût et Budget</option>
+                                <option value="Lien École-Famille">Lien École-Famille</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Second Row : Angle & Target -->
+                    <div class="options-grid" style="grid-template-columns: repeat(2, 1fr); gap: 1rem;">
+                        <!-- Angle -->
+                        <div style="display:flex; flex-direction:column; gap:0.5rem;">
+                            <label style="font-size:0.9rem;">L'Angle (Comment on en parle)</label>
                             <select id="angleSelect" class="select-field">
                                 <option value="" disabled selected>Choisir un angle...</option>
-                                <option value="Le Contre-Pied (Mythe vs Réalité)">⚡ Le Contre-Pied (Mythe vs Réalité)
-                                </option>
+                                <option value="Le Contre-Pied (Mythe vs Réalité)">⚡ Le Contre-Pied (Mythe vs Réalité)</option>
                                 <option value="Le Cas Pratique (Terrain / Vécu)">📝 Le Cas Pratique (Terrain)</option>
                                 <option value="L'Urgence / L'Alerte">🚨 L'Urgence / L'Alerte</option>
-                                <option value="La Vision Stratégique (École de 2030)">🔭 La Vision Stratégique</option>
-                                <option value="La Simplification (Astuce simple)">💡 La Simplification</option>
+                                <option value="La Vision Stratégique (2030)">🔭 La Vision Stratégique</option>
+                                <option value="La Simplification (Tuto / Astuce)">💡 La Simplification / Tuto</option>
                             </select>
                         </div>
 
-                        <!-- Col 3: Cible -->
+                        <!-- Target -->
                         <div style="display:flex; flex-direction:column; gap:0.5rem;">
                             <label style="font-size:0.9rem;">La Cible (Pour qui)</label>
                             <select id="targetSelect" class="select-field">
                                 <option value="" disabled selected>Choisir une cible...</option>
-                                <option value="Les Enseignants (Ton empathique, conseils)">👩‍🏫 Les Enseignants
-                                </option>
-                                <option value="Les Décideurs / Recteurs (Ton stratégique, enjeux)">🏛️ Les Décideurs
-                                </option>
-                                <option value="Les Éditeurs EdTech (Ton expert UX, terrain)">💻 Les Éditeurs EdTech
-                                </option>
-                                <option value="Les Parents (Ton rassurant, explicatif)">👨‍👩‍👧 Les Parents</option>
+                                <option value="Les Enseignants">👩‍🏫 Les Enseignants</option>
+                                <option value="Les Décideurs / Recteurs">🏛️ Les Décideurs</option>
+                                <option value="Les Éditeurs EdTech">💻 Les Éditeurs EdTech</option>
+                                <option value="Les Parents">👨‍👩‍👧 Les Parents</option>
                             </select>
                         </div>
                     </div>
@@ -726,10 +730,12 @@
 
         // Main Logic
         async function generatePost() {
-            const theme = document.getElementById('themeSelect').value;
+            const listA = document.getElementById('listA').value;
+            const listB = document.getElementById('listB').value;
+            // List C is optional or can be mixed in
 
-            if (!theme) {
-                alert("Veuillez choisir au moins un Thème (Catégorie 1).");
+            if (!listA && !listB) {
+                alert("Veuillez choisir au moins un sujet (Liste A) ou un prisme (Liste B).");
                 return;
             }
 
@@ -789,10 +795,13 @@
 
         function constructPrompt() {
             // Récupération des variables du Mixeur
-            const theme = document.getElementById('themeSelect').value || "Sujet ouvert sur le numérique éducatif";
-            const angle = document.getElementById('angleSelect').value || "Analytique et Expert";
+            const topicA = document.getElementById('listA').value || "Sujet Tech Général";
+            const topicB = document.getElementById('listB').value || "Approche Pédagogique";
+            const topicC = document.getElementById('listC').value || "Vision Stratégique";
+            
+            const angle = document.getElementById('angleSelect').value || "Expert & Accessible";
             const target = document.getElementById('targetSelect').value || "Tout le réseau éducatif";
-            const context = document.getElementById('topic').value || "Pas de contexte spécifique fourni, improvise sur le thème.";
+            const context = document.getElementById('topic').value || "";
             const length = document.getElementById('length').value;
 
             // Récupération des Mots-Clés cochés
@@ -806,23 +815,28 @@
             return `Agis comme un Expert du Numérique Éducatif et DRANE Adjoint.
     Rédige un post LinkedIn ${length}.
 
+    --- LE MIX THÉMATIQUE (Cœur du sujet) ---
+    Tu dois croiser ces 3 dimensions pour créer un propos unique et riche :
+    1. 🛠️ SUJET TECH (Le Déclencheur) : ${topicA}
+    2. 🏫 PRISME PÉDAGOGIQUE (Le Sens) : ${topicB}
+    3. 🔭 DIMENSION STRATÉGIQUE (La Vision) : ${topicC}
+
     --- PARAMÈTRES DU POST ---
-    📍 THÈME : ${theme}
     📐 ANGLE D'ATTAQUE : ${angle}
     🎯 CIBLE (LECTEUR) : ${target}
     🗝️ MOTS-CLÉS OBLIGATOIRES A INCLURE : ${keywordsString}
 
-    📝 ABONDEMENT / CONTEXTE SPÉCIFIQUE :
+    📝 ABONDEMENT / CONTEXTE SPÉCIFIQUE (Si fourni) :
     "${context}"
 
     --- STRUCTURE IMPÉRATIVE ---
-    1. Une Hook (Accroche) percutante qui déconstruit une idée reçue ou pose un constat fort. (Pas de "Bonjour").
-    2. Un corps de texte aéré (sauts de ligne) développant l'angle choisi.
-    3. Une conclusion qui ouvre sur l'avenir ou une valeur forte (inclusion, équité).
+    1. Une Hook (Accroche) percutante qui déconstruit une idée reçue sur ${topicA} ou interpelle sur ${topicB}. (Pas de "Bonjour").
+    2. Un corps de texte aéré qui tisse des liens entre la technique (${topicA}) et la pédagogie (${topicB}), le tout sous le regard de la stratégie (${topicC}).
+    3. Une conclusion qui ouvre sur l'avenir ou une valeur forte (inclusion, souveraineté).
     4. Une Question Ouverte à la fin pour générer des commentaires.
     5. 3 hashtags précis.
 
-    Attention : Reste humble mais expert. Parle "Vrai".`;
+    Attention : Reste humble mais expert. Parle "Vrai". Ancre le propos dans le réel (la classe, l'école, le territoire).`;
         }
 
         async function callAI(key) {
@@ -917,20 +931,26 @@
         }
 
         function generateImagePrompt() {
-            const theme = document.getElementById('themeSelect').value || "Education Technology";
-            let cleanTheme = theme.replace(/[\u{1F600}-\u{1F64F}]/gu, "")
+            const topicA = document.getElementById('listA').value || "Education Technology";
+            const topicB = document.getElementById('listB').value || "";
+            // Use Topic A as the main visual subject
+            
+            let cleanTheme = topicA.replace(/[\u{1F600}-\u{1F64F}]/gu, "")
                 .replace(/[\u{1F300}-\u{1F5FF}]/gu, "")
                 .replace(/[\u{1F680}-\u{1F6FF}]/gu, "")
                 .replace(/[\u{2600}-\u{26FF}]/gu, "")
                 .replace(/[\u{2700}-\u{27BF}]/gu, "").trim();
             cleanTheme = cleanTheme.split("(")[0].trim();
+            
+            // Add flavor from List B
+            let flavor = topicB ? `showing ${topicB.split("(")[0]}` : "";
 
             const style = document.getElementById('imgStyle').value;
             const color = document.getElementById('imgColor').value;
             const context = document.getElementById('topic').value;
 
             // Prompt format for Nano Banana / Flux / SDXL
-            const prompt = `(Masterpiece, Best Quality), A conceptual illustration of "${cleanTheme}", ${context ? "featuring " + context + "," : ""} ${style}.
+            const prompt = `(Masterpiece, Best Quality), A conceptual illustration of "${cleanTheme}" ${flavor}, ${context ? "featuring " + context + "," : ""} ${style}.
 Color Palette: ${color}.
 Lighting: Professional studio lighting, 8k resolution, highly detailed, sharp focus.`;
 
@@ -944,7 +964,9 @@ Lighting: Professional studio lighting, 8k resolution, highly detailed, sharp fo
 
         function resetForm() {
             if (confirm("Tout effacer ?")) {
-                document.getElementById('themeSelect').selectedIndex = 0;
+                document.getElementById('listA').selectedIndex = 0;
+                document.getElementById('listB').selectedIndex = 0;
+                document.getElementById('listC').selectedIndex = 0;
                 document.getElementById('angleSelect').selectedIndex = 0;
                 document.getElementById('targetSelect').selectedIndex = 0;
                 document.getElementById('topic').value = '';
