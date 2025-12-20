@@ -86,6 +86,7 @@
         .brand i {
             background: var(--gradient-main);
             -webkit-background-clip: text;
+            background-clip: text;
             -webkit-text-fill-color: transparent;
             font-size: 2rem;
         }
@@ -157,6 +158,7 @@
             font-size: 2.5rem;
             background: linear-gradient(to right, #fff, #94a3b8);
             -webkit-background-clip: text;
+            background-clip: text;
             -webkit-text-fill-color: transparent;
         }
 
@@ -416,6 +418,51 @@
             color: var(--primary);
             font-weight: 600;
         }
+
+        /* Style Grid for Images */
+        .style-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .style-card {
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: 0.75rem;
+            padding: 0.5rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+        }
+
+        .style-card:hover {
+            border-color: var(--primary);
+            background: var(--bg-card);
+        }
+
+        .style-card.selected {
+            border-color: var(--secondary);
+            background: rgba(139, 92, 246, 0.2);
+            box-shadow: 0 0 15px rgba(139, 92, 246, 0.2);
+        }
+
+        .style-card img {
+            width: 100%;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 0.5rem;
+            margin-bottom: 0.5rem;
+            background-color: #000;
+            /* Placeholder bg */
+        }
+
+        .style-label {
+            font-size: 0.8rem;
+            font-weight: 500;
+            display: block;
+        }
     </style>
 </head>
 
@@ -468,31 +515,38 @@
                         style="color: var(--accent); margin-bottom: 1rem; display:block; text-transform:uppercase; font-size:0.8rem; letter-spacing:1px; font-weight:700;">
                         1. La Formule Magique (Le Mix A + B + C)
                     </label>
-                    
+
                     <!-- NEW : 3 LISTES A, B, C -->
-                    <div class="options-grid" style="grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1.5rem;">
-                        
+                    <div class="options-grid"
+                        style="grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1.5rem;">
+
                         <!-- List A -->
                         <div style="display:flex; flex-direction:column; gap:0.5rem;">
-                            <label style="font-size:0.85rem; color:var(--primary); font-weight:600;">🛠️ LISTE A : Tech (Déclencheur)</label>
+                            <label style="font-size:0.85rem; color:var(--primary); font-weight:600;">🛠️ LISTE A : Tech
+                                (Déclencheur)</label>
                             <select id="listA" class="select-field">
                                 <option value="" disabled selected>Choisir un outil/tech...</option>
-                                <option value="IA Générative de texte (ChatGPT, Claude...)">IA Générative de texte</option>
-                                <option value="IA Générative d'images (Midjourney, DALL-E)">IA Générative d'images</option>
-                                <option value="Prompt Engineering (Art de parler à la machine)">Prompt Engineering</option>
+                                <option value="IA Générative de texte (ChatGPT, Claude...)">IA Générative de texte
+                                </option>
+                                <option value="IA Générative d'images (Midjourney, DALL-E)">IA Générative d'images
+                                </option>
+                                <option value="Prompt Engineering (Art de parler à la machine)">Prompt Engineering
+                                </option>
                                 <option value="Outils No-Code (Créer sans code)">Outils No-Code</option>
                                 <option value="ENT & Plateformes scolaires">ENT & Plateformes scolaires</option>
                                 <option value="Tablettes & BYOD (Équipement mobile)">Tablettes & BYOD</option>
                                 <option value="Ressources Éducatives Libres (REL)">Ressources Libres (REL)</option>
                                 <option value="Algorithmes de recommandation">Algorithmes de recommandation</option>
                                 <option value="Outils de visioconférence">Outils de visioconférence</option>
-                                <option value="Cybersécurité de base (Phishing, Mots de passe)">Cybersécurité de base</option>
+                                <option value="Cybersécurité de base (Phishing, Mots de passe)">Cybersécurité de base
+                                </option>
                             </select>
                         </div>
 
                         <!-- List B -->
                         <div style="display:flex; flex-direction:column; gap:0.5rem;">
-                            <label style="font-size:0.85rem; color:var(--secondary); font-weight:600;">🏫 LISTE B : Pédago (Sens)</label>
+                            <label style="font-size:0.85rem; color:var(--secondary); font-weight:600;">🏫 LISTE B :
+                                Pédago (Sens)</label>
                             <select id="listB" class="select-field">
                                 <option value="" disabled selected>Choisir un prisme...</option>
                                 <option value="Inclusion & Handicap (Dys, TDAH)">Inclusion & Handicap</option>
@@ -510,13 +564,15 @@
 
                         <!-- List C -->
                         <div style="display:flex; flex-direction:column; gap:0.5rem;">
-                            <label style="font-size:0.85rem; color:var(--accent); font-weight:600;">🔭 LISTE C : Stratégie (Vision)</label>
+                            <label style="font-size:0.85rem; color:var(--accent); font-weight:600;">🔭 LISTE C :
+                                Stratégie (Vision)</label>
                             <select id="listC" class="select-field">
                                 <option value="" disabled selected>Choisir une vision...</option>
                                 <option value="Souveraineté Numérique">Souveraineté Numérique</option>
                                 <option value="Ruralité & Isolement (Corse)">Ruralité & Isolement</option>
                                 <option value="Éthique des données">Éthique des données</option>
-                                <option value="Transformation des organisations">Transformation des organisations</option>
+                                <option value="Transformation des organisations">Transformation des organisations
+                                </option>
                                 <option value="Formation continue">Formation continue</option>
                                 <option value="Fracture numérique">Fracture numérique</option>
                                 <option value="Synergie Public/Privé">Synergie Public/Privé</option>
@@ -534,7 +590,8 @@
                             <label style="font-size:0.9rem;">L'Angle (Comment on en parle)</label>
                             <select id="angleSelect" class="select-field">
                                 <option value="" disabled selected>Choisir un angle...</option>
-                                <option value="Le Contre-Pied (Mythe vs Réalité)">⚡ Le Contre-Pied (Mythe vs Réalité)</option>
+                                <option value="Le Contre-Pied (Mythe vs Réalité)">⚡ Le Contre-Pied (Mythe vs Réalité)
+                                </option>
                                 <option value="Le Cas Pratique (Terrain / Vécu)">📝 Le Cas Pratique (Terrain)</option>
                                 <option value="L'Urgence / L'Alerte">🚨 L'Urgence / L'Alerte</option>
                                 <option value="La Vision Stratégique (2030)">🔭 La Vision Stratégique</option>
@@ -551,6 +608,7 @@
                                 <option value="Les Décideurs / Recteurs">🏛️ Les Décideurs</option>
                                 <option value="Les Éditeurs EdTech">💻 Les Éditeurs EdTech</option>
                                 <option value="Les Parents">👨‍👩‍👧 Les Parents</option>
+                                <option value="Les Citoyens">👥 Les Citoyens</option>
                             </select>
                         </div>
                     </div>
@@ -594,6 +652,12 @@
                                 checked>
                             <span style="font-size:0.9rem;">Local / Corse</span>
                         </label>
+                        <label class="option-card"
+                            style="justify-content: flex-start; padding: 0.75rem; border-color: var(--accent);">
+                            <input type="checkbox" name="keywords" value="Sobriété Numérique, Low-Tech, Écologie"
+                                checked>
+                            <span style="font-size:0.9rem;">🌱 Sobriété Numérique</span>
+                        </label>
                     </div>
                 </div>
 
@@ -624,29 +688,80 @@
                         précises.
                     </p>
 
+                    <!-- NEW: Custom Text Input -->
+                    <div class="input-group">
+                        <label style="font-size:0.9rem;">Sujet Libre (Optionnel)</label>
+                        <textarea id="customImageText" class="textarea-field" style="min-height: 60px;"
+                            placeholder="Si rempli, remplace les thèmes ci-dessus pour l'image. Ex: Un robot qui apprend à peindre..."></textarea>
+                    </div>
+
                     <div class="options-grid" style="grid-template-columns: repeat(2, 1fr); gap: 1rem;">
-                        <!-- Style -->
+                        <!-- Image Text Option -->
                         <div style="display:flex; flex-direction:column; gap:0.5rem;">
+                            <label style="font-size:0.9rem;">Texte dans l'image ?</label>
+                            <div style="display:flex; gap:1rem;">
+                                <label style="display:flex; align-items:center; gap:0.5rem; cursor:pointer;">
+                                    <input type="radio" name="imgText" value="no" checked>
+                                    <span style="font-size:0.9rem;">Non (Clean)</span>
+                                </label>
+                                <label style="display:flex; align-items:center; gap:0.5rem; cursor:pointer;">
+                                    <input type="radio" name="imgText" value="yes">
+                                    <span style="font-size:0.9rem;">Oui (Avec Titre)</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Style (Visual Grid) -->
+                        <div
+                            style="grid-column: span 2; display:flex; flex-direction:column; gap:0.5rem; margin-top:1rem;">
                             <label style="font-size:0.9rem;">Style Graphique</label>
-                            <select id="imgStyle" class="select-field">
-                                <option
-                                    value="Minimalist 3D Render, isometric view, high-end toy aesthetic, clay render, soft lighting">
-                                    🧊 3D Minimaliste (Clean Tech)</option>
-                                <option
-                                    value="Abstract tech data visualization, network nodes, glowing connections, dark background, cybernetic">
-                                    🌐 Abstrait Data / Réseau</option>
-                                <option
-                                    value="Photorealistic, cinematic lighting, depth of field, professional education setting, soft focus">
-                                    📸 Photo Unsplash (Réaliste)</option>
-                                <option
-                                    value="Vector flat illustration, corporate memphis style, clean lines, vibrant colors">
-                                    🎨 Illustration Vectorielle (Moderne)</option>
-                                <option value="Cyberpunk futuristic interface, neon lights, holograms, dark mode UI">🔮
-                                    Futuriste / Cyberpunk</option>
-                                <option
-                                    value="Hand-drawn sketch on whiteboard, marker style, brainstorming concept, rough lines">
-                                    ✏️ Croquis / Whiteboard</option>
-                            </select>
+                            <input type="hidden" id="imgStyle"
+                                value="Minimalist 3D Render, isometric view, high-end toy aesthetic, clay render, soft lighting">
+
+                            <div class="style-grid">
+                                <!-- 1. 3D -->
+                                <div class="style-card selected"
+                                    onclick="selectStyle(this, 'Minimalist 3D Render, isometric view, high-end toy aesthetic, clay render, soft lighting')">
+                                    <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iIzFlMjkzYiIvPjxwYXRoIGQ9Ik01MCAyMCBMOTAgNDAgTDUwIDYwIEwxMCA0MCBaIiBmaWxsPSIjNjBhNWZhIi8+PHBhdGggZD0iTTUwIDYwIEw5MCA0MCBWODAgTDUwIDEwMCBaIiBmaWxsPSIjMjU2M2ViIi8+PHBhdGggZD0iTTUwIDYwIEwxMCA0MCBWODAgTDUwIDEwMCBaIiBmaWxsPSIjMWQ0ZWQ4Ii8+PC9zdmc+"
+                                        alt="3D">
+                                    <span class="style-label">🧊 3D Minimaliste</span>
+                                </div>
+                                <!-- 2. Abstract -->
+                                <div class="style-card"
+                                    onclick="selectStyle(this, 'Abstract tech data visualization, network nodes, glowing connections, dark background, cybernetic')">
+                                    <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iIzBmMTcyYSIvPjxjaXJjbGUgY3g9IjMwIiBjeT0iMzAiIHI9IjEwIiBmaWxsPSIjMjJkM2VlIi8+PGNpcmNsZSBjeD0iNzAiIGN5PSI3MCIgcj0iMTAiIGZpbGw9IiM4MThjZjgiLz48Y2lyY2xlIGN4PSI3MCIgY3k9IjMwIiByPSI1IiBmaWxsPSIjMjJkM2VlIiBvcGFjaXR5PSIwLjUiLz48Y2lyY2xlIGN4PSIzMCIgY3k9IjcwIiByPSI1IiBmaWxsPSIjODE4Y2Y4IiBvcGFjaXR5PSIwLjUiLz48bGluZSB4MT0iMzAiIHkxPSIzMCIgeDI9IjcwIiB5Mj0iNzAiIHN0cm9rZT0iI2Y4ZmFmYyIgc3Ryb2tlLXdpZHRoPSIyIi8+PGxpbmUgeDE9IjcwIiB5MT0iMzAiIHgyPSIzMCIgeTI9IjcwIiBzdHJva2U9IiNmOGZhZmMiIHN0cm9rZS13aWR0aD0iMiIgb3BhY2l0eT0iMC41Ii8+PC9zdmc+"
+                                        alt="Data">
+                                    <span class="style-label">🌐 Abstract Data</span>
+                                </div>
+                                <!-- 3. Photo -->
+                                <div class="style-card"
+                                    onclick="selectStyle(this, 'Photorealistic, cinematic lighting, depth of field, professional education setting, soft focus')">
+                                    <img src="https://images.unsplash.com/photo-1524178232363-1fb2b075b655?auto=format&fit=crop&w=400&q=60"
+                                        alt="Photo">
+                                    <span class="style-label">📸 Photo Réaliste</span>
+                                </div>
+                                <!-- 4. Vector -->
+                                <div class="style-card"
+                                    onclick="selectStyle(this, 'Vector flat illustration, corporate memphis style, clean lines, vibrant colors')">
+                                    <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2YxZjVmOSIvPjxwYXRoIGQ9Ik0yMCA4MCBDIDIwIDgwLCA0MCAyMCwgODAgMjAiIHN0cm9rZT0iI2VjNDg5OSIgc3Ryb2tlLXdpZHRoPSI1IiBmaWxsPSJub25lIi8+PGNpcmNsZSBjeD0iMjAiIGN5PSI4MCIgcj0iNSIgZmlsbD0iI2Y1OWUwYiIvPjxjaXJjbGUgY3g9IjgwIiBjeT0iMjAiIHI9IjUiIGZpbGw9IiNmNTllMGIiLz48bGluZSB4MT0iMjAiIHkxPSI4MCIgeDI9IjgwIiB5Mj0iMjAiIHN0cm9rZT0iIzk0YTNiOCIgc3Ryb2tlLXdpZHRoPSIxIiBzdHJva2UtZGFzaGFycmF5PSI1LDUiLz48L3N2Zz4="
+                                        alt="Vector">
+                                    <span class="style-label">🎨 Vectoriel</span>
+                                </div>
+                                <!-- 5. Cyberpunk -->
+                                <div class="style-card"
+                                    onclick="selectStyle(this, 'Cyberpunk futuristic interface, neon lights, holograms, dark mode UI')">
+                                    <img src="https://images.unsplash.com/photo-1555680202-c86f0e12f086?auto=format&fit=crop&w=400&q=60"
+                                        alt="Cyber">
+                                    <span class="style-label">🔮 Cyberpunk</span>
+                                </div>
+                                <!-- 6. Sketch -->
+                                <div class="style-card"
+                                    onclick="selectStyle(this, 'Hand-drawn sketch on whiteboard, marker style, brainstorming concept, rough lines')">
+                                    <img src="https://images.unsplash.com/photo-1531403009284-440f080d1e12?auto=format&fit=crop&w=400&q=60"
+                                        alt="Sketch">
+                                    <span class="style-label">✏️ Croquis</span>
+                                </div>
+                            </div>
                         </div>
 
                         <!-- Couleurs -->
@@ -724,8 +839,13 @@
 
     <script>
         // UI Helpers
-        function selectOption(group, value, element) {
-            // Deprecated in new design but kept for safety if repurposed
+        function selectStyle(element, value) {
+            // Remove selected class from all
+            document.querySelectorAll('.style-card').forEach(card => card.classList.remove('selected'));
+            // Add to clicked
+            element.classList.add('selected');
+            // Set value
+            document.getElementById('imgStyle').value = value;
         }
 
         // Main Logic
@@ -798,7 +918,7 @@
             const topicA = document.getElementById('listA').value || "Sujet Tech Général";
             const topicB = document.getElementById('listB').value || "Approche Pédagogique";
             const topicC = document.getElementById('listC').value || "Vision Stratégique";
-            
+
             const angle = document.getElementById('angleSelect').value || "Expert & Accessible";
             const target = document.getElementById('targetSelect').value || "Tout le réseau éducatif";
             const context = document.getElementById('topic').value || "";
@@ -931,28 +1051,47 @@
         }
 
         function generateImagePrompt() {
-            const topicA = document.getElementById('listA').value || "Education Technology";
-            const topicB = document.getElementById('listB').value || "";
-            // Use Topic A as the main visual subject
-            
-            let cleanTheme = topicA.replace(/[\u{1F600}-\u{1F64F}]/gu, "")
-                .replace(/[\u{1F300}-\u{1F5FF}]/gu, "")
-                .replace(/[\u{1F680}-\u{1F6FF}]/gu, "")
-                .replace(/[\u{2600}-\u{26FF}]/gu, "")
-                .replace(/[\u{2700}-\u{27BF}]/gu, "").trim();
-            cleanTheme = cleanTheme.split("(")[0].trim();
-            
-            // Add flavor from List B
-            let flavor = topicB ? `showing ${topicB.split("(")[0]}` : "";
-
+            const customText = document.getElementById('customImageText').value;
             const style = document.getElementById('imgStyle').value;
             const color = document.getElementById('imgColor').value;
             const context = document.getElementById('topic').value;
 
+            let subject = "";
+
+            if (customText && customText.trim() !== "") {
+                // CASE 1: Custom Text Provided
+                subject = customText.trim();
+            } else {
+                // CASE 2: Use List A + List B
+                const topicA = document.getElementById('listA').value || "Education Technology";
+                const topicB = document.getElementById('listB').value || "";
+
+                let cleanTheme = topicA.replace(/[\u{1F600}-\u{1F64F}]/gu, "")
+                    .replace(/[\u{1F300}-\u{1F5FF}]/gu, "")
+                    .replace(/[\u{1F680}-\u{1F6FF}]/gu, "")
+                    .replace(/[\u{2600}-\u{26FF}]/gu, "")
+                    .replace(/[\u{2700}-\u{27BF}]/gu, "").trim();
+                cleanTheme = cleanTheme.split("(")[0].trim();
+
+                let flavor = topicB ? `showing ${topicB.split("(")[0]}` : "";
+                subject = `"${cleanTheme}" ${flavor}, ${context ? "featuring " + context + "," : ""}`;
+            }
+
+            // Text Option
+            const textOption = document.querySelector('input[name="imgText"]:checked').value;
+            let textPrompt = "";
+            if (textOption === "yes") {
+                // Try to infer a title
+                let title = customText ? customText.substring(0, 20) : cleanTheme;
+                textPrompt = `, with the text "${title}" displayed broadly in modern typography, french text`;
+            } else {
+                textPrompt = ", no text, no watermark, clean composition";
+            }
+
             // Prompt format for Nano Banana / Flux / SDXL
-            const prompt = `(Masterpiece, Best Quality), A conceptual illustration of "${cleanTheme}" ${flavor}, ${context ? "featuring " + context + "," : ""} ${style}.
-Color Palette: ${color}.
-Lighting: Professional studio lighting, 8k resolution, highly detailed, sharp focus.`;
+            const prompt = `(Masterpiece, Best Quality), A conceptual illustration of ${subject}, ${style}${textPrompt}.
+ Color Palette: ${color}.
+ Lighting: Professional studio lighting, 8k resolution, highly detailed, sharp focus.`;
 
             const container = document.getElementById('imageOutputContent');
             const section = document.getElementById('imageResultSection');
@@ -970,6 +1109,7 @@ Lighting: Professional studio lighting, 8k resolution, highly detailed, sharp fo
                 document.getElementById('angleSelect').selectedIndex = 0;
                 document.getElementById('targetSelect').selectedIndex = 0;
                 document.getElementById('topic').value = '';
+                document.getElementById('customImageText').value = '';
                 document.getElementById('resultSection').style.display = 'none';
             }
         }
