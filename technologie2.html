@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Générateur de Cours - Technologie (Programme 2024)</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@400;500;600;700;800;900&display=swap');
+        :root {
+            --primary-500: #3b82f6; --primary-600: #2563eb; --primary-700: #1d4ed8;
+            --secondary-500: #10b981; --secondary-600: #059669;
+            --accent-500: #8b5cf6; --accent-600: #7c3aed;
+            --danger-500: #ef4444; --success-500: #16a34a;
+            --neutral-50: #f8fafc; --neutral-100: #f1f5f9; --neutral-200: #e2e8f0; --neutral-300: #cbd5e1; --neutral-500: #64748b; --neutral-700: #334155; --neutral-800: #1e293b;
+            --white: #ffffff;
+            --font-primary: 'Poppins', sans-serif; --font-secondary: 'Inter', sans-serif;
+            --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
+            --border-radius-lg: 0.75rem; --border-radius-md: 0.5rem;
+            --transition-default: all 0.3s ease-in-out;
+            --shadow-focus-ring: 0 0 0 3px rgba(59, 130, 246, 0.4);
+            --shadow-xs: 0 1px 2px 0 rgba(0,0,0,0.03);
+        }
+        body { font-family: var(--font-secondary); background-color: var(--neutral-100); color: var(--neutral-700); line-height: 1.6; margin: 0; padding: 1.5rem; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .header-container { background-color: var(--white); padding: 2.5rem; border-radius: var(--border-radius-lg); box-shadow: var(--shadow-lg); margin-bottom: 2rem; border-top: 5px solid var(--primary-500); }
+        .page-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--neutral-200); padding-bottom: 1.5rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+        .back-button { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.6rem 1.2rem; background-color: var(--neutral-200); color: var(--neutral-700); text-decoration: none; border-radius: var(--border-radius-md); font-weight: 500; transition: var(--transition-default); }
+        .back-button:hover { background-color: var(--neutral-300); transform: translateX(-3px); }
+        .page-header h1 { font-family: var(--font-primary); font-size: clamp(1.8rem, 4vw, 2.5rem); color: var(--neutral-800); display: flex; align-items: center; gap: 1rem; margin: 0; text-align: center; flex-grow: 1; justify-content: center; }
+        .page-header h1 .icon { color: var(--primary-500); }
+        .page-header-subtitle { text-align: center; font-size: 1.1rem; color: var(--neutral-500); font-weight: 500; }
+        .section { background-color: var(--white); padding: 2.5rem; border-radius: var(--border-radius-lg); box-shadow: var(--shadow-lg); margin-bottom: 2rem; }
+        .section h2 { font-family: var(--font-primary); font-size: 2rem; color: var(--primary-700); margin-bottom: 1.5rem; border-bottom: 1px solid var(--neutral-200); padding-bottom: 0.75rem; }
+        .form-group { margin-bottom: 2rem; }
+        .label-text { display: block; font-weight: 600; color: var(--neutral-800); margin-bottom: 0.75rem; font-size: 1.1rem; }
+        .input-field, .select-field, .textarea-field { width: 100%; box-sizing: border-box; padding: 1rem; border: 1px solid var(--neutral-300); border-radius: var(--border-radius-md); background-color: var(--neutral-50); font-size: 1.1rem; color: var(--neutral-800); transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out; font-family: var(--font-secondary); }
+        .input-field:focus, .select-field:focus, .textarea-field:focus { outline: none; border-color: var(--primary-500); box-shadow: var(--shadow-focus-ring); background-color: #fff; }
+        .btn { padding: 1.2rem 2rem; border-radius: var(--border-radius-md); font-weight: 600; font-family: var(--font-secondary); transition: var(--transition-default); border: 1px solid transparent; cursor: pointer; font-size: 1.1rem; display: inline-flex; align-items: center; justify-content: center; gap: 0.75rem; box-shadow: var(--shadow-xs); }
+        .btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+        .btn-primary { background-color: var(--primary-500); color: var(--white); }
+        .btn-primary:hover:not(:disabled) { background-color: var(--primary-600); }
+        .btn-secondary { background-color: var(--neutral-700); color: var(--white); }
+        .grid-2-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
+        .grid-3-cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem; }
+        .radio-group { display: flex; align-items: center; gap: 2rem; margin-top: 0.5rem; }
+        .radio-group label { font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; font-size: 1.1rem; }
+        .feedback-message { transition: all 0.3s; opacity: 0; font-size: 1.1rem; margin-top: 0.75rem; font-weight: 600; max-height: 0; overflow: hidden;}
+        .feedback-message.show { opacity: 1; max-height: 50px;}
+        .feedback-message.success { color: var(--secondary-600); }
+        
+        .object-input-group { display: flex; gap: 0.5rem; }
+        .object-input-group .input-field { flex-grow: 1; }
+        .btn-add { padding: 0.8rem; background-color: var(--accent-500); color: white; border-radius: var(--border-radius-md); font-size: 1.3rem; }
+        #selectedObjectsContainer { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 1rem; padding: 0.5rem; min-height: 30px; }
+        .selected-item { display: inline-flex; align-items: center; background-color: var(--secondary-500); color: white; padding: 0.5rem 1rem; border-radius: 2rem; font-size: 1rem; font-weight: 600; }
+        .remove-item-btn { margin-left: 0.75rem; background: none; border: none; color: white; cursor: pointer; font-size: 1.2rem; line-height: 1; }
+        .suggestion-container { display: flex; flex-wrap: wrap; gap: 0.6rem; margin-top: 1rem; }
+        .suggestion-item { padding: 0.6rem 1rem; background-color: var(--primary-500); color: var(--white); border-radius: var(--border-radius-md); font-size: 0.95rem; font-weight: 600; cursor: pointer; transition: var(--transition-default); }
+        .suggestion-item:hover { background-color: var(--primary-600); transform: translateY(-2px); }
+        
+        .discipline-button-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-top: 1.5rem; }
+        .discipline-button { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2rem; border-radius: var(--border-radius-lg); background-color: var(--neutral-50); border: 1px solid var(--neutral-200); text-decoration: none; color: var(--neutral-800); text-align: center; transition: var(--transition-default); }
+        .discipline-button:hover { transform: translateY(-5px); box-shadow: var(--shadow-md); border-color: var(--accent-500); color: var(--accent-500); }
+        .discipline-button .icon { font-size: 3rem; margin-bottom: 1rem; }
+        .discipline-button .title { font-family: var(--font-primary); font-size: 1.3rem; font-weight: 700; }
+
+        optgroup { font-weight: bold; color: var(--neutral-800); background: var(--neutral-100); }
+        option { padding: 10px; font-size: 1.05rem; }
+
+        @media (max-width: 768px) { .grid-2-cols, .grid-3-cols { grid-template-columns: 1fr; } .page-header h1 { font-size: 1.6rem; } }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header-container">
+        <header class="page-header">
+            <a href="index.html" class="back-button"><i class="fas fa-arrow-left"></i> Retour</a>
+            <h1><i class="fas fa-laptop-code icon"></i> Générateur de Cours - Technologie</h1>
+        </header>
+        <p class="page-header-subtitle">Ingénierie de formation Cycle 4 | Programme 2024 (Version Intégrale & Haute Fidélité)</p>
+    </div>
+
+    <section class="section">
+        <h2>1. Sélection de la Séquence (Obligatoire)</h2>
+        <div class="grid-2-cols">
+            <div class="form-group">
+                <label for="gradeSelect" class="label-text">Niveau scolaire :</label>
+                <select id="gradeSelect" class="select-field">
+                    <option value="">-- Choisir un niveau --</option>
+                    <option value="5e">5ème (Habitat, Ouvrages, Fondamentaux)</option>
+                    <option value="4e">4ème (Confort, Domotique, Automatisme)</option>
+                    <option value="3e">3ème (Innovation, Société, Projet DNB)</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="sequenceSelect" class="label-text">Séquence officielle (Thème - N° - Titre) :</label>
+                <select id="sequenceSelect" class="select-field" disabled>
+                    <option value="">-- Choisir un niveau d'abord --</option>
+                </select>
+            </div>
+        </div>
+    </section>
+
+    <section class="section">
+        <h2>2. Personnalisation & Ressources</h2>
+        <div class="form-group">
+            <label class="label-text">Système(s) d'étude centraux (Recommandé : 1 à 3)</label>
+            <div class="object-input-group">
+                <input type="text" id="studyObjectInput" class="input-field" placeholder="Ex: Drone, Robot mBot, Serre connectée...">
+                <button id="addObjectButton" class="btn btn-add"><i class="fas fa-plus"></i></button>
+            </div>
+            <div id="selectedObjectsContainer"></div>
+            <div id="suggestionContainer" class="suggestion-container"></div>
+        </div>
+
+        <div class="form-group">
+            <label for="planInput" class="label-text">Structure de plan imposée (Optionnel) :</label>
+            <textarea id="planInput" rows="3" class="textarea-field" placeholder="Ex: I. Analyse fonctionnelle, II. Solutions techniques, III. Programmation..."></textarea>
+        </div>
+        
+        <label class="label-text">Ressources d'appui (Vidéos, Sites Web, Textes) :</label>
+        <div class="grid-3-cols">
+            <textarea id="videoLinks" rows="3" class="textarea-field" placeholder="Liens Vidéos (un par ligne)"></textarea>
+            <textarea id="websiteLinks" rows="3" class="textarea-field" placeholder="Liens Sites Web (un par ligne)"></textarea>
+            <textarea id="rawText" rows="3" class="textarea-field" placeholder="Notes techniques ou texte brut d'appui"></textarea>
+        </div>
+    </section>
+
+    <section class="section">
+        <h2>3. Génération du Prompt</h2>
+        <div class="grid-2-cols">
+            <div class="form-group">
+                <label class="label-text">Format de sortie :</label>
+                <div class="radio-group">
+                    <label><input type="radio" name="outputFormat" value="docx" checked> Word (DOCX)</label>
+                    <label><input type="radio" name="outputFormat" value="html"> Web (HTML)</label>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label class="label-text">Options pédagogiques :</label>
+                <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                    <label style="cursor: pointer; display: flex; align-items: center; gap: 0.5rem;">
+                        <input type="checkbox" id="pixCheckbox" checked> Inclure identification compétences Pix (CRCN)
+                    </label>
+                    <label style="cursor: pointer; display: flex; align-items: center; gap: 0.5rem;">
+                        <input type="checkbox" id="designCheckbox"> Mise en page moderne (si format HTML)
+                    </label>
+                </div>
+            </div>
+        </div>
+        
+        <button id="generateButton" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">
+            <i class="fas fa-magic"></i> GÉNÉRER LE PROMPT DE HAUT NIVEAU
+        </button>
+
+        <div class="form-group" style="margin-top: 2rem;">
+            <label for="outputPrompt" class="label-text">Prompt de Séquence prêt à copier :</label>
+            <textarea id="outputPrompt" rows="12" class="textarea-field" style="background-color: #fff; font-size: 1.1rem; min-height: 400px;" readonly placeholder="Le prompt généré apparaîtra ici..."></textarea>
+            <div style="display: flex; align-items: center; gap: 1rem; margin-top: 1rem;">
+                <button id="copyButton" class="btn btn-secondary"><i class="fas fa-copy"></i> Copier le Prompt</button>
+                <span id="copyMessage" class="feedback-message">Prompt copié avec succès !</span>
+            </div>
+        </div>
+    </section>
+
+    <section class="section" style="border-left: 6px solid var(--secondary-500);">
+        <h2>Outils Annexes</h2>
+        <div class="grid-2-cols">
+            <button id="logbookButton" class="btn btn-secondary">Phrase Cahier de Texte</button>
+            <button id="summaryButton" class="btn btn-secondary">Résumé de Séquence Élèves</button>
+        </div>
+        <textarea id="pedagogicalOutput" rows="4" class="textarea-field" style="margin-top: 1.5rem; font-size: 1.1rem;" readonly></textarea>
+    </section>
+
+    <section class="section">
+        <h2>Votre Boîte à Outils Pédagogiques</h2>
+        <div class="discipline-button-container">
+            <a href="boite.html" class="discipline-button">
+                <i class="fas fa-toolbox icon"></i>
+                <span class="title">Accéder à la Boîte à Outils</span>
+                <p>Retrouvez l'ensemble de vos générateurs et éditeurs pour créer du contenu sur mesure.</p>
+            </a>
+        </div>
+    </section>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+
+    const T1 = "Thème 1 (Conception à l’usage)";
+    const T2 = "Thème 2 (Info & Programmation)";
+    const T3 = "Thème 3 (Société & Env)";
+
+    // --- BASE DE DONNÉES INTÉGRALE ET NON RÉSUMÉE DES 45 SÉQUENCES ---
+    // Les descriptions ici sont restaurées à leur richesse maximale d'origine.
+    const modulesData = {
+        "5e": {
+            1: { mainTheme: T1, title: "Analyse du besoin et fonctions de l'objet", hook: "Imagine : tu dois concevoir un nouveau sac à dos pour les collégiens. Par où commences-tu ? Comment t'assures-tu qu'il sera non seulement pratique mais aussi super stylé et solide, sans être trop cher ? C'est le défi de tout designer !", skills: "Identifier un besoin à travers une situation. Distinguer et formuler la fonction d'usage principale et les fonctions d'estime. Lister les contraintes (techniques, économiques, esthétiques) qui s'appliquent à un objet.", knowledge: "Besoin utilisateur. Fonction d'usage (à quoi sert l'objet ?). Fonction d'estime (l'image que l'objet renvoie). Contraintes (de fonctionnement, de sécurité, esthétiques, économiques, environnementales).", socleSkills: "Domaine 1 : S'exprimer à l'écrit pour décrire. Domaine 2 : Coopérer et réaliser des projets." },
+            2: { mainTheme: T1, title: "Structure et constituants : anatomie d'un système", hook: "Une voiture miniature, une simple lampe de poche... On les utilise sans y penser. Mais si on les 'démontait' par la pensée ? De quelles pièces sont-ils faits ? Comment ces pièces fonctionnent-elles ensemble pour créer le mouvement ou la lumière ? Plongeons à l'intérieur des objets pour comprendre leur logique.", skills: "Identifier les différents composants (pièces) d'un objet technique simple. Décrire la fonction de chaque composant principal. Représenter les liens entre les composants par un schéma simple.", knowledge: "Fonction d'usage globale. Fonctions techniques des composants. Représentation par schéma ou croquis légendé. Notion de système (un ensemble d'éléments en interaction). Matériaux principaux (plastique, métal).", socleSkills: "Domaine 4 : Décrire le fonctionnement d'objets techniques. Domaine 1 : Utiliser des langages scientifiques (schémas)." },
+            3: { mainTheme: T1, title: "Familles de matériaux et propriétés physiques", hook: "En quel matériau fabriquer ton médiator solide et écolo ? Pourquoi ta trottinette n'est-elle pas en bois ? Explorons les secrets de la matière !", skills: "Classer les matériaux dans les grandes familles. Associer un matériau à ses propriétés caractéristiques (légèreté, solidité, isolation...). Associer propriétés mécaniques et physiques à un usage.", knowledge: "Familles de matériaux (métaux, matières plastiques, matériaux organiques, céramiques, composites). Propriétés principales des matériaux (mécaniques, physiques). Impact environnemental.", socleSkills: "Domaine 4 : Pratiquer une démarche scientifique ou technologique. Domaine 2 : Mener des recherches d'informations." },
+            4: { mainTheme: T1, title: "Représentation technique et modélisation 3D", hook: "Tu as imaginé un support génial pour ton smartphone, mais tu dois envoyer le plan à un ami pour qu'il le fabrique. Un simple dessin ne suffit pas. Donne vie à tes idées dans un monde virtuel !", skills: "Lire un dessin technique simple. Se repérer dans l'interface d'un logiciel de CAO volumique. Créer une esquisse en 2D avec des formes simples. Générer un volume 3D par extrusion.", knowledge: "CAO (Conception Assistée par Ordinateur). Interface de modeleur volumique. Esquisse. Fonctions volumiques de base (extrusion, perçage). Vues normalisées et échelle.", socleSkills: "Domaine 2 : Utiliser des outils numériques pour concevoir. Domaine 5 : Se repérer dans l'espace." },
+            5: { mainTheme: T1, title: "Procédés de mise en forme et réalisation", hook: "Tu as une super idée d'objet, mais comment la faire sortir du papier ? Quels outils utiliser pour couper du bois sans danger ? Bienvenue dans l'atelier, où l'on apprend les gestes et les règles pour transformer la matière en objet réel.", skills: "Choisir l'outil adapté à une tâche de fabrication simple (scier, percer, coller). Suivre une gamme de fabrication pour réaliser un prototype. Appliquer les règles de sécurité individuelles et collectives à l'atelier.", knowledge: "Les familles d'outils (coupe, perçage, assemblage). La gamme de fabrication. Les Équipements de Protection Individuelle (EPI). Usinage, moulage, impression 3D.", socleSkills: "Domaine 3 : Respecter les règles de sécurité. Domaine 4 : Concevoir, créer, réaliser." },
+            6: { mainTheme: T2, title: "Architecture d'un réseau local et Internet", hook: "Comment une vidéo YouTube arrive-t-elle jusqu'à ton écran ? Ton ordinateur n'est pas tout seul : il fait partie d'une immense toile mondiale !", skills: "Identifier les composants matériels d'un réseau local (LAN). Naviguer dans l'arborescence de fichiers d'un ordinateur. Comprendre le rôle du routeur.", knowledge: "Réseau local, Routeur, Switch, Serveur, Cloud. Adresse IP et Internet. Stockage local vs distant.", socleSkills: "Domaine 2 : Organiser, structurer des informations. Domaine 4 : Comprendre les réseaux." },
+            7: { mainTheme: T2, title: "Algorithmique et logique de programmation", hook: "Deviens le maître du code ! Apprends à parler la langue des robots pour leur faire faire ce que tu veux avec Scratch.", skills: "Écrire une suite d'instructions logiques (algorithme) pour résoudre un problème simple. Créer un script en assemblant des blocs visuels (Scratch, Blockly). Utiliser des boucles simples.", knowledge: "Algorithme. Programme / Script. Langage de programmation par blocs. Instruction. Séquence d'instructions. Événement déclencheur. Boucle simple ('répéter N fois').", socleSkills: "Domaine 4 : Imaginer, concevoir et programmer des applications. Domaine 2 : Raisonner." },
+            8: { mainTheme: T2, title: "Pilotage d'un système automatisé (Micro:bit)", hook: "Fais clignoter une lumière quand il fait nuit. Comment transformer un code sur ton écran en une action réelle ?", skills: "Associer programme et action physique. Identifier capteurs et actionneurs. Câbler les composants à un microcontrôleur.", knowledge: "Chaîne d'information. Microcontrôleur (Micro:bit). Capteur et Actionneur. Signal logique (haut/bas).", socleSkills: "Domaine 4 : Concevoir et réaliser un objet technique automatisé. Domaine 1 : Utiliser les langages." },
+            9: { mainTheme: T2, title: "Données et signaux : flux d'information", hook: "0 et 1 : comment tout écrire avec seulement deux chiffres ? Comment ta voix voyage dans un câble ?", skills: "Distinguer donnée et signal. Comprendre la nature d'un message numérique. Identifier la nature d'un message (informatif, publicitaire).", knowledge: "Binaire. Signal analogique vs numérique. Codage de l'information (0 et 1). Transmission de données.", socleSkills: "Domaine 1 : Utiliser les langages informatiques. Domaine 4 : Systèmes techniques." },
+            10: { mainTheme: T3, title: "Cycle de vie et impact environnemental", hook: "Quelle est l'histoire cachée de ton stylo ? De l'extraction du pétrole à sa fin de vie dans la poubelle, enquêtons sur son empreinte.", skills: "Identifier les étapes du cycle de vie d'un produit (extraction, fabrication, transport...). Repérer les principaux impacts environnementaux à chaque étape.", knowledge: "Analyse du Cycle de Vie (ACV). Recyclage, réemploi. Développement durable. Éco-conception.", socleSkills: "Domaine 5 : Responsabilités individuelles et collectives. Domaine 3 : S'engager durablement." },
+            11: { mainTheme: T3, title: "Gestion de l'énergie : sources et conversion", hook: "D'où vient l'énergie qui allume ta lampe ? Pourquoi ta console chauffe-t-elle ?", skills: "Identifier source et nature d'énergie. Distinguer une solution de stockage (batterie) d'une solution de distribution.", knowledge: "Source d'énergie (renouvelable ou non). Stockage (batterie). Chaîne d'énergie (Alimenter, Distribuer, Convertir). Puissance.", socleSkills: "Domaine 4 : Analyser les solutions relatives à l'énergie. Domaine 5 : Enjeux énergétiques." },
+            12: { mainTheme: T3, title: "Réparabilité et lutte contre l'obsolescence", hook: "Ne jette pas, répare ! Pourquoi est-ce difficile de changer la batterie de certains téléphones ?", skills: "Diagnostiquer une panne simple. Comprendre l'indice de réparabilité. Proposer des solutions de maintenance.", knowledge: "Obsolescence (technique, programmée). Indice de réparabilité. Diagnostic technique. Maintenance démontable.", socleSkills: "Domaine 3 : Formation du citoyen. Domaine 5 : Consommation responsable." },
+            13: { mainTheme: T3, title: "Initiation à l'IA : reconnaissance de formes", hook: "Comment ton téléphone reconnaît-il ton visage ? Les machines peuvent-elles 'apprendre' à voir comme nous ?", skills: "Découvrir le principe de l'apprentissage machine (ML). Évaluer les biais simples et les erreurs possibles d'un modèle entraîné.", knowledge: "Intelligence Artificielle. Données d'entraînement. Reconnaissance de formes et d'images. Algorithmes d'apprentissage.", socleSkills: "Domaine 2 : Outils numériques. Domaine 5 : Questionner les enjeux de l'IA." },
+            14: { mainTheme: T3, title: "Éthique numérique et données personnelles", hook: "Sur Internet, si c'est gratuit, c'est toi le produit. Quelles traces laisses-tu derrière toi quand tu joues ?", skills: "Distinguer informations personnelles publiques et privées. Protéger ses données. Choisir des mots de passe robustes.", knowledge: "Identité numérique. RGPD. Traces numériques. Cookies. Droit à l'image. Cyberharcèlement.", socleSkills: "Domaine 3 : Citoyen numérique. Domaine 2 : Usage responsable." },
+            15: { mainTheme: T3, title: "Projet Flash : Concevoir l'objet durable", hook: "Tu as 3 semaines pour inventer l'objet du futur pour ton collège. Design, matériaux, recyclage !", skills: "Mobiliser ses connaissances dans un projet. Proposer des solutions créatives en équipe. Justifier un choix de design.", knowledge: "Synthèse Cycle 4. Gestion de projet simple. Croquis et maquette. Éco-conception appliquée.", socleSkills: "Domaine 2 : Réaliser des projets. Domaine 4 : Concevoir et réaliser." }
+        },
+        "4e": {
+            1: { mainTheme: T1, title: "Cahier des charges fonctionnel (CDCF)", hook: "Une entreprise veut créer une nouvelle trottinette connectée. Comment être sûr que tout le monde travaille vers le même but ? Ils utilisent un document secret : le Cahier des Charges. Décryptons-le !", skills: "Traduire un besoin en fonctions de service. Lister et hiérarchiser les fonctions principales et les fonctions contraintes. Définir des critères d'appréciation et des niveaux de performance pour chaque fonction.", knowledge: "CDCF. Fonctions de service (principale, complémentaire). Fonctions contraintes. Critère d'appréciation (quantifiable ou qualifiable). Niveau de performance (valeur, flexibilité).", socleSkills: "Domaine 2 : Planifier un projet. Domaine 1 : Rédiger un texte pour argumenter." },
+            2: { mainTheme: T1, title: "Liaisons mécaniques et degrés de liberté", hook: "Comment le bras du robot bouge-t-il sans se casser ? Étudions ses articulations virtuelles pour comprendre comment limiter ou permettre les mouvements.", skills: "Modéliser des liaisons pivot, glissière. Analyser les mouvements. Identifier les composants assurant la structure et le guidage.", knowledge: "Liaisons mécaniques normalisées. Degrés de liberté. Guidage en rotation et translation. Assemblage sous contraintes.", socleSkills: "Domaine 4 : Modélisation technique. Domaine 1 : Représenter par schémas." },
+            3: { mainTheme: T1, title: "Industrialisation et contraintes de fabrication", hook: "Pourquoi cette pièce est-elle injectée et non imprimée ? Découvrons comment on passe d'un prototype unique à une production de millions d'unités.", skills: "Associer forme, matériau et procédé de série. Différencier le prototypage de la production en série. Analyser les coûts de production.", knowledge: "Injection plastique, Usinage CNC, Moule. Coûts de production. Logiques de consommation et de production industrielle.", socleSkills: "Domaine 4 : Ingénierie. Domaine 5 : Logiques de production." },
+            4: { mainTheme: T1, title: "Revue de conception et simulation numérique", hook: "Crash-test virtuel : ton pont résistera-t-il à la tempête ? Testons la solidité et le comportement avant même de poser la première pierre.", skills: "Valider une performance par simulation numérique. Appliquer des efforts sur un modèle numérique. Interpréter les résultats visuels (déformations, contraintes).", knowledge: "Simulation numérique. Modèle comportemental. Validation de performance. Optimisation de forme et de structure.", socleSkills: "Domaine 2 : Démarche d'investigation. Domaine 4 : Valider par simulation." },
+            5: { mainTheme: T1, title: "Prototypage rapide (Découpe laser et 3D)", hook: "Du fichier à l'objet réel en 30 minutes. Maîtrise les machines à commande numérique pour donner vie à tes projets.", skills: "Utiliser un slicer, paramétrer une machine numérique. Mettre en œuvre un procédé de fabrication numérique sécurisé.", knowledge: "FAO (Fabrication Assistée par Ordinateur). Impression 3D (FDM). Découpe laser. Paramètres techniques (remplissage, vitesse).", socleSkills: "Domaine 4 : Fabrication numérique. Domaine 2 : Logiciels assistés." },
+            6: { mainTheme: T2, title: "Capteurs et Actionneurs : la chaîne d'information", hook: "Comment le store 'voit' le soleil et décide de bouger ? Décomposons l'intelligence des objets pour comprendre comment ils interagissent.", skills: "Identifier les blocs de la chaîne d'info et d'énergie. Décrire la fonction de chaque composant (acquérir, traiter, communiquer).", knowledge: "Système automatisé. Chaîne d'information (Acquérir, Traiter, Communiquer). Chaîne d'énergie (Alimenter, Distribuer, Convertir, Transmettre). Capteurs et détecteurs. Actionneurs. Interface programmable.", socleSkills: "Domaine 4 : Analyse systémique. Domaine 1 : Utiliser des schémas de flux." },
+            7: { mainTheme: T2, title: "Programmation : Variables et structures logiques", hook: "Gère le score et les vies dans ton jeu. Ton programme doit maintenant avoir de la mémoire pour prendre des décisions complexes !", skills: "Utiliser des variables pour stocker de l'information. Utiliser des structures conditionnelles ('si...alors') et des boucles imbriquées.", knowledge: "Variable. Type de donnée (nombre, texte, booléen). Opérateurs de comparaison. Boucle 'Tant que'. Algorithme complexe.", socleSkills: "Domaine 1 : Écrire des programmes. Domaine 2 : Pensée algorithmique." },
+            8: { mainTheme: T2, title: "Traitement et stockage des données", hook: "Où va ta température enregistrée ? Comment stocker des milliers d'infos sur une carte SD et les analyser ensuite sur un ordinateur ?", skills: "Encoder et traiter une donnée issue d'un capteur. Importer un jeu de données simple dans un tableur (CSV) pour créer des graphiques.", knowledge: "Format de fichier (CSV, JSON). Encodage binaire. Métadonnées. Stockage local vs Cloud. Confidentialité.", socleSkills: "Domaine 2 : Exploiter les informations. Domaine 1 : Communiquer par graphiques." },
+            9: { mainTheme: T2, title: "Communication sans fil et IoT (Bluetooth, Wi-Fi)", hook: "Quand ton frigo parle à ton téléphone. Comment les objets discutent-ils sans fil et à travers quels réseaux ?", skills: "Comprendre les protocoles de communication. Décrire le rôle des passerelles (gateways). Identifier les réseaux IoT.", knowledge: "IoT (Internet of Things). Bluetooth. Wi-Fi. Protocoles de communication. Objets communicants. Architecture réseau sans fil.", socleSkills: "Domaine 4 : Systèmes communicants. Domaine 5 : Monde numérique." },
+            10: { mainTheme: T3, title: "Transition écologique et efficacité énergétique", hook: "Comment rendre une maison autonome ? Chauffer moins tout en vivant mieux grâce à la technologie et aux matériaux.", skills: "Calculer une efficacité énergétique. Proposer des isolants ou solutions techniques. Comparer des consommations énergétiques.", knowledge: "Efficacité énergétique. Pertes thermiques (ponts). Énergies vertes (renouvelables). Puissance (W) vs capacité (Wh).", socleSkills: "Domaine 5 : Développement durable. Domaine 4 : Analyser l'énergie." },
+            11: { mainTheme: T3, title: "Éco-conception et économie circulaire", hook: "Concevoir un produit qui ne deviendra jamais un déchet. Le défi du cycle de vie circulaire pour sauver nos ressources.", skills: "Appliquer l'éco-conception à un projet technique. Proposer des pistes de réemploi ou de reconditionnement d'un objet usagé.", knowledge: "Recyclabilité. Reconditionnement. Cycle technique/biologique. Économie circulaire. Ressources rares et métaux stratégiques.", socleSkills: "Domaine 5 : Responsabilités. Domaine 3 : Esprit critique." },
+            12: { mainTheme: T3, title: "Cybersécurité : protéger son système", hook: "Hacker vs Admin. Comment empêcher quelqu'un de piloter ta maison connectée ou de voler tes identifiants ?", skills: "Sécuriser un accès par mot de passe robuste et chiffrement simple. Identifier les menaces (phishing, virus, ingénierie sociale).", knowledge: "Phishing. Pare-feu (Firewall). Authentification forte (2FA). Chiffrement des données. Hygiène informatique.", socleSkills: "Domaine 3 : Hygiène numérique. Domaine 2 : Protéger ses données." },
+            13: { mainTheme: T3, title: "IA et société : algorithmes de recommandation", hook: "Pourquoi TikTok te propose cette vidéo ? Les algorithmes nous connaissent-ils vraiment et comment influencent-ils nos choix ?", skills: "Comprendre le fonctionnement des recommandations personnalisées. Identifier les biais algorithmiques dans les résultats de recherche.", knowledge: "Algorithme de recommandation. Big Data. Biais dans les données. Impact sur les choix citoyens et la démocratie numérique.", socleSkills: "Domaine 5 : Monde numérique. Domaine 3 : Jugement critique." },
+            14: { mainTheme: T3, title: "Éthique et autonomie des robots", hook: "Si une voiture autonome a un accident, qui est fautif ? Entre programmation et responsabilité, débattons des limites de l'IA.", skills: "Débattre d'un enjeu éthique lié à l'automatisation. Comprendre la différence entre fiabilité matérielle et autonomie logicielle.", knowledge: "Responsabilité juridique. Autonomie robotique. Éthique (Lois d'Asimov). Interaction humain-machine complexe.", socleSkills: "Domaine 3 : Jugement. Domaine 4 : Interactions humains-systèmes." },
+            15: { mainTheme: T3, title: "Défi : Automatisation urbaine intelligente", hook: "Gère les feux rouges ou l'éclairage d'une ville pour économiser l'énergie. Relève le défi technologique de la Smart City !", skills: "Programmer un système urbain complexe avec des capteurs multiples. Justifier des choix techniques face à des enjeux urbains.", knowledge: "Smart City. Urbanisme durable. Programmation avancée (fonctions, conditions). Pilotage de sorties multiples synchronisées.", socleSkills: "Domaine 4 : Concevoir une solution. Domaine 5 : Défis sociétaux." }
+        },
+        "3e": {
+            1: { mainTheme: T1, title: "Démarche d'innovation et créativité", hook: "Pour ton oral du brevet, vous devez créer un objet innovant. Comment être sûr que votre idée n'existe pas déjà et comment la protéger ?", skills: "Mener une veille technologique. Proposer des solutions de rupture. Mener une recherche d'antériorité dans les bases de brevets.", knowledge: "Innovation incrémentale vs rupture. Veille technologique. Brevet et Marque. Licence d'utilisation (Creative Commons, Open Source). Propriété Intellectuelle.", socleSkills: "Domaine 2 : Innovation. Domaine 3 : Comprendre le droit." },
+            2: { mainTheme: T1, title: "Ingénierie système : modélisation multiphysique", hook: "Tout est lié : mécanique, électricité et code. Modélisons le système complet pour prédire son fonctionnement global.", skills: "Utiliser SysML simplifié pour décrire un système. Identifier les flux matière/énergie/info entre sous-systèmes complexes.", knowledge: "Diagramme d'état et de séquence. Approche système (flux). Fiabilité et Redondance des systèmes critiques.", socleSkills: "Domaine 4 : Analyser des systèmes complexes. Domaine 1 : Modélisation." },
+            3: { mainTheme: T1, title: "Planification et gestion de projet collaboratif", hook: "Gérer un projet comme une start-up. Qui fait quoi ? Quel jalon demain pour être prêt pour le jour J ?", skills: "Participer à la définition des objectifs. Planifier les tâches (diagramme de Gantt). Mener des revues de projet régulières.", knowledge: "Gestion de projet. Diagramme de Gantt. Jalons et délais. Outils collaboratifs (Kanban, Cloud).", socleSkills: "Domaine 2 : S'organiser. Domaine 3 : Travailler en équipe." },
+            4: { mainTheme: T1, title: "Réalisation collective : assemblage et tests", hook: "L'heure de vérité ! Toutes les pièces s'emboîtent-elles comme prévu dans le monde réel ? Testons le prototype final.", skills: "Travailler en équipe pour l'assemblage final. Tester et valider les performances réelles via des outils de mesure.", knowledge: "Assemblage final. Tolérances et Ajustements. Protocole de test expérimental. Mesure de grandeurs physiques réelles.", socleSkills: "Domaine 4 : Réaliser. Domaine 2 : Coopération." },
+            5: { mainTheme: T1, title: "Dossier technique et maintenance", hook: "Rendre l'objet réparable et compréhensible par les autres. La documentation technique est la mémoire de l'ingénieur.", skills: "Rédiger une notice technique claire. Concevoir un support de communication numérique efficace pour l'utilisateur final.", knowledge: "Documentation technique structurelle. Notice d'utilisation. Maintenance préventive et curative. IHM graphique et notice interactive.", socleSkills: "Domaine 1 : Communiquer par écrit et visuellement." },
+            6: { mainTheme: T2, title: "Réseaux complexes et serveurs", hook: "Dans les coulisses d'Internet : comment configurer un serveur et comprendre comment les données trouvent leur chemin ?", skills: "Paramétrer un réseau avec DNS et passerelles. Schématiser l'architecture Client/Serveur et identifier les flux de données.", knowledge: "Routage IP. DNS et Serveurs. Client/Serveur vs Peer-to-Peer. Protocoles HTTP et API de services.", socleSkills: "Domaine 4 : Infrastructure numérique. Domaine 5 : Fonctionnement du Web." },
+            7: { mainTheme: T2, title: "Programmation avancée (Initiation Python)", hook: "Passe du bloc au texte. Apprends à coder avec Python, le langage universel des ingénieurs et des data-scientists.", skills: "Traduire un algorithme de blocs en Python. Utiliser la syntaxe textuelle : variables, fonctions, listes et boucles texte.", knowledge: "Python (Syntaxe). Fonctions et arguments. Listes et tableaux. Bibliothèques standards. Passage de la logique blocs à la syntaxe texte.", socleSkills: "Domaine 1 : Langages de programmation. Domaine 2 : Pensée logique." },
+            8: { mainTheme: T2, title: "IA appliquée : entraîner un modèle", hook: "Apprends à ton ordinateur à reconnaître des sons ou des images. Plonge dans la création d'une intelligence artificielle.", skills: "Collecter des données pour l'apprentissage. Entraîner et tester un modèle d'IA simple. Évaluer la précision et les limites du modèle.", knowledge: "Machine Learning (apprentissage supervisé). Dataset. Entraînement et Validation. Biais dans l'IA. Applications concrètes du Deep Learning.", socleSkills: "Domaine 2 : Projet numérique. Domaine 5 : Enjeux éthiques de l'IA." },
+            9: { mainTheme: T2, title: "Interface Homme-Machine (IHM) et UX Design", hook: "Pourquoi certaines applis sont-elles addictives ? Apprends à concevoir l'expérience utilisateur pour rendre la technologie utile.", skills: "Concevoir une interface graphique ergonomique. Évaluer le confort d'interaction et l'efficacité de navigation (UX).", knowledge: "UX Design (User Experience). UI Design. Interactivité logicielle. Feedbacks et psychologie de l'utilisateur.", socleSkills: "Domaine 4 : Interfaces. Domaine 3 : Esprit critique." },
+            10: { mainTheme: T3, title: "Bilan carbone et éco-conception avancée", hook: "Combien pèse ton projet en CO2 ? Réduisons l'impact avant même de fabriquer le premier prototype.", skills: "Calculer l'empreinte carbone d'une solution technique. Intégrer des contraintes de coût et de durabilité environnementale.", knowledge: "Bilan carbone. Énergie grise. Cycle de vie complet. Économie de la fonctionnalité et modèles économiques durables.", socleSkills: "Domaine 5 : Environnement. Domaine 4 : Analyser l'impact." },
+            11: { mainTheme: T3, title: "Cybersécurité : authentification et chiffrement", hook: "Envoyer des messages secrets et protéger son identité. Maîtrise les outils de la confiance numérique.", skills: "Comprendre le principe du chiffrement. Paramétrer les options de confidentialité avancées d'un service ou d'un réseau.", knowledge: "Cryptographie (Chiffrement symétrique/asymétrique). Clé publique/privée. Hachage. RGPD et souveraineté des données personnelles.", socleSkills: "Domaine 3 : Sécurité numérique. Domaine 2 : Protection des données." },
+            12: { mainTheme: T3, title: "Prospective : Défis des villes durables", hook: "Imaginer la ville de 2050 : entre mobilité douce, énergie propre et gestion intelligente des ressources.", skills: "Proposer des scénarios technologiques futuristes crédibles. Analyser les évolutions majeures de la vie urbaine.", knowledge: "Smart City. Mobilité durable. Prospective technologique. Urbanisme et gestion connectée des réseaux de fluides.", socleSkills: "Domaine 5 : Société et Temps. Domaine 4 : Systèmes complexes." },
+            13: { mainTheme: T3, title: "Métiers et parcours de formation en technologie", hook: "Quels métiers ferons-nous dans 10 ans ? Découvre l'évolution des compétences technologiques et ton futur parcours.", skills: "Identifier les parcours d'études et les domaines d'avenir. Argumenter ses choix d'orientation selon ses goûts et compétences.", knowledge: "Parcours Avenir. Métiers de l'ingénierie, du design et du numérique. Compétences psycho-sociales (soft skills) et techniques.", socleSkills: "Parcours Avenir. Domaine 1 : S'exprimer à l'oral." },
+            14: { mainTheme: T3, title: "Revue de projet finale : tests et mesures", hook: "Dernière ligne droite avant la présentation. Ton prototype remplit-il sa mission avec précision ?", skills: "Tester et valider les performances réelles par des mesures physiques. Définir les paramètres d'une simulation jumeau numérique.", knowledge: "Validation technique par l'essai. Protocole de test expérimental. Optimisation. Jumeau numérique et maintenance prédictive.", socleSkills: "Domaine 4 : Validation. Domaine 2 : Démarche expérimentale." },
+            15: { mainTheme: T3, title: "Soutenance de projet : communication et oral", hook: "Convaincre le jury du brevet en 5 minutes. Prépare ton pitch et ton support pour briller le jour de l'examen !", skills: "Structurer son oral de manière argumentative. Concevoir un support visuel percutant. S'exprimer clairement et gérer son stress.", knowledge: "Oral continu. Argumentation technique structurelle. Support de présentation numérique. Éloquence et langage non-verbal.", socleSkills: "Domaine 1 : Oral. Domaine 2 : Outils numériques de présentation." }
+        }
+    };
+
+    const suggestionDatabase = {
+        'général': ["Drone de loisir", "Robot mBot", "Smartphone", "Trottinette électrique", "Station météo connectée", "Console de jeux", "VTT", "Maison domotique", "Imprimante 3D"],
+        'conception': ["Sac à dos", "Support de téléphone", "Objet design", "Mobilier urbain", "Porte-clés personnalisé"],
+        'programmation': ["Carte Micro:bit", "Feu de circulation", "Arrosage automatique", "Robot suiveur de ligne", "Animation Scratch"],
+        'énergie': ["Vélo électrique", "Sèche-cheveux", "Lampe solaire", "Panneau solaire", "Éolienne"],
+        'réseau': ["Box internet", "Le réseau du collège", "Serveur Minecraft", "Stockage Cloud", "Routeur Wi-Fi"]
+    };
+
+    const gradeSelect = document.getElementById('gradeSelect');
+    const sequenceSelect = document.getElementById('sequenceSelect');
+    const studyObjectInput = document.getElementById('studyObjectInput');
+    const planInput = document.getElementById('planInput');
+    const generateButton = document.getElementById('generateButton');
+    const outputPrompt = document.getElementById('outputPrompt');
+    const copyButton = document.getElementById('copyButton');
+    const pixCheckbox = document.getElementById('pixCheckbox');
+    const designCheckbox = document.getElementById('designCheckbox');
+    const selectedObjectsContainer = document.getElementById('selectedObjectsContainer');
+    const suggestionContainer = document.getElementById('suggestionContainer');
+    const pedagogicalOutput = document.getElementById('pedagogicalOutput');
+
+    let selectedObjects = [];
+
+    // --- POPULATION SELECTEUR ---
+    gradeSelect.addEventListener('change', (e) => {
+        const val = e.target.value;
+        sequenceSelect.innerHTML = '<option value="">-- Sélectionner une séquence --</option>';
+        if (val && modulesData[val]) {
+            sequenceSelect.disabled = false;
+            const groups = {
+                [T1]: document.createElement('optgroup'), 
+                [T2]: document.createElement('optgroup'), 
+                [T3]: document.createElement('optgroup')
+            };
+            Object.keys(groups).forEach(k => groups[k].label = k);
+            
+            Object.keys(modulesData[val]).forEach(id => {
+                const mod = modulesData[val][id];
+                const opt = document.createElement('option');
+                opt.value = id;
+                const themeMatch = mod.mainTheme.match(/\d+/);
+                const themeNum = themeMatch ? themeMatch[0] : "X";
+                opt.textContent = `T${themeNum} - S${id.toString().padStart(2, '0')} - ${mod.title}`;
+                if (groups[mod.mainTheme]) groups[mod.mainTheme].appendChild(opt);
+            });
+            Object.values(groups).forEach(g => {
+                if (g.children.length > 0) sequenceSelect.appendChild(g);
+            });
+            updateSuggestions(val);
+        } else {
+            sequenceSelect.disabled = true;
+        }
+    });
+
+    // --- GESTION OBJETS ---
+    function addObj(name) {
+        if (name && selectedObjects.length < 6 && !selectedObjects.includes(name)) {
+            selectedObjects.push(name);
+            renderObjects();
+            studyObjectInput.value = '';
+        }
+    }
+    function renderObjects() {
+        selectedObjectsContainer.innerHTML = '';
+        selectedObjects.forEach((o, i) => {
+            const span = document.createElement('span');
+            span.className = 'selected-item';
+            span.innerHTML = `${o} <button class="remove-item-btn" onclick="removeObj(${i})">&times;</button>`;
+            selectedObjectsContainer.appendChild(span);
+        });
+    }
+    window.removeObj = (i) => { selectedObjects.splice(i, 1); renderObjects(); };
+
+    function updateSuggestions(grade) {
+        suggestionContainer.innerHTML = '';
+        let list = suggestionDatabase['général'];
+        [...new Set(list)].sort(() => 0.5 - Math.random()).slice(0, 10).forEach(s => {
+            const el = document.createElement('span');
+            el.className = 'suggestion-item';
+            el.textContent = s;
+            el.onclick = () => addObj(s);
+            suggestionContainer.appendChild(el);
+        });
+    }
+
+    document.getElementById('addObjectButton').onclick = () => addObj(studyObjectInput.value.trim());
+
+    // --- GÉNÉRATION ---
+    generateButton.onclick = () => {
+        const grade = gradeSelect.value;
+        const seqId = sequenceSelect.value;
+        if (!grade || !seqId) return alert("Veuillez sélectionner un niveau et une séquence.");
+
+        const mod = modulesData[grade][seqId];
+        const includePix = pixCheckbox.checked;
+        const objects = selectedObjects.join(', ');
+        const plan = planInput.value.trim();
+        const videos = document.getElementById('videoLinks').value.trim();
+        const websites = document.getElementById('websiteLinks').value.trim();
+        const textAppui = document.getElementById('rawText').value.trim();
+        const outputFormat = document.querySelector('input[name="outputFormat"]:checked').value;
+
+        let prompt = `**RÔLE ET MISSION DE HAUT NIVEAU**
+Tu es un **concepteur pédagogique expert en ingénierierie de la formation**, agissant en tant qu'auteur principal pour un éditeur de manuels scolaires de premier plan. Tu es également **Professeur agrégé de Technologie** et tu maîtrises parfaitement les nouveaux programmes du Cycle 4 (2024).
+
+Ta mission est de rédiger un **document de cours complet, exhaustif et multi-facettes** pour un élève de **${grade}**. Ce document doit être une ressource de référence, alliant rigueur académique et clarté pédagogique. Il ne s'agit pas d'un simple résumé, mais d'un chapitre de manuel de très haute qualité.\n\n`;
+
+        if (objects || plan || videos || websites || textAppui) {
+            prompt += `**INSTRUCTIONS IMPÉRATIVES DE L'ENSEIGNANT**\n`;
+            if (objects) prompt += `- **Objet(s) d'étude centraux :** Articule tout le cours autour de : **${objects}**.\n`;
+            if (plan) prompt += `- **Plan imposé :** Suis scrupuleusement cette structure :\n${plan}\n`;
+            if (videos || websites || textAppui) {
+                prompt += `- **Ressources d'appui :** Analyse et intègre ces éléments :\n`;
+                if (videos) prompt += `  - Vidéos : ${videos}\n`;
+                if (websites) prompt += `  - Web : ${websites}\n`;
+                if (textAppui) prompt += `  - Textes : ${textAppui}\n`;
+            }
+            prompt += "\n";
+        }
+
+        prompt += `**CAHIER DES CHARGES PÉDAGOGIQUE (BO 2024)**
+- **Thème :** ${mod.mainTheme}
+- **Titre de la Séquence :** ${mod.title}
+- **Accroche :** "${mod.hook}"
+- **Compétences Visées :** ${mod.skills}
+- **Savoirs & Connaissances :** ${mod.knowledge}
+- **Socle Commun :** ${mod.socleSkills}\n\n`;
+
+        prompt += `**STRUCTURE DÉTAILLÉE DU DOCUMENT (10 POINTS)**
+Tu dois rédiger le cours en respectant **impérativement** le format de sortie demandé (${outputFormat.toUpperCase()}) et cette structure :\n`;
+
+        if (outputFormat === 'html' && designCheckbox.checked) {
+            prompt += `*INSTRUCTIONS DESIGN HTML : Crée un cours moderne, responsive, avec CSS interne, icônes Font Awesome et encadrés stylisés pour les notions clés.*\n`;
+        }
+
+        prompt += `
+1. **TITRE DE LA SÉQUENCE** : (${mod.title.toUpperCase()})
+2. **SITUATION DÉCLENCHANTE** : Scénarise l'accroche ("${mod.hook}") en un court récit engageant.
+3. **OBJECTIFS PÉDAGOGIQUES** :
+   - **Compétences disciplinaires** (basé sur : ${mod.skills})
+   - **Savoirs à acquérir** (basé sur : ${mod.knowledge})
+   - **Compétences du Socle** (basé sur : ${mod.socleSkills})
+   ${includePix ? '- **Compétences Numériques (CRCN) :** Identifie précisément quelles compétences Pix (parmi les 16 du référentiel) sont travaillées dans ce cours.' : ''}
+4. **INTRODUCTION & PROBLÉMATIQUE** : Pose la question technique centrale. Annonce le plan.
+5. **DÉVELOPPEMENT DU COURS - EXPLORATION EN PROFONDEUR** :
+   C'est le cœur du cours. Pour **CHAQUE SAVOIR ET CONNAISSANCE** de "${mod.knowledge}", suis **impérativement** cette structure en 8 points :
+   **a) La Définition de Référence** (précise et officielle)
+   **b) Analogie et Simplification Pédagogique** (métaphore pour un collégien)
+   **c) Étude de Cas Concrète** (application sur ${objects || 'un système technique choisi'})
+   **d) Au Cœur du Système** (mini-tuto ou description technique du fonctionnement)
+   **e) Points de Vigilance et Erreurs à Éviter** (anticipe les erreurs d'élèves)
+   **f) Le Saviez-Vous ?** (anecdote ou fait marquant)
+   **g) Ponts Interdisciplinaires** (liens avec les Mathématiques, Physique-Chimie...)
+   **h) Pour les Experts** (approfondissement ou ouverture métier)
+6. **AVENIR & PERSPECTIVES** : Innovations et impacts sociétaux.
+7. **CONCLUSION** : Synthèse répondant à la problématique.
+8. **SYNTHÈSE VISUELLE (CARTE MENTALE)** : Description textuelle d'une carte de révision.
+9. **LEXIQUE TECHNIQUE** : Glossaire précis.
+10. **POUR ALLER PLUS LOIN** : 3 pistes (mini-défi, vidéo, métier).
+
+**RÈGLE FINALE :** Produis directement le contenu du cours, sans méta-discours.`;
+
+        outputPrompt.value = prompt;
+    };
+
+    // --- COPIE ET ANNEXES ---
+    function copyToClipboard(text, messageEl) {
+        if (!text) return;
+        const fallback = (data) => {
+            const ta = document.createElement("textarea"); ta.value = data;
+            ta.style.position = "fixed"; ta.style.opacity = "0";
+            document.body.appendChild(ta); ta.select();
+            try { document.execCommand('copy'); messageEl.classList.add('show'); setTimeout(() => messageEl.classList.remove('show'), 2500); } catch(e) {}
+            document.body.removeChild(ta);
+        };
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(text).then(() => {
+                messageEl.classList.add('show'); setTimeout(() => messageEl.classList.remove('show'), 2500);
+            }).catch(() => fallback(text));
+        } else { fallback(text); }
+    }
+
+    copyButton.onclick = () => copyToClipboard(outputPrompt.value, document.getElementById('copyMessage'));
+
+    document.getElementById('logbookButton').onclick = () => {
+        const g = gradeSelect.value; const s = sequenceSelect.value;
+        if(!g || !s) return;
+        pedagogicalOutput.value = `Technologie ${g} - Séquence : ${modulesData[g][s].title}. Compétences travaillées : ${modulesData[g][s].skills}.`;
+    };
+    document.getElementById('summaryButton').onclick = () => {
+        const g = gradeSelect.value; const s = sequenceSelect.value;
+        if(!g || !s) return;
+        pedagogicalOutput.value = `À retenir (Technologie ${g}) - ${modulesData[g][s].title} : ${modulesData[g][s].knowledge}.`;
+    };
+});
+</script>
+
+</body>
+</html>
