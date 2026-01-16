@@ -76,7 +76,38 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function updateSuggestions() {
         suggestionContainer.innerHTML = '';
-        const suggestions = [...suggestionDatabase['général']].sort(() => 0.5 - Math.random()).slice(0, 8);
+
+        // Récupérer le thème de la séquence sélectionnée
+        const selectedSeqId = sequenceSelect.value;
+        const selectedGrade = gradeSelect.value;
+
+        let relevantCategories = ['général']; // Catégorie par défaut
+
+        // Si une séquence est sélectionnée, utiliser son thème
+        if (selectedGrade && selectedSeqId && modulesData[selectedGrade] && modulesData[selectedGrade][selectedSeqId]) {
+            const selectedSequence = modulesData[selectedGrade][selectedSeqId];
+            const mainTheme = selectedSequence.mainTheme;
+
+            // Obtenir les catégories pertinentes pour ce thème
+            if (themeToCategories[mainTheme]) {
+                relevantCategories = themeToCategories[mainTheme];
+            }
+        }
+
+        // Collecter tous les objets des catégories pertinentes
+        let allRelevantObjects = [];
+        relevantCategories.forEach(category => {
+            if (suggestionDatabase[category]) {
+                allRelevantObjects = allRelevantObjects.concat(suggestionDatabase[category]);
+            }
+        });
+
+        // Mélanger et sélectionner 10 objets aléatoires
+        const suggestions = allRelevantObjects
+            .sort(() => 0.5 - Math.random())
+            .slice(0, 10);
+
+        // Afficher les suggestions
         suggestions.forEach(s => {
             const el = document.createElement('span');
             el.className = 'suggestion-item';

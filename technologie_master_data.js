@@ -67,5 +67,67 @@ const suggestionDatabase = {
     'conception': ["Sac à dos", "Support téléphone", "Porte-clés"],
     'programmation': ["Micro:bit", "Arduino", "Scratch"],
     'énergie': ["Vélo électrique", "Lampe solaire", "Panneau solaire"],
-    'réseau': ["Box internet", "Réseau collège", "Cloud"]
+    'réseau': ["Box internet", "Réseau collège", "Cloud"],
+
+    // Thème 1 : Design, Innovation et Créativité (L'évolution des objets)
+    'évolution': [
+        "Le vélo",
+        "La brosse à dents",
+        "La cafetière",
+        "Le pont",
+        "L'appareil photo",
+        "La montre",
+        "Le drone de loisir",
+        "Le casque audio",
+        "La trottinette"
+    ],
+
+    // Thème 2 : Les Objets Techniques, les Services et les Changements
+    'objets_techniques': [
+        "L'éolienne",
+        "Le panneau solaire aérothermique",
+        "La voiture hybride/électrique",
+        "Le chargeur solaire nomade",
+        "La maison bioclimatique",
+        "Le système de récupération d'eau de pluie",
+        "L'ascenseur",
+        "Le train à grande vitesse (TGV)",
+        "La borne de recharge électrique",
+        "Le robot de tri postal"
+    ],
+
+    // Thème 3 : La Modélisation et la Simulation du Réel
+    'systèmes_automatisés': [
+        "Le portail automatique",
+        "Le store automatisé",
+        "La barrière de parking",
+        "Le robot aspirateur",
+        "Le système d'arrosage automatique",
+        "L'alarme domestique",
+        "Le distributeur de gel hydroalcoolique",
+        "Le feu de carrefour intelligent",
+        "La serre connectée",
+        "Le drone de livraison (simulation)"
+    ],
+
+    // Thème 4 : L'Informatique et la Programmation
+    'iot_ia': [
+        "L'enceinte connectée",
+        "Le thermostat connecté (Nest/Netatmo)",
+        "Le système de reconnaissance faciale",
+        "Le capteur de qualité de l'air (CO2)",
+        "La serrure connectée",
+        "Le bracelet de fitness",
+        "L'imprimante 3D",
+        "Le robot mBot ou Thymio",
+        "Le système de pilotage de Smart City",
+        "Le serveur de données (Data Center)"
+    ]
+};
+
+// Mapping des thèmes vers les catégories d'objets pertinentes
+const themeToCategories = {
+    "Thème 1 (Design, Innovation, Créativité)": ['évolution', 'conception', 'systèmes_automatisés'],
+    "Thème 2 (Informatique & Programmation)": ['programmation', 'iot_ia', 'réseau'],
+    "Thème 3 (Société & Environnement)": ['objets_techniques', 'énergie', 'général']
 };

@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mission Technologie : Modélisation 3D</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .gradient-bg { background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%); }
+        .step-card { transition: all 0.3s ease; }
+        .step-card:hover { transform: translateY(-5px); border-color: #3b82f6; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-900 leading-relaxed">
+
+    <!-- Header Section -->
+    <header class="gradient-bg text-white py-12 px-6 shadow-lg text-center">
+        <div class="max-w-4xl mx-auto">
+            <h1 class="text-4xl md:text-5xl font-extrabold mb-4 tracking-tight">🚀 Mission Modélisation 3D</h1>
+            <p class="text-xl opacity-90 font-medium">Technologie - Classe de 5ème</p>
+            <div class="mt-6 inline-block bg-white/20 backdrop-blur-md px-4 py-2 rounded-full text-sm font-semibold border border-white/30 text-white">
+                Outil : Tinkercad (Modeleur Volumique)
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-4xl mx-auto px-6 py-12">
+
+        <!-- INTRODUCTION PEDAGOGIQUE -->
+        <section class="mb-12 grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                <h2 class="text-lg font-bold mb-3 flex items-center gap-2 text-blue-700">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                    </svg>
+                    C'est quoi Tinkercad ?
+                </h2>
+                <p class="text-sm text-slate-600">
+                    Tinkercad est un <strong>modeleur volumique</strong>. Contrairement au dessin classique, on crée des objets en assemblant des <strong>volumes</strong> (cubes, cylindres, sphères). 
+                    On utilise la <strong>Géométrie de Construction de Solides</strong> : on ajoute de la matière (regrouper) ou on en enlève (créer des trous).
+                </p>
+            </div>
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                <h2 class="text-lg font-bold mb-3 flex items-center gap-2 text-green-700">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    Tes Compétences travaillées
+                </h2>
+                <ul class="text-xs text-slate-600 space-y-2">
+                    <li>🎯 <strong>Maths :</strong> Se repérer dans l'espace (X, Y, Z) et mesurer.</li>
+                    <li>💻 <strong>Numérique :</strong> Utiliser un logiciel de CAO (Conception Assistée par Ordinateur).</li>
+                    <li>🛠️ <strong>Techno :</strong> Respecter un cahier des charges précis.</li>
+                    <li>👤 <strong>Autonomie :</strong> Suivre une procédure technique seul ou à deux.</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- REGLE DU SILENCE -->
+        <div class="mb-12 bg-amber-50 border-l-4 border-amber-500 p-4 rounded-r-xl flex items-center gap-4">
+            <span class="text-2xl">🔇</span>
+            <p class="text-amber-800 font-bold text-sm">RAPPEL IMPORTANT : Les haut-parleurs de vos ordinateurs doivent rester en mode MUET. Utilisez vos écouteurs si vous en avez, sinon lisez bien les consignes visuelles.</p>
+        </div>
+
+        <!-- ETAPE 1: CONNEXION -->
+        <section class="mb-12">
+            <div class="flex items-center mb-6">
+                <div class="bg-blue-600 text-white w-10 h-10 rounded-full flex items-center justify-center font-bold mr-4 shadow-md">1</div>
+                <h2 class="text-2xl font-bold">Connexion à l'Atelier</h2>
+            </div>
+            
+            <div class="bg-white border-2 border-blue-100 rounded-2xl p-8 shadow-sm flex flex-col items-center justify-between gap-6 border-l-8 border-l-blue-600">
+                <div class="w-full">
+                    <h3 class="text-xl font-bold mb-2">Instructions de départ</h3>
+                    <p class="text-slate-600 mb-6">
+                        Vous devez d'abord rejoindre la classe virtuelle. Votre travail est enregistré automatiquement. 
+                        <strong>Étape 1 :</strong> Cliquez sur le bouton bleu. 
+                        <strong>Étape 2 :</strong> Entrez votre pseudonyme (voir liste PDF).
+                    </p>
+                </div>
+                
+                <div class="flex flex-col md:flex-row gap-4 w-full">
+                    <a href="https://www.tinkercad.com/joinclass/9WFMTPTQ4" target="_blank" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-xl font-bold text-lg shadow-lg transition-all active:scale-95 text-center">
+                        👉 Accéder à ma Classe
+                    </a>
+                    <a href="pseudo.pdf" target="_blank" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 px-8 py-4 rounded-xl font-bold text-lg border-2 border-slate-200 transition-all active:scale-95 text-center flex items-center justify-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        Trouver mon Pseudo (PDF)
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- ETAPE 2: FORMATION PAR EPISODES -->
+        <section class="mb-12">
+            <div class="flex items-center mb-8">
+                <div class="bg-blue-600 text-white w-10 h-10 rounded-full flex items-center justify-center font-bold mr-4 shadow-md">2</div>
+                <h2 class="text-2xl font-bold">Formation : Apprendre les techniques</h2>
+            </div>
+            <p class="mb-8 text-slate-600 bg-white p-4 rounded-xl border border-slate-200">
+                <strong>Consigne :</strong> Pour chaque épisode, regardez la vidéo attentivement. Puis, dans Tinkercad, réalisez l'objet demandé pour tester si vous avez bien compris la technique.
+            </p>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                
+                <!-- Episode 1 -->
+                <div class="step-card bg-white rounded-3xl p-6 border-2 border-slate-100 shadow-sm flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between mb-4">
+                            <span class="bg-blue-100 text-blue-700 text-xs font-bold px-3 py-1 rounded-full uppercase">Épisode 1</span>
+                        </div>
+                        <h3 class="text-xl font-bold mb-4">L'Interface 3D</h3>
+                        <div class="bg-blue-50 p-4 rounded-xl border border-blue-100 mb-4 text-sm">
+                            <p><strong>🛠️ Objet :</strong> <span class="font-bold">Le Cube d'Entraînement</span></p>
+                            <p class="mt-2">Missions : Tourner la vue, zoomer et déplacer la forme.</p>
+                        </div>
+                    </div>
+                    <a href="https://youtu.be/nhyjo4A4vnw" target="_blank" class="block w-full bg-slate-900 hover:bg-blue-600 text-white text-center font-bold py-3 rounded-xl transition-colors">
+                        ▶ Vidéo n°1
+                    </a>
+                </div>
+
+                <!-- Episode 2 -->
+                <div class="step-card bg-white rounded-3xl p-6 border-2 border-slate-100 shadow-sm flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between mb-4">
+                            <span class="bg-blue-100 text-blue-700 text-xs font-bold px-3 py-1 rounded-full uppercase">Épisode 2</span>
+                        </div>
+                        <h3 class="text-xl font-bold mb-4">Dimensions & Groupes</h3>
+                        <div class="bg-blue-50 p-4 rounded-xl border border-blue-100 mb-4 text-sm">
+                            <p><strong>🛠️ Objet :</strong> <span class="font-bold">La Pièce avec Chanfrein</span></p>
+                            <p class="mt-2">Missions : Changer les tailles et fusionner des formes.</p>
+                        </div>
+                    </div>
+                    <a href="https://youtu.be/XLNsHfbj7cw" target="_blank" class="block w-full bg-slate-900 hover:bg-blue-600 text-white text-center font-bold py-3 rounded-xl transition-colors">
+                        ▶ Vidéo n°2
+                    </a>
+                </div>
+
+                <!-- Episode 3 -->
+                <div class="step-card bg-white rounded-3xl p-6 border-2 border-slate-100 shadow-sm flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between mb-4">
+                            <span class="bg-blue-100 text-blue-700 text-xs font-bold px-3 py-1 rounded-full uppercase">Épisode 3</span>
+                        </div>
+                        <h3 class="text-xl font-bold mb-4">L'outil Dupliquer</h3>
+                        <div class="bg-blue-50 p-4 rounded-xl border border-blue-100 mb-4 text-sm">
+                            <p><strong>🛠️ Objet :</strong> <span class="font-bold">Le Pneu / Roue dentée</span></p>
+                            <p class="mt-2">Missions : Utiliser Ctrl+D pour répéter une forme.</p>
+                        </div>
+                    </div>
+                    <a href="https://youtu.be/kxrOwm6kflk" target="_blank" class="block w-full bg-slate-900 hover:bg-blue-600 text-white text-center font-bold py-3 rounded-xl transition-colors">
+                        ▶ Vidéo n°3
+                    </a>
+                </div>
+
+                <!-- Episode 4 -->
+                <div class="step-card bg-white rounded-3xl p-6 border-2 border-slate-100 shadow-sm flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between mb-4">
+                            <span class="bg-blue-100 text-blue-700 text-xs font-bold px-3 py-1 rounded-full uppercase">Épisode 4</span>
+                        </div>
+                        <h3 class="text-xl font-bold mb-4">Règle & Alignement</h3>
+                        <div class="bg-blue-50 p-4 rounded-xl border border-blue-100 mb-4 text-sm">
+                            <p><strong>🛠️ Objet :</strong> <span class="font-bold">Le Dé à jouer</span></p>
+                            <p class="mt-2">Missions : Aligner parfaitement et mesurer avec la règle.</p>
+                        </div>
+                    </div>
+                    <a href="https://youtu.be/K0JnY4HvIfc" target="_blank" class="block w-full bg-slate-900 hover:bg-blue-600 text-white text-center font-bold py-3 rounded-xl transition-colors">
+                        ▶ Vidéo n°4
+                    </a>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- ETAPE 3: DEFI FINAL -->
+        <section class="mb-12">
+            <div class="flex items-center mb-8">
+                <div class="bg-orange-500 text-white w-10 h-10 rounded-full flex items-center justify-center font-bold mr-4 shadow-md">3</div>
+                <h2 class="text-2xl font-bold">Le Grand Défi Final</h2>
+            </div>
+
+            <div class="bg-slate-900 text-white rounded-3xl p-8 md:p-12 shadow-2xl relative overflow-hidden border-b-8 border-b-orange-500">
+                <div class="absolute top-0 right-0 w-32 h-32 bg-orange-500 opacity-20 blur-3xl"></div>
+                
+                <h3 class="text-2xl font-bold mb-6 text-orange-400 italic underline">Objet à fabriquer : Une Table de Salon</h3>
+                <p class="text-sm text-slate-300 mb-8">C'est le moment d'utiliser tout ce que tu as appris dans les vidéos !</p>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="space-y-4">
+                        <div class="flex items-start gap-3">
+                            <span class="bg-orange-500 text-white text-xs font-bold px-2 py-1 rounded">1</span>
+                            <span><strong>Plateau :</strong> Créer une boîte fine (100 x 60 x 5 mm).</span>
+                        </div>
+                        <div class="flex items-start gap-3">
+                            <span class="bg-orange-500 text-white text-xs font-bold px-2 py-1 rounded">2</span>
+                            <span><strong>Pieds :</strong> Un pied cylindrique dupliqué 4 fois.</span>
+                        </div>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="flex items-start gap-3">
+                            <span class="bg-orange-500 text-white text-xs font-bold px-2 py-1 rounded">3</span>
+                            <span><strong>Précision :</strong> Pieds alignés aux 4 coins du plateau.</span>
+                        </div>
+                        <div class="flex items-start gap-3">
+                            <span class="bg-orange-500 text-white text-xs font-bold px-2 py-1 rounded">4</span>
+                            <span><strong>Finition :</strong> Tout grouper et nommer "NOM_Prénom_Table".</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- FIN DE COURS -->
+        <section class="bg-red-50 border-2 border-red-200 rounded-2xl p-6 text-center">
+            <h2 class="text-red-700 font-extrabold text-xl mb-4">⌛ FIN DU COURS</h2>
+            <p class="text-red-800 font-medium">
+                Pensez à bien appliquer la <strong>procédure de fin de cours</strong> habituelle :
+                fermez vos sessions, rangez les chaises et attendez le signal du professeur.
+            </p>
+        </section>
+
+    </main>
+
+    <footer class="text-center py-12 text-slate-400 text-sm">
+        <p>Cours de Technologie - Collège Montesoro</p>
+        <p class="mt-2 font-medium">Série : "Les tutos du Fab Lab" - Cité des Sciences et de l'Industrie</p>
+    </footer>
+
+</body>
+</html>
