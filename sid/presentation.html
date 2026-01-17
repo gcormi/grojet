@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Note de Synthèse - Stratégie Ingénierie Groupe</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        :root { --primary: #2563eb; --dark: #0f172a; --gray: #64748b; }
+        body { font-family: 'Inter', sans-serif; background: #e2e8f0; margin: 0; padding: 40px; color: var(--dark); line-height: 1.6; }
+        .page { background: white; max-width: 210mm; margin: 0 auto; padding: 50px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); min-height: 297mm; position: relative; }
+
+        header { border-bottom: 2px solid var(--primary); padding-bottom: 20px; margin-bottom: 40px; display: flex; justify-content: space-between; align-items: flex-end; }
+        h1 { font-family: 'Outfit', sans-serif; font-size: 24px; color: var(--dark); margin: 0; text-transform: uppercase; letter-spacing: -0.5px; }
+        .subtitle { color: var(--primary); font-weight: 700; font-size: 14px; margin-top: 5px; }
+        .date { font-size: 13px; color: var(--gray); text-align: right; }
+
+        .intro { font-size: 16px; margin-bottom: 40px; border-left: 4px solid var(--gray); padding-left: 20px; color: #334155; }
+        
+        .doc-list { display: flex; flex-direction: column; gap: 20px; }
+        
+        a.doc-item { 
+            display: flex; gap: 20px; padding: 20px; border: 1px solid #e2e8f0; border-radius: 8px; 
+            transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s; background: #f8fafc; 
+            text-decoration: none; color: inherit; cursor: pointer;
+        }
+        
+        a.doc-item:hover { transform: translateY(-2px); border-color: var(--primary); box-shadow: 0 4px 12px rgba(37, 99, 235, 0.1); background: white; }
+        
+        .doc-icon { width: 50px; height: 50px; background: white; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 24px; color: var(--primary); border: 2px solid #e2e8f0; flex-shrink: 0; }
+        .doc-content h3 { margin: 0 0 5px 0; font-family: 'Outfit', sans-serif; font-size: 18px; color: var(--dark); text-decoration: underline 2px transparent; transition: text-decoration-color 0.2s; }
+        a.doc-item:hover .doc-content h3 { text-decoration-color: var(--primary); }
+        .doc-content p { margin: 0; font-size: 13px; color: var(--gray); }
+        .tag { font-size: 11px; text-transform: uppercase; font-weight: 700; color: var(--primary); letter-spacing: 0.5px; }
+        
+        .click-hint { font-size: 11px; color: var(--primary); margin-left: auto; align-self: center; font-weight: 600; display: none; }
+        a.doc-item:hover .click-hint { display: block; }
+
+        .cta-box { margin-top: 50px; background: #eff6ff; padding: 20px; border-radius: 8px; text-align: center; border: 1px dashed var(--primary); }
+        .cta-text { font-family: 'Outfit', sans-serif; font-weight: 600; color: #1e40af; }
+
+        @media print { 
+            body { background: white; padding: 0; } 
+            .page { box-shadow: none; margin: 0; width: 100%; max-width: none; } 
+            .click-hint { display: none !important; }
+            a.doc-item { border: 1px solid #ccc; }
+        }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <header>
+            <div>
+                <h1>Dispositif Transverse "Ingénierie Augmentée"</h1>
+                <div class="subtitle">Solution d'Industrialisation & Conformité Pédagogique</div>
+            </div>
+            <div class="date">
+                <strong>Destinataire :</strong> Tralalere (Direction Générale & Innovation)<br>
+                Janvier 2026
+            </div>
+        </header>
+
+        <div class="intro">
+            <p><strong>Objet : Un moteur unique pour valoriser l'ensemble de l'écosystème Tralalere.</strong></p>
+            <p>Ce dossier présente une technologie d'ingénierie pédagogique capable de traiter toutes vos productions (Vinz et Lou, InfoHunter, Code-Décode...) pour générer automatiquement des livrables <strong>certifiés conformes</strong> aux exigences institutionnelles (Programmes 2024, Pix, Socle).</p>
+        </div>
+
+        <div class="doc-list">
+            <!-- DOC 1 -->
+            <a href="doc1_mecanique.html" class="doc-item" target="_blank">
+                <div class="doc-icon"><i class="fas fa-microchip"></i></div>
+                <div class="doc-content">
+                    <span class="tag">Pièce n°1 : Le Moteur Universel</span>
+                    <h3>Architecture Technique Transverse</h3>
+                    <p>Comment l'algorithme "matrice" n'importe quel contenu (Vidéo, Code, Texte) avec les référentiels officiels.</p>
+                </div>
+                <div class="click-hint">VOIR LE DOCUMENT <i class="fas fa-arrow-right"></i></div>
+            </a>
+
+            <!-- DOC 2 -->
+            <a href="doc2_exemple_sid.html" class="doc-item" target="_blank">
+                <div class="doc-icon"><i class="fas fa-flask"></i></div>
+                <div class="doc-content">
+                    <span class="tag">Pièce n°2 : Démonstrateur (Use Case)</span>
+                    <h3>Application au cas "Internet Sans Crainte"</h3>
+                    <p>Exemple de livrable généré pour le SID 2026, démontrant la précision de l'alignement Pix.</p>
+                </div>
+                <div class="click-hint">VOIR LE DOCUMENT <i class="fas fa-arrow-right"></i></div>
+            </a>
+
+            <!-- DOC 3 -->
+            <a href="doc3_catalogue.html" class="doc-item" target="_blank">
+                <div class="doc-icon"><i class="fas fa-globe-europe"></i></div>
+                <div class="doc-content">
+                    <span class="tag">Pièce n°3 : Vision Groupe</span>
+                    <h3>Déploiement Multi-Thématique</h3>
+                    <p>Comment transposer la solution à l'ensemble des verticales Tralalere (Code, EMI, Citoyenneté).</p>
+                </div>
+                <div class="click-hint">VOIR LE DOCUMENT <i class="fas fa-arrow-right"></i></div>
+            </a>
+        </div>
+
+        <div class="cta-box">
+            <p class="cta-text">Proposition de Valeur Groupe</p>
+            <p style="font-size: 13px; color: #475569;">
+                Au-delà du SID, ce dispositif est un levier de productivité pour <strong>tous vos appels à projets</strong>,<br>
+                garantissant une "sécurité pédagogique" absolue à vos partenaires institutionnels.
+            </p>
+        </div>
+
+        <div style="margin-top: 60px; text-align: right; font-size: 14px;">
+            <strong>Gilles CORMI</strong><br>
+            Expert Numérique & Pédagogie<br>
+            Stratégie IA & Éthique
+        </div>
+    </div>
+</body>
+</html>
