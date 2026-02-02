@@ -3,219 +3,238 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Documentation de Référence - Inclusion IA</title>
+    <title>Inclusion IA - Documentation de Référence</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
-        body { font-family: 'Inter', sans-serif; }
+        body { font-family: 'Inter', sans-serif; color: #1e293b; }
         
         @media print {
-            @page { size: auto; margin: 1.5cm; }
+            @page { size: A4; margin: 1.5cm; }
             .no-print { display: none !important; }
-            body { background: white; }
-            .content-card { border: none !important; box-shadow: none !important; padding: 0 !important; margin-bottom: 2rem !important; }
-            .page-break { page-break-before: always; }
+            body { background: white; -webkit-print-color-adjust: exact; }
+            .content-card { border: 1px solid #e2e8f0 !important; box-shadow: none !important; margin-bottom: 2rem !important; break-inside: avoid; }
+            h1, h2, h3 { color: #0f172a !important; }
+            .bg-blue-600 { background-color: #2563eb !important; color: white !important; }
+            .bg-slate-50 { background-color: #f8fafc !important; }
         }
 
-        .matrix-table th { background-color: #f8fafc; color: #1e40af; }
-        .feature-column { width: 25%; font-weight: 700; color: #1e293b; background-color: #f1f5f9; }
-        .rule-badge { font-size: 0.7rem; font-weight: 800; padding: 2px 8px; border-radius: 9999px; text-transform: uppercase; }
+        .matrix-table th { background-color: #f1f5f9; color: #334155; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; padding: 12px; }
+        .matrix-table td { padding: 12px; border-top: 1px solid #e2e8f0; font-size: 0.85rem; }
+        .feature-column { font-weight: 600; background-color: #f8fafc; width: 30%; }
+        .level-badge { font-size: 0.7rem; font-weight: 700; padding: 2px 6px; border-radius: 4px; text-transform: uppercase; display: inline-block; margin-bottom: 4px; }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-900 leading-relaxed">
+<body class="bg-slate-50 leading-relaxed">
 
-    <!-- Header / Banner -->
-    <header class="bg-white border-b border-slate-200 py-8 no-print">
-        <div class="max-w-5xl mx-auto px-6">
-            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-                <div class="flex items-center gap-4">
-                    <div class="bg-blue-600 p-3 rounded-2xl shadow-lg shadow-blue-200">
+    <!-- Header -->
+    <header class="bg-white border-b border-slate-200 py-12 no-print">
+        <div class="max-w-4xl mx-auto px-8">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center gap-5">
+                    <div class="bg-blue-600 p-3 rounded-xl shadow-lg">
                         <i data-lucide="book-open" class="text-white w-8 h-8"></i>
                     </div>
                     <div>
-                        <h1 class="text-2xl font-bold text-slate-900 leading-tight">Inclusion IA : Guide de l'Expert</h1>
-                        <p class="text-slate-500 text-sm italic">Expertise Numérique • Ingénierie de la Transformation • Inclusion Scolaire</p>
+                        <h1 class="text-2xl font-bold text-slate-900">Inclusion IA</h1>
+                        <p class="text-blue-600 font-medium text-sm uppercase tracking-wide mt-1">Référentiel Technique & Pédagogique</p>
                     </div>
                 </div>
-                <button onclick="window.print()" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-bold flex items-center gap-2 transition-all shadow-md">
-                    <i data-lucide="printer" class="w-4 h-4"></i> Exporter la Documentation (PDF)
+                <button onclick="window.print()" class="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-white px-5 py-2.5 rounded-lg font-semibold transition-colors text-sm">
+                    <i data-lucide="printer" class="w-4 h-4"></i> Imprimer le PDF
                 </button>
             </div>
         </div>
     </header>
 
-    <main class="max-w-5xl mx-auto px-6 py-10 space-y-10">
+    <main class="max-w-4xl mx-auto px-8 py-12 space-y-12">
 
-        <!-- 1. VISION MÉTHODOLOGIQUE -->
-        <section class="bg-white rounded-3xl p-8 shadow-sm border border-slate-200 content-card">
-            <h2 class="text-xl font-bold text-slate-900 mb-6 flex items-center gap-3">
-                <i data-lucide="eye" class="text-blue-500 w-6 h-6"></i>
-                1. Vision Méthodologique : L'enjeu du Collège (11-15 ans)
+        <!-- Titre Impression -->
+        <div class="hidden print:block mb-8 border-b-2 border-slate-900 pb-4">
+            <h1 class="text-3xl font-bold">Référentiel Inclusion IA</h1>
+            <p class="text-sm text-slate-600 mt-2">Document de référence unifié - Version Collège (11-15 ans)</p>
+        </div>
+
+        <!-- 1. PHILOSOPHIE -->
+        <section class="bg-white rounded-2xl p-8 shadow-sm border border-slate-200 content-card">
+            <h2 class="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
+                <i data-lucide="target" class="text-blue-600 w-5 h-5"></i>
+                1. Philosophie : L'Exigence Inclusive
             </h2>
-            <div class="space-y-4 text-slate-600 text-sm md:text-base">
+            <div class="prose prose-sm text-slate-600 max-w-none">
                 <p>
-                    Au collège, la remédiation cognitive change de paradigme. L'objectif n'est plus seulement d'aider l'élève à <strong>déchiffrer</strong> les mots (primaire), mais de libérer sa <strong>charge cognitive</strong> pour qu'il puisse se concentrer sur la compréhension de concepts complexes et l'organisation autonome de son travail.
+                    Ce référentiel définit les normes appliquées par l'outil <strong>Inclusion IA</strong>. Au collège, l'objectif n'est pas le déchiffrage (primaire), mais la libération de la charge cognitive.
                 </p>
-                <div class="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r-xl">
-                    <p class="font-semibold text-blue-800">Principe de Souveraineté du Savoir :</p>
-                    <p class="italic">On ne simplifie jamais le contenu ou le niveau d'exigence. On adapte uniquement la forme visuelle et linguistique pour garantir l'équité face au savoir.</p>
+                <ul class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 not-prose">
+                    <li class="bg-blue-50 p-4 rounded-lg border border-blue-100">
+                        <strong class="text-blue-900 block mb-1">Zéro Résumé</strong>
+                        <span class="text-xs">Conservation intégrale du savoir. L'élève accède au même contenu que ses pairs, seule la forme change.</span>
+                    </li>
+                    <li class="bg-green-50 p-4 rounded-lg border border-green-100">
+                        <strong class="text-green-900 block mb-1">Norme "Ado"</strong>
+                        <span class="text-xs">Abandon de la segmentation syllabique (tirets) qui ralentit la lecture fluide. Priorité à l'aération et à l'alignement gauche.</span>
+                    </li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- 2. MIROIR DE FORMAT -->
+        <section class="bg-white rounded-2xl p-8 shadow-sm border border-slate-200 content-card">
+            <h2 class="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
+                <i data-lucide="refresh-ccw" class="text-blue-600 w-5 h-5"></i>
+                2. Protocole Technique "Miroir de Format"
+            </h2>
+            <div class="space-y-4">
+                <div class="flex gap-4 p-4 border rounded-xl bg-slate-50">
+                    <div class="bg-white p-2 rounded-lg border h-fit"><i data-lucide="file-text" class="w-5 h-5 text-blue-600"></i></div>
+                    <div>
+                        <h4 class="font-bold text-sm text-slate-800">Entrée : Texte, Word, PDF</h4>
+                        <p class="text-xs text-slate-600 mt-1"><strong>Sortie :</strong> Markdown structuré pour <strong>Word (.docx)</strong>.</p>
+                    </div>
+                </div>
+                <div class="flex gap-4 p-4 border rounded-xl bg-slate-50">
+                    <div class="bg-white p-2 rounded-lg border h-fit"><i data-lucide="code" class="w-5 h-5 text-purple-600"></i></div>
+                    <div>
+                        <h4 class="font-bold text-sm text-slate-800">Entrée : HTML (Web)</h4>
+                        <p class="text-xs text-slate-600 mt-1"><strong>Sortie :</strong> Fichier <strong>HTML5 Autonome</strong> (avec images).</p>
+                    </div>
                 </div>
             </div>
         </section>
 
-        <!-- 2. MIROIR DE FORMAT & PROTOCOLE -->
-        <section class="bg-white rounded-3xl p-8 shadow-sm border border-slate-200 content-card">
-            <h2 class="text-xl font-bold text-slate-900 mb-6 flex items-center gap-3">
-                <i data-lucide="refresh-cw" class="text-blue-500 w-6 h-6"></i>
-                2. Miroir de Format & Protocole Technique
+        <!-- 3. MATRICE DE REMÉDIATION -->
+        <section class="bg-white rounded-2xl p-8 shadow-sm border border-slate-200 content-card page-break">
+            <h2 class="text-lg font-bold text-slate-900 mb-6 flex items-center gap-2">
+                <i data-lucide="layout-grid" class="text-blue-600 w-5 h-5"></i>
+                3. Matrice de Remédiation par Profils
             </h2>
-            <p class="text-sm text-slate-500 mb-6">L'outil Inclusion IA ajuste dynamiquement ses instructions à l'IA selon la nature de la source fournie :</p>
             
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="p-6 bg-slate-50 rounded-2xl border border-slate-200">
-                    <div class="flex items-center gap-2 mb-3">
-                        <i data-lucide="file-text" class="text-blue-600 w-5 h-5"></i>
-                        <h3 class="font-bold">Source : Texte / DOCX / PDF</h3>
-                    </div>
-                    <ul class="text-xs space-y-2 text-slate-600">
-                        <li class="flex gap-2"><strong>Format Cible :</strong> Markdown structuré pour Microsoft Word.</li>
-                        <li class="flex gap-2"><strong>Logique :</strong> Utilisation de symboles sémantiques (#, -, **) pour un transfert direct en DOCX sans pollution de code.</li>
-                    </ul>
-                </div>
-                <div class="p-6 bg-slate-50 rounded-2xl border border-slate-200">
-                    <div class="flex items-center gap-2 mb-3">
-                        <i data-lucide="code" class="text-purple-600 w-5 h-5"></i>
-                        <h3 class="font-bold">Source : HTML</h3>
-                    </div>
-                    <ul class="text-xs space-y-2 text-slate-600">
-                        <li class="flex gap-2"><strong>Format Cible :</strong> Fichier HTML5 autonome complet.</li>
-                        <li class="flex gap-2"><strong>Images :</strong> Conservation stricte des balises <code>&lt;img&gt;</code> et des attributs originaux.</li>
-                        <li class="flex gap-2"><strong>Interactivité :</strong> Préservation des boutons de quiz et scripts de feedback.</li>
-                    </ul>
-                </div>
+            <!-- 3.1 DYSLEXIE -->
+            <div class="mb-8">
+                <h3 class="text-sm font-bold text-slate-800 uppercase tracking-wider mb-3 pl-2 border-l-4 border-blue-500">3.1. Dyslexie / Ortho</h3>
+                <table class="w-full matrix-table text-left">
+                    <thead>
+                        <tr>
+                            <th>Niveau</th>
+                            <th>Actions Automatisées par l'IA</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="feature-column"><span class="bg-slate-100 text-slate-600 level-badge">Léger</span></td>
+                            <td>Mise en gras des mots-clés essentiels. Police sans serif (Arial/Verdana).</td>
+                        </tr>
+                        <tr>
+                            <td class="feature-column"><span class="bg-blue-100 text-blue-700 level-badge">Standard (PAP)</span></td>
+                            <td>Alignement gauche strict. Interlignage 2.0. Suppression de l'italique.</td>
+                        </tr>
+                        <tr>
+                            <td class="feature-column"><span class="bg-blue-200 text-blue-900 level-badge">Renforcé (AESH)</span></td>
+                            <td><strong>Glossaire Automatique :</strong> Création d'un lexique de poche (FALC) pour les mots complexes en fin de document. Synthèse vocale facilitée.</td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
-        </section>
 
-        <!-- 3. MATRICE DE REMÉDIATION COGNITIVE -->
-        <section class="bg-white rounded-3xl p-8 shadow-sm border border-slate-200 content-card page-break">
-            <h2 class="text-xl font-bold text-slate-900 mb-2 flex items-center gap-3">
-                <i data-lucide="layout" class="text-blue-500 w-6 h-6"></i>
-                3. Matrice de Remédiation (Normes 11-15 ans)
-            </h2>
-            <p class="text-xs text-slate-400 mb-8 italic">Le Meta-Prompt de l'application automatise ces réglages selon les préconisations officielles (FFDys).</p>
+            <!-- 3.2 DYSPRAXIE -->
+            <div class="mb-8">
+                <h3 class="text-sm font-bold text-slate-800 uppercase tracking-wider mb-3 pl-2 border-l-4 border-indigo-500">3.2. Dyspraxie (Organisation)</h3>
+                <table class="w-full matrix-table text-left">
+                    <thead>
+                        <tr>
+                            <th>Niveau</th>
+                            <th>Actions Automatisées par l'IA</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="feature-column"><span class="bg-slate-100 text-slate-600 level-badge">Léger</span></td>
+                            <td>Aération des paragraphes (sauts de ligne systématiques).</td>
+                        </tr>
+                        <tr>
+                            <td class="feature-column"><span class="bg-indigo-100 text-indigo-700 level-badge">Standard (PAP)</span></td>
+                            <td><strong>Cadres de section</strong> pour isoler visuellement chaque bloc d'information.</td>
+                        </tr>
+                        <tr>
+                            <td class="feature-column"><span class="bg-indigo-200 text-indigo-900 level-badge">Zéro tracé manuel</span></td>
+                            <td>Suppression des tâches de dessin/géométrie. Remplacement par des descriptions textuelles ou des QCM.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
 
-            <div class="space-y-8">
-                <!-- Langage -->
-                <div class="overflow-x-auto">
-                    <div class="flex items-center gap-2 mb-4">
-                        <span class=" rule-badge bg-amber-100 text-amber-800">Interdiction des tirets</span>
-                        <h3 class="font-bold text-blue-900 text-sm uppercase tracking-wide">3.1. Troubles du Langage (Dyslexie/Dysorthographie)</h3>
+            <!-- 3.3 TDAH -->
+            <div class="mb-8">
+                <h3 class="text-sm font-bold text-slate-800 uppercase tracking-wider mb-3 pl-2 border-l-4 border-amber-500">3.3. TDAH (Attention)</h3>
+                <table class="w-full matrix-table text-left">
+                    <thead>
+                        <tr>
+                            <th>Niveau</th>
+                            <th>Actions Automatisées par l'IA</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="feature-column"><span class="bg-slate-100 text-slate-600 level-badge">Guide lecture</span></td>
+                            <td>Ajout de mentions <strong>"⏱️ Temps estimé"</strong> en début de section pour la planification.</td>
+                        </tr>
+                        <tr>
+                            <td class="feature-column"><span class="bg-amber-100 text-amber-700 level-badge">Séquençage fort</span></td>
+                            <td>Micro-découpage : "Une idée = Un paragraphe". Icônes repères (📌, 💡).</td>
+                        </tr>
+                        <tr>
+                            <td class="feature-column"><span class="bg-amber-200 text-amber-900 level-badge">Check-lists extrêmes</span></td>
+                            <td>Insertion de cases à cocher ✅ de validation après chaque consigne ou concept clé.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- 3.4 DYSCALCULIE & EXPERTS -->
+            <div>
+                <h3 class="text-sm font-bold text-slate-800 uppercase tracking-wider mb-3 pl-2 border-l-4 border-purple-500">3.4. Autres Profils</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="p-4 bg-slate-50 rounded-lg border border-slate-200">
+                        <strong class="text-slate-900 text-sm block mb-1">Dyscalculie / Logique</strong>
+                        <p class="text-xs text-slate-700">Conversion des données abstraites en analogies visuelles. Décomposition "Step-by-step" des raisonnements.</p>
                     </div>
-                    <table class="w-full border-collapse border border-slate-200 text-sm matrix-table">
-                        <thead>
-                            <tr>
-                                <th class="border border-slate-200 p-3 text-left">Levier</th>
-                                <th class="border border-slate-200 p-3 text-left">Niveau Standard</th>
-                                <th class="border border-slate-200 p-3 text-left">Niveau Renforcé</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td class="border border-slate-200 p-3 feature-column">Design du texte</td>
-                                <td class="border border-slate-200 p-3 text-slate-600">Polices Sans Serif (Arial, Verdana). Taille 12-14.</td>
-                                <td class="border border-slate-200 p-3 bg-blue-50/30"><strong>Syllabation interdite</strong>. Espacement étendu entre les lettres et les mots.</td>
-                            </tr>
-                            <tr>
-                                <td class="border border-slate-200 p-3 feature-column">Mise en forme</td>
-                                <td class="border border-slate-200 p-3 text-slate-600">Alignement à GAUCHE strict (pas de texte justifié).</td>
-                                <td class="border border-slate-200 p-3 bg-blue-50/30"><strong>Zéro Italique</strong> (caractères renversés). Mots-clés en GRAS.</td>
-                            </tr>
-                            <tr>
-                                <td class="border border-slate-200 p-3 feature-column">Structure</td>
-                                <td class="border border-slate-200 p-3 text-slate-600">Paragraphes courts (1 idée = 1 bloc).</td>
-                                <td class="border border-slate-200 p-3 bg-blue-50/30">Lexique préalable complet. Synthèse vocale préconisée.</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-
-                <!-- Organisation -->
-                <div class="overflow-x-auto">
-                    <h3 class="font-bold text-blue-900 mb-4 text-sm uppercase tracking-wide">3.2. Troubles de l'Organisation (Dyspraxie/TDAH)</h3>
-                    <table class="w-full border-collapse border border-slate-200 text-sm matrix-table">
-                        <thead>
-                            <tr>
-                                <th class="border border-slate-200 p-3 text-left">Levier</th>
-                                <th class="border border-slate-200 p-3 text-left">Dyspraxie</th>
-                                <th class="border border-slate-200 p-3 text-left">TDAH (Attention)</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td class="border border-slate-200 p-3 feature-column">Contenants</td>
-                                <td class="border border-slate-200 p-3 text-slate-600"><strong>Cadres de section</strong> pour limiter le balayage visuel.</td>
-                                <td class="border border-slate-200 p-3 bg-blue-50/30">Micro-séquençage. Barre de progression visuelle.</td>
-                            </tr>
-                            <tr>
-                                <td class="border border-slate-200 p-3 feature-column">Repères</td>
-                                <td class="border border-slate-200 p-3 text-slate-600"><strong>Icônes fixes (📌, 💡, 🆘)</strong> comme ancres visuelles.</td>
-                                <td class="border border-slate-200 p-3 bg-blue-50/30">Check-lists d'attention après chaque bloc conceptuel.</td>
-                            </tr>
-                            <tr>
-                                <td class="border border-slate-200 p-3 feature-column">Écrits</td>
-                                <td class="border border-slate-200 p-3 text-slate-600">Suppression des tracés manuels. Flux vertical pur.</td>
-                                <td class="border border-slate-200 p-3 bg-blue-50/30">Syntaxe radicale : Sujet+Verbe+Complément.</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-
-                <!-- Profils Experts -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div class="p-5 bg-purple-50 rounded-2xl border border-purple-100">
-                        <div class="flex items-center gap-2 mb-2">
-                            <span class="rule-badge bg-purple-200 text-purple-700">En test</span>
-                            <h4 class="font-bold text-purple-900">Spectre Autistique (TSA)</h4>
-                        </div>
-                        <p class="text-xs text-purple-800 leading-relaxed">Nettoyage systématique des métaphores et de l'implicite. Transformation des consignes narratives en algorithmes de tâches directes.</p>
-                    </div>
-                    <div class="p-5 bg-cyan-50 rounded-2xl border border-cyan-100">
-                        <div class="flex items-center gap-2 mb-2">
-                            <span class="rule-badge bg-cyan-200 text-cyan-700">En test</span>
-                            <h4 class="font-bold text-cyan-900">Haut Potentiel (HPI)</h4>
-                        </div>
-                        <p class="text-xs text-cyan-800 leading-relaxed">Maintien du savoir socle mais ajout de "Boîtes de complexité" ou de défis intellectuels pour stimuler l'engagement cognitif.</p>
+                    <div class="p-4 bg-purple-50 rounded-lg border border-purple-100">
+                        <strong class="text-purple-900 text-sm block mb-1">Profils Experts (TSA / HPI)</strong>
+                        <p class="text-xs text-purple-800">
+                            <strong>TSA :</strong> Explicitation de l'implicite.<br>
+                            <strong>HPI :</strong> Ajout de "Boîtes de Défi" pour la complexité.
+                        </p>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- 4. ENGAGEMENTS & ROADMAP -->
-        <section class="bg-slate-900 rounded-3xl p-8 shadow-xl text-white content-card">
-            <h2 class="text-xl font-bold mb-6 flex items-center gap-3">
-                <i data-lucide="zap" class="text-yellow-400 w-6 h-6"></i>
-                4. Engagements de l'Ingénierie & Perspectives
+        <!-- 4. ENGAGEMENTS -->
+        <section class="bg-slate-900 rounded-2xl p-8 shadow-lg text-white content-card">
+            <h2 class="text-lg font-bold mb-4 flex items-center gap-2">
+                <i data-lucide="shield-check" class="text-yellow-400 w-5 h-5"></i>
+                4. Charte Éthique
             </h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 text-sm">
-                <div class="space-y-3">
-                    <h4 class="font-bold text-blue-400 uppercase tracking-tighter">Zéro Résumé</h4>
-                    <p class="text-slate-300">L'enseignant reste maître de son contenu. L'IA a interdiction de résumer, garantissant que l'élève adapté passe le même examen que ses pairs.</p>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm opacity-90">
+                <div>
+                    <strong class="block text-white mb-1">Responsabilité</strong>
+                    L'enseignant reste le seul garant de la validité scientifique.
                 </div>
-                <div class="space-y-3">
-                    <h4 class="font-bold text-blue-400 uppercase tracking-tighter">Architecture Ouverte</h4>
-                    <p class="text-slate-300">Le système de Meta-Prompting est modulaire. De nouveaux profils (Dysphasie, Troubles exécutifs) peuvent être ajoutés par simple injection de règles linguistiques.</p>
+                <div>
+                    <strong class="block text-white mb-1">Confidentialité</strong>
+                    L'outil fonctionne en local. Aucune donnée élève n'est stockée.
                 </div>
-            </div>
-            <div class="mt-10 pt-6 border-t border-slate-700 text-center">
-                <p class="text-xs text-slate-400 italic">"L'outil n'est pas une fin en soi, mais un moteur de transformation pour une école réellement inclusive."</p>
+                <div>
+                    <strong class="block text-white mb-1">Intégrité</strong>
+                    Le prompt garantit qu'aucune information du cours n'est supprimée.
+                </div>
             </div>
         </section>
 
     </main>
 
     <script>
-        // Initialisation des icônes Lucide
         lucide.createIcons();
     </script>
 </body>
