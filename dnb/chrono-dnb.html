@@ -1,0 +1,1097 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Horloge Examen DNB - Académie de Corse</title>
+    <style>
+        /* === STYLES GÉNÉRAUX === */
+        :root {
+            --blue-main: #3b82f6;
+            --blue-dark: #1e3a8a;
+            --blue-light: #eff6ff;
+            --red-alert: #ef4444;
+            --red-light: #fef2f2;
+            --gray-light: #f8fafc;
+            --border-color: #0f172a;
+            --shadow-soft: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
+        }
+
+        body {
+            font-family: 'Nunito', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #e2e8f0;
+            margin: 0;
+            padding: 2vw; /* Marges relatives */
+            color: var(--border-color);
+        }
+
+        /* Mode Plein écran : fond blanc pour éviter le gris autour */
+        :fullscreen { background-color: white; padding: 2vw; overflow-y: auto; }
+        :-webkit-full-screen { background-color: white; padding: 2vw; overflow-y: auto; }
+        :-ms-fullscreen { background-color: white; padding: 2vw; overflow-y: auto; }
+
+        .container {
+            max-width: 1300px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 2.5vw;
+            border-radius: 24px;
+            box-shadow: var(--shadow-soft);
+        }
+
+        /* === PANNEAU SURVEILLANT === */
+        .admin-panel {
+            background-color: var(--gray-light);
+            border: 1px solid #cbd5e1;
+            padding: 15px 25px;
+            margin-bottom: 30px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .admin-group-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            flex: 1;
+        }
+
+        .admin-group-right {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .admin-title {
+            font-weight: bold;
+            color: #64748b;
+            text-transform: uppercase;
+            font-size: 0.9em;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+        }
+
+        select.preset-selector {
+            padding: 10px 15px;
+            font-size: 1.1em;
+            font-weight: bold;
+            border: 2px solid #cbd5e1;
+            border-radius: 8px;
+            color: var(--blue-dark);
+            background-color: white;
+            cursor: pointer;
+            flex: 1;
+            min-width: 250px;
+            transition: border-color 0.2s;
+        }
+        
+        select.preset-selector:hover { border-color: var(--blue-main); }
+
+        .switch-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .switch-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: bold;
+            color: var(--blue-dark);
+            background-color: white;
+            padding: 8px 15px;
+            border-radius: 8px;
+            border: 2px solid #cbd5e1;
+            font-size: 0.9em;
+            white-space: nowrap;
+        }
+
+        .switch { position: relative; display: inline-block; width: 44px; height: 22px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #cbd5e1; transition: .4s; border-radius: 22px; }
+        .slider:before { position: absolute; content: ""; height: 14px; width: 14px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: var(--blue-main); }
+        input:checked + .slider:before { transform: translateX(22px); }
+
+        .btn-action {
+            background-color: white;
+            color: #475569;
+            border: 2px solid #cbd5e1;
+            padding: 8px 15px;
+            font-size: 0.9em;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            white-space: nowrap;
+            transition: all 0.2s;
+        }
+        .btn-action:hover { background-color: #f1f5f9; border-color: #94a3b8; color: #1e293b; }
+
+        /* === TABLEAU DE BORD === */
+        .dashboard {
+            display: flex;
+            gap: 2vw;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .clock-card {
+            flex: 1;
+            min-width: 280px;
+            background-color: var(--gray-light);
+            border-radius: 20px;
+            padding: 2vw;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            border: 1px solid #e2e8f0;
+        }
+
+        .date-display {
+            font-size: clamp(0.9em, 1.5vw, 1.2em);
+            font-weight: 800;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 10px;
+        }
+
+        .time-display {
+            font-size: clamp(3.5em, 6vw, 5.5em);
+            font-weight: 900;
+            color: var(--blue-dark);
+            line-height: 1;
+            margin: 0;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .remaining-card {
+            flex: 1.2;
+            min-width: 300px;
+            background: linear-gradient(135deg, var(--blue-main), var(--blue-dark));
+            border-radius: 20px;
+            padding: 2vw;
+            text-align: center;
+            color: white;
+            box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.3);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            transition: background 0.5s ease;
+        }
+        
+        .remaining-card.finished {
+            background: linear-gradient(135deg, #ef4444, #991b1b);
+            box-shadow: 0 10px 15px -3px rgba(239, 68, 68, 0.3);
+        }
+
+        .remaining-label {
+            font-size: clamp(1em, 1.5vw, 1.2em);
+            font-weight: bold;
+            letter-spacing: 2px;
+            opacity: 0.9;
+            margin-bottom: 10px;
+        }
+
+        .remaining-time {
+            font-size: clamp(4.5em, 8vw, 7.5em);
+            font-weight: 900;
+            line-height: 1;
+            font-variant-numeric: tabular-nums;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        /* === GESTION DU TEMPS ET RÈGLES === */
+        .controls-and-rules {
+            display: flex;
+            gap: 2vw;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .time-management {
+            flex: 1;
+            min-width: 300px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            background-color: var(--gray-light);
+            padding: 20px;
+            border-radius: 16px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .time-row {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .time-box {
+            flex: 1;
+            min-width: 80px;
+            background: white;
+            border: 1px solid #cbd5e1;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 10px 5px;
+            font-weight: bold;
+            transition: border-color 0.2s;
+        }
+
+        .time-box.active {
+            border-color: var(--blue-main);
+            box-shadow: 0 2px 4px rgba(59, 130, 246, 0.1);
+        }
+
+        .time-label {
+            font-size: 0.7em;
+            text-transform: uppercase;
+            color: #64748b;
+            margin-bottom: 5px;
+            text-align: center;
+        }
+
+        .time-input {
+            border: none;
+            font-size: clamp(1.2em, 2vw, 1.6em);
+            font-weight: 900;
+            color: var(--blue-dark);
+            outline: none;
+            width: 100%;
+            text-align: center;
+            background: transparent;
+        }
+
+        .time-box.readonly { background-color: #f1f5f9; }
+
+        .tt-button {
+            background-color: white;
+            color: var(--blue-main);
+            border: 2px solid var(--blue-main);
+            padding: 12px;
+            font-size: 1em;
+            font-weight: bold;
+            border-radius: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+        .tt-button:hover { background-color: var(--blue-light); }
+
+        .rules-container {
+            flex: 1.5;
+            min-width: 300px;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            background-color: var(--red-light);
+            padding: 15px;
+            border-radius: 16px;
+            border: 1px solid #fecaca;
+        }
+
+        .rule-box {
+            flex: 1;
+            min-width: 85px;
+            max-width: 160px; /* Évite qu'ils deviennent trop larges si on en décoche beaucoup */
+            background: white;
+            border-radius: 10px;
+            padding: 10px 5px;
+            text-align: center;
+            color: var(--red-alert);
+            font-weight: bold;
+            font-size: clamp(0.65em, 1vw, 0.75em);
+            text-transform: uppercase;
+            box-shadow: 0 2px 4px rgba(239, 68, 68, 0.05);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .rule-icon { font-size: clamp(1.8em, 2.5vw, 2.2em); margin-bottom: 8px; position: relative; }
+        .rule-icon::after {
+            content: ""; position: absolute; top: 50%; left: 20%; width: 60%; height: 3px;
+            background-color: var(--red-alert); transform: rotate(-45deg); border-radius: 2px;
+        }
+
+        .tt-bar {
+            background-color: var(--blue-light);
+            color: var(--blue-dark);
+            text-align: center;
+            padding: 15px;
+            font-weight: bold;
+            font-size: clamp(1em, 1.5vw, 1.2em);
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            border-radius: 12px;
+            border: 2px dashed var(--blue-main);
+            flex-wrap: wrap;
+        }
+
+        /* === COPIE D'EXAMEN OFFICIELLE === */
+        .exam-copy-wrapper {
+            border: 2px solid var(--border-color);
+            background-color: white;
+            margin-top: 20px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .copy-section { display: flex; min-height: 250px; }
+
+        .sidebar-left {
+            width: 45px;
+            flex-shrink: 0;
+            border-right: 2px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #fafafa;
+        }
+
+        .vertical-text {
+            transform: rotate(-90deg);
+            white-space: nowrap;
+            font-size: 0.8em;
+            font-weight: 800;
+            letter-spacing: 2px;
+            color: #333;
+        }
+
+        .copy-main {
+            flex: 1;
+            padding: 3vw;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            position: relative;
+            min-width: 0;
+        }
+
+        .dashed-divider { border-top: 3px dashed #666; width: 100%; }
+
+        .form-row {
+            display: flex;
+            gap: 2vw;
+            align-items: flex-end;
+            flex-wrap: wrap;
+        }
+
+        .form-group {
+            flex: 1;
+            min-width: 200px;
+            display: flex;
+            align-items: flex-end;
+            position: relative;
+        }
+
+        .form-label {
+            font-weight: bold;
+            font-size: clamp(0.75em, 1.2vw, 0.9em);
+            white-space: nowrap;
+            margin-right: 10px;
+            padding-bottom: 2px;
+            color: #111;
+        }
+
+        .form-line {
+            flex: 1;
+            border-bottom: 2px solid var(--blue-main);
+            font-size: clamp(1.1em, 1.8vw, 1.5em);
+            font-weight: 900;
+            color: var(--blue-main);
+            padding-bottom: 2px;
+            min-height: 28px;
+            text-transform: uppercase;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .locked-corsica {
+            color: var(--blue-main);
+            font-weight: 900;
+            letter-spacing: 2px;
+            background: repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(59, 130, 246, 0.05) 10px, rgba(59, 130, 246, 0.05) 20px);
+            cursor: not-allowed;
+            text-align: center;
+        }
+
+        .instructions-box {
+            position: absolute;
+            right: 3vw;
+            top: 2vw;
+            width: clamp(150px, 20vw, 200px);
+            font-size: 0.7em;
+            font-style: italic;
+            border: 1px solid #333;
+            padding: 8px;
+            text-align: justify;
+            background-color: #fff;
+            z-index: 2;
+        }
+
+        /* Case Numéro Candidat interactive */
+        .num-candidat-box {
+            border: 2px solid var(--blue-main);
+            height: 35px;
+            flex: 1;
+            min-width: 150px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #f8fafc;
+            cursor: pointer;
+            font-weight: 800;
+            font-size: 0.9em;
+            user-select: none;
+            transition: all 0.2s;
+            color: var(--red-alert);
+        }
+
+        .num-candidat-box:hover { border-color: var(--red-alert); background-color: #f1f5f9; }
+        .num-candidat-box.not-required {
+            background: repeating-linear-gradient(45deg, rgba(239, 68, 68, 0.05), rgba(239, 68, 68, 0.05) 10px, rgba(239, 68, 68, 0.1) 10px, rgba(239, 68, 68, 0.1) 20px);
+            border-color: var(--red-alert);
+        }
+
+        /* MODALES (Aide, Infos & Règles) */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(3px);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-overlay.active { display: flex; }
+        
+        .modal-content {
+            background: white;
+            padding: 30px 40px;
+            border-radius: 16px;
+            max-width: 600px;
+            width: 90%;
+            position: relative;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            color: #1e293b;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-content h2 {
+            margin-top: 0;
+            color: var(--blue-dark);
+            text-transform: uppercase;
+            font-size: 1.4em;
+            border-bottom: 2px solid var(--blue-light);
+            padding-bottom: 10px;
+        }
+
+        .modal-content p { line-height: 1.6; margin-bottom: 15px; }
+        .modal-content ul { line-height: 1.6; margin-bottom: 15px; padding-left: 20px; }
+        .modal-content li { margin-bottom: 10px; }
+        .modal-content a { color: var(--blue-main); text-decoration: none; font-weight: bold; }
+        .modal-content a:hover { text-decoration: underline; }
+        
+        .close-modal {
+            position: absolute;
+            top: 20px; right: 25px;
+            font-size: 1.8em;
+            font-weight: bold;
+            cursor: pointer;
+            color: #64748b;
+            transition: color 0.2s;
+            line-height: 1;
+        }
+        
+        .close-modal:hover { color: var(--red-alert); }
+
+        .privacy-note {
+            background-color: #f8fafc;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid var(--blue-main);
+            font-size: 0.9em;
+            margin-top: 20px;
+        }
+
+        .help-highlight {
+            font-weight: bold;
+            color: var(--blue-main);
+        }
+
+        /* Liste des cases à cocher pour les règles */
+        .rules-toggles {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 15px;
+        }
+
+        .rules-toggles label {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-size: 1.1em;
+            cursor: pointer;
+            padding: 12px 15px;
+            background-color: var(--gray-light);
+            border-radius: 8px;
+            border: 1px solid #cbd5e1;
+            transition: background-color 0.2s;
+        }
+
+        .rules-toggles label:hover {
+            background-color: #e2e8f0;
+        }
+
+        .rules-toggles input[type="checkbox"] {
+            width: 22px;
+            height: 22px;
+            cursor: pointer;
+            accent-color: var(--blue-main);
+        }
+
+        @media (max-width: 768px) {
+            .copy-section { flex-direction: column; }
+            .sidebar-left { width: 100%; height: 30px; border-right: none; border-bottom: 2px solid var(--border-color); }
+            .vertical-text { transform: none; letter-spacing: 5px; }
+            .instructions-box { position: relative; width: 100%; right: 0; top: 0; margin-bottom: 15px; }
+            .form-group[style*="margin-right"] { margin-right: 0 !important; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container" id="main-container">
+    
+    <!-- PANNEAU POUR LE SURVEILLANT -->
+    <div class="admin-panel" id="admin-panel">
+        <div class="admin-group-left">
+            <span class="admin-title">⚙️ Panneau Surveillant :</span>
+            <select id="preset-selector" class="preset-selector" onchange="applyPreset()">
+                <option value="" disabled selected>-- CHOISISSEZ L'ÉPREUVE DU D.N.B. ICI --</option>
+                <option value="maths">DNB - Mathématiques (2h00)</option>
+                <option value="hg_emc">DNB - Histoire-Géographie EMC (2h00)</option>
+                <option value="fr_grammaire">DNB - Français : Grammaire & Compréhension (1h10)</option>
+                <option value="fr_dictee">DNB - Français : Dictée (0h20)</option>
+                <option value="fr_redaction">DNB - Français : Rédaction (1h30)</option>
+                <option value="sciences">DNB - Sciences (Physique-Chimie / SVT / Techno) (1h00)</option>
+                <option value="lv">DNB - Langues Vivantes Étrangères (1h30)</option>
+                <option value="custom">Autre (Saisie manuelle)</option>
+            </select>
+
+            <div class="switch-group">
+                <div class="switch-container">
+                    <span>DNB Blanc</span>
+                    <label class="switch">
+                        <input type="checkbox" id="mode-blanc" onchange="toggleBlanc()">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="switch-container">
+                    <span>Série Pro</span>
+                    <label class="switch">
+                        <input type="checkbox" id="mode-pro" onchange="toggleSerie()">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+            </div>
+        </div>
+        
+        <div class="admin-group-right">
+            <!-- BOUTON RÈGLES -->
+            <button class="btn-action" onclick="openRulesModal()" title="Cocher/décocher les consignes affichées">
+                📋 Règles
+            </button>
+
+            <!-- BOUTON AIDE -->
+            <button class="btn-action" onclick="openHelpModal()" title="Mode d'emploi">
+                ❓ Aide
+            </button>
+
+            <!-- BOUTON INFOS & LICENCE -->
+            <button class="btn-action" onclick="openInfoModal()" title="Informations et Licence">
+                ℹ️ Infos
+            </button>
+            
+            <!-- BOUTON PLEIN ÉCRAN -->
+            <button class="btn-action" onclick="toggleFullScreen()" id="btn-fullscreen">
+                🔲 Plein Écran
+            </button>
+        </div>
+    </div>
+
+    <!-- TABLEAU DE BORD HORLOGE & TEMPS RESTANT -->
+    <div class="dashboard">
+        <div class="clock-card">
+            <div class="date-display" id="date-display">--</div>
+            <div class="time-display" id="clock">00:00:00</div>
+        </div>
+        
+        <div class="remaining-card" id="remaining-card">
+            <div class="remaining-label">TEMPS RESTANT</div>
+            <div class="remaining-time" id="time-remaining">--h--</div>
+        </div>
+    </div>
+
+    <!-- CONTRÔLES ET RÈGLES -->
+    <div class="controls-and-rules">
+        <div class="time-management">
+            <div class="time-row">
+                <div class="time-box active">
+                    <span class="time-label" style="color: var(--blue-main);">Début (à saisir)</span>
+                    <input type="time" class="time-input" id="start-time" value="08:00" oninput="calculateTimes()">
+                </div>
+                <div class="time-box active">
+                    <span class="time-label">Durée</span>
+                    <input type="time" class="time-input" id="duration" value="02:00" oninput="calculateTimes()">
+                </div>
+                <div class="time-box readonly">
+                    <span class="time-label">Fin</span>
+                    <input type="time" class="time-input" id="end-time" readonly>
+                </div>
+            </div>
+            <button class="tt-button" onclick="toggleTiersTemps()">
+                <span>⏱️ AFFICHER 1/3 TIERS-TEMPS</span>
+            </button>
+        </div>
+
+        <div class="rules-container">
+            <div class="rule-box" id="rule-smartphone"><div class="rule-icon">📱</div>Smartphone</div>
+            <!-- Modification "Montre" -> "Montre connectée" -->
+            <div class="rule-box" id="rule-watch"><div class="rule-icon">⌚</div>Montre<br/>connectée</div>
+            <div class="rule-box" id="rule-exit">
+                <div class="rule-icon">🚶</div>
+                <span id="exit-time-display" style="line-height: 1.3;">SORTIE AVANT<br/>1H</span>
+            </div>
+            <div class="rule-box" id="rule-bags"><div class="rule-icon">🎒</div>Sacs loin</div>
+            <div class="rule-box" id="rule-talk"><div class="rule-icon">💬</div>Bavardage</div>
+        </div>
+    </div>
+
+    <!-- BARRE TIERS-TEMPS -->
+    <div class="tt-bar" id="tt-bar" style="display: none;">
+        <span>TIERS-TEMPS : <span id="tt-duration">--:--</span></span>
+        <span>FIN : <span id="tt-end-time">--:--</span></span>
+    </div>
+
+    <!-- === COPIE D'EXAMEN OFFICIELLE === -->
+    <div class="exam-copy-wrapper">
+        <div class="copy-section">
+            <div class="sidebar-left">
+                <span class="vertical-text">DANS CE CADRE</span>
+            </div>
+            <div class="copy-main">
+                <div class="form-row">
+                    <div class="form-group">
+                        <span class="form-label">ACADÉMIE :</span>
+                        <div class="form-line locked-corsica">CORSE</div>
+                    </div>
+                    <div class="form-group">
+                        <span class="form-label">SESSION :</span>
+                        <div class="form-line" id="field-session" contenteditable="true">2026</div>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <span class="form-label">EXAMEN OU CONCOURS :</span>
+                        <div class="form-line" id="field-examen" contenteditable="true">DIPLÔME NATIONAL DU BREVET</div>
+                    </div>
+                    <div class="form-group">
+                        <span class="form-label">SÉRIE* :</span>
+                        <div class="form-line" id="field-serie" contenteditable="true">GÉNÉRALE</div>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <span class="form-label">SPÉCIALITÉ/OPTION :</span>
+                        <div class="form-line" id="field-specialite" contenteditable="true">NÉANT</div>
+                    </div>
+                    <div class="form-group">
+                        <span class="form-label">REPÈRE DE L'ÉPREUVE :</span>
+                        <div class="form-line" contenteditable="true"></div>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group" style="width: 100%;">
+                        <span class="form-label">ÉPREUVE/SOUS-ÉPREUVE :</span>
+                        <div class="form-line" id="field-epreuve" contenteditable="true">MATHÉMATIQUES</div>
+                    </div>
+                </div>
+                
+                <div class="form-row" style="margin-top: 10px;">
+                    <div class="form-group" style="width: 100%;">
+                        <span class="form-label">NOM :</span>
+                        <div class="form-line"></div>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <span class="form-label">PRÉNOMS :</span>
+                        <div class="form-line"></div>
+                    </div>
+                    <div class="form-group" style="flex: 0.8;">
+                        <span class="form-label">N° DU CANDIDAT :</span>
+                        <div class="num-candidat-box" id="num-candidat-box" onclick="toggleNumCandidat()" title="Cliquez pour indiquer aux élèves de ne pas remplir"></div>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <span class="form-label">NÉ(E) LE :</span>
+                        <div class="form-line"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="dashed-divider"></div>
+
+        <div class="copy-section">
+            <div class="sidebar-left">
+                <span class="vertical-text">NE RIEN ÉCRIRE</span>
+            </div>
+            <div class="copy-main">
+                
+                <div class="instructions-box">
+                    Numérotez chaque page (dans le cadre en bas de la page) et placez les feuilles intercalaires dans le bon sens.
+                </div>
+
+                <div class="form-row" style="margin-top: 10px; margin-bottom: 20px;">
+                    <div class="form-group">
+                        <span class="form-label">EXAMEN OU CONCOURS :</span>
+                        <div class="form-line" id="field-examen-bottom">DIPLÔME NATIONAL DU BREVET</div>
+                    </div>
+                    <div class="form-group" style="margin-right: 220px;">
+                        <span class="form-label">SÉRIE* :</span>
+                        <div class="form-line" id="field-serie-bottom">GÉNÉRALE</div>
+                    </div>
+                </div>
+
+                <div class="form-row" style="margin-bottom: 20px;">
+                    <div class="form-group">
+                        <span class="form-label">SPÉCIALITÉ/OPTION :</span>
+                        <div class="form-line" id="field-specialite-bottom">NÉANT</div>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group" style="width: 100%;">
+                        <span class="form-label">ÉPREUVE/SOUS-ÉPREUVE :</span>
+                        <div class="form-line" id="field-epreuve-bottom">MATHÉMATIQUES</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- FENÊTRE MODALE PARAMÉTRAGE DES RÈGLES -->
+<div id="rules-modal" class="modal-overlay">
+    <div class="modal-content">
+        <span class="close-modal" onclick="closeRulesModal()" title="Fermer">&times;</span>
+        <h2>📋 Consignes affichées</h2>
+        <p>Cochez ou décochez les consignes à afficher au tableau pour cette épreuve :</p>
+        
+        <div class="rules-toggles">
+            <label>
+                <input type="checkbox" checked onchange="toggleRuleVisibility('rule-smartphone', this.checked)"> 
+                📱 Interdiction des smartphones
+            </label>
+            <label>
+                <input type="checkbox" checked onchange="toggleRuleVisibility('rule-watch', this.checked)"> 
+                ⌚ Interdiction des montres connectées
+            </label>
+            <label>
+                <input type="checkbox" checked onchange="toggleRuleVisibility('rule-exit', this.checked)"> 
+                🚶 Interdiction de sortie avant 1h
+            </label>
+            <label>
+                <input type="checkbox" checked onchange="toggleRuleVisibility('rule-bags', this.checked)"> 
+                🎒 Sacs loin des tables
+            </label>
+            <label>
+                <input type="checkbox" checked onchange="toggleRuleVisibility('rule-talk', this.checked)"> 
+                💬 Interdiction de bavarder
+            </label>
+        </div>
+    </div>
+</div>
+
+<!-- FENÊTRE MODALE AIDE / MODE D'EMPLOI -->
+<div id="help-modal" class="modal-overlay">
+    <div class="modal-content">
+        <span class="close-modal" onclick="closeHelpModal()" title="Fermer">&times;</span>
+        <h2>📖 Mode d'emploi</h2>
+        
+        <p>Cet outil est conçu pour vous faciliter la surveillance de l'épreuve. Voici comment l'utiliser :</p>
+        
+        <ul>
+            <li><span class="help-highlight">1. Préparez l'épreuve :</span> Utilisez le menu déroulant en haut à gauche pour sélectionner l'épreuve du jour. Toutes les informations s'ajusteront automatiquement.</li>
+            <li><span class="help-highlight">2. Ajustez les règles :</span> Le bouton <strong>"📋 Règles"</strong> vous permet d'afficher ou masquer certaines consignes (smartphones, montres connectées...) selon l'épreuve.</li>
+            <li><span class="help-highlight">3. Donnez le Top Départ :</span> Au moment de la distribution des sujets, saisissez l'heure exacte dans la case <strong>"Début"</strong>.</li>
+            <li><span class="help-highlight">4. Tiers-Temps :</span> Cliquez sur le bouton <strong>"⏱️ Afficher 1/3 Tiers-Temps"</strong> pour faire apparaître les horaires aménagés spécifiques.</li>
+            <li><span class="help-highlight">5. N° du Candidat :</span> <strong style="color: var(--red-alert);">Cliquez directement sur la case "N° DU CANDIDAT"</strong> sur la copie virtuelle pour afficher "NE PAS REMPLIR" (ex: DNB Blanc).</li>
+            <li><span class="help-highlight">6. Plein Écran :</span> Cliquez sur le bouton <strong>"🔲 Plein Écran"</strong> pour masquer les menus de votre ordinateur lors de la projection.</li>
+        </ul>
+    </div>
+</div>
+
+<!-- FENÊTRE MODALE INFOS -->
+<div id="info-modal" class="modal-overlay">
+    <div class="modal-content">
+        <span class="close-modal" onclick="closeInfoModal()" title="Fermer">&times;</span>
+        <h2>Informations & Licence</h2>
+        
+        <p><strong>Adaptation et amélioration de l'outil par :</strong><br/>Gilles Cormi</p>
+        
+        <p><strong>Basé sur l'idée et l'outil original créés par :</strong><br/>Julien Delmas</p>
+        
+        <p><strong>Licence :</strong><br/>
+            Ce site est publié sous licence <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.fr" target="_blank">Creative Commons BY-NC-SA 4.0</a> : vous pouvez le partager librement en citant l'auteur, sans usage commercial, et en conservant la même licence pour toute version modifiée.
+        </p>
+
+        <div class="privacy-note">
+            <strong>Données personnelles & confidentialité</strong><br/>
+            Cet outil ne collecte, ne transmet et ne traite <strong>aucune donnée personnelle</strong>. Tout fonctionne uniquement en local dans votre navigateur.
+        </div>
+    </div>
+</div>
+
+<script>
+    // === GESTION DES FENÊTRES MODALES ===
+    
+    // Modal INFOS
+    function openInfoModal() { document.getElementById('info-modal').classList.add('active'); }
+    function closeInfoModal() { document.getElementById('info-modal').classList.remove('active'); }
+
+    // Modal AIDE
+    function openHelpModal() { document.getElementById('help-modal').classList.add('active'); }
+    function closeHelpModal() { document.getElementById('help-modal').classList.remove('active'); }
+
+    // Modal RÈGLES
+    function openRulesModal() { document.getElementById('rules-modal').classList.add('active'); }
+    function closeRulesModal() { document.getElementById('rules-modal').classList.remove('active'); }
+
+    // Fermer les modales si l'utilisateur clique en dehors de la boîte blanche
+    window.onclick = function(event) {
+        const infoModal = document.getElementById('info-modal');
+        const helpModal = document.getElementById('help-modal');
+        const rulesModal = document.getElementById('rules-modal');
+        if (event.target == infoModal) closeInfoModal();
+        if (event.target == helpModal) closeHelpModal();
+        if (event.target == rulesModal) closeRulesModal();
+    }
+
+    // === GESTION DES RÈGLES AFFICHEES ===
+    function toggleRuleVisibility(ruleId, isVisible) {
+        const ruleBox = document.getElementById(ruleId);
+        if (isVisible) {
+            ruleBox.style.display = 'flex';
+        } else {
+            ruleBox.style.display = 'none';
+        }
+    }
+
+    // === PLEIN ÉCRAN ===
+    function toggleFullScreen() {
+        if (!document.fullscreenElement) {
+            document.documentElement.requestFullscreen().catch(err => {
+                alert(`Erreur d'activation du plein écran : ${err.message}`);
+            });
+            document.getElementById('btn-fullscreen').innerHTML = "🗗 Quitter Plein Écran";
+        } else {
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+                document.getElementById('btn-fullscreen').innerHTML = "🔲 Plein Écran";
+            }
+        }
+    }
+
+    document.addEventListener('fullscreenchange', (event) => {
+        if (!document.fullscreenElement) {
+            document.getElementById('btn-fullscreen').innerHTML = "🔲 Plein Écran";
+        }
+    });
+
+    const presetsDNB = {
+        "maths": { epreuve: "MATHÉMATIQUES", duree: "02:00" },
+        "hg_emc": { epreuve: "HISTOIRE-GÉOGRAPHIE ET E.M.C.", duree: "02:00" },
+        "fr_grammaire": { epreuve: "FRANÇAIS - GRAMMAIRE ET COMPRÉHENSION", duree: "01:10" },
+        "fr_dictee": { epreuve: "FRANÇAIS - DICTÉE", duree: "00:20" },
+        "fr_redaction": { epreuve: "FRANÇAIS - RÉDACTION", duree: "01:30" },
+        "sciences": { epreuve: "SCIENCES (PHYSIQUE-CHIMIE, SVT OU TECHNOLOGIE)", duree: "01:00" },
+        "lv": { epreuve: "LANGUE VIVANTE ÉTRANGÈRE", duree: "01:30" },
+        "custom": { epreuve: "", duree: "00:00" }
+    };
+
+    let tiersTempsActive = false;
+
+    function toggleNumCandidat() {
+        const box = document.getElementById('num-candidat-box');
+        box.classList.toggle('not-required');
+        if (box.classList.contains('not-required')) {
+            box.textContent = "NE PAS REMPLIR";
+        } else {
+            box.textContent = "";
+        }
+    }
+
+    function toggleBlanc() {
+        const isBlanc = document.getElementById('mode-blanc').checked;
+        const text = isBlanc ? "D.N.B. BLANC" : "DIPLÔME NATIONAL DU BREVET";
+        document.getElementById('field-examen').textContent = text;
+        document.getElementById('field-examen-bottom').textContent = text;
+    }
+
+    function toggleSerie() {
+        const isPro = document.getElementById('mode-pro').checked;
+        const text = isPro ? "PROFESSIONNELLE" : "GÉNÉRALE";
+        document.getElementById('field-serie').textContent = text;
+        document.getElementById('field-serie-bottom').textContent = text;
+    }
+
+    function applyPreset() {
+        const selector = document.getElementById('preset-selector');
+        const choice = selector.value;
+        const isBlanc = document.getElementById('mode-blanc').checked;
+        const isPro = document.getElementById('mode-pro').checked;
+        
+        if (choice && presetsDNB[choice]) {
+            const data = presetsDNB[choice];
+            
+            const epreuveText = data.epreuve;
+            document.getElementById('field-epreuve').textContent = epreuveText;
+            document.getElementById('field-epreuve-bottom').textContent = epreuveText;
+            
+            const examText = isBlanc ? "D.N.B. BLANC" : "DIPLÔME NATIONAL DU BREVET";
+            document.getElementById('field-examen').textContent = examText;
+            document.getElementById('field-examen-bottom').textContent = examText;
+            
+            const serieText = isPro ? "PROFESSIONNELLE" : "GÉNÉRALE";
+            document.getElementById('field-serie').textContent = serieText;
+            document.getElementById('field-serie-bottom').textContent = serieText;
+            
+            if (choice !== "custom") {
+                document.getElementById('duration').value = data.duree;
+            }
+
+            calculateTimes();
+        }
+    }
+
+    function calculateTimes() {
+        const startStr = document.getElementById('start-time').value;
+        const durationStr = document.getElementById('duration').value;
+        
+        if (!startStr || !durationStr) return;
+
+        const startParts = startStr.split(':');
+        const startMinutes = parseInt(startParts[0], 10) * 60 + parseInt(startParts[1], 10);
+        
+        const durParts = durationStr.split(':');
+        const durMinutes = parseInt(durParts[0], 10) * 60 + parseInt(durParts[1], 10);
+
+        const endMinutes = startMinutes + durMinutes;
+        const endH = String(Math.floor(endMinutes / 60) % 24).padStart(2, '0');
+        const endM = String(endMinutes % 60).padStart(2, '0');
+        document.getElementById('end-time').value = `${endH}:${endM}`;
+
+        let exitMinutes = startMinutes + 60;
+        if (durMinutes <= 60) {
+            exitMinutes = startMinutes + durMinutes;
+        }
+        const exitH = String(Math.floor(exitMinutes / 60) % 24).padStart(2, '0');
+        const exitM = String(exitMinutes % 60).padStart(2, '0');
+        document.getElementById('exit-time-display').innerHTML = `SORTIE AVANT<br/><span style="font-size: 1.2em; color: var(--red-alert);">${exitH}h${exitM}</span>`;
+
+        const ttDurMinutes = Math.round(durMinutes + (durMinutes / 3));
+        const ttEndMinutes = startMinutes + ttDurMinutes;
+
+        const ttDurH = Math.floor(ttDurMinutes / 60);
+        const ttDurM = String(ttDurMinutes % 60).padStart(2, '0');
+        document.getElementById('tt-duration').textContent = `${ttDurH}h${ttDurM}`;
+
+        const ttEndH = String(Math.floor(ttEndMinutes / 60) % 24).padStart(2, '0');
+        const ttEndM = String(ttEndMinutes % 60).padStart(2, '0');
+        document.getElementById('tt-end-time').textContent = `${ttEndH}:${ttEndM}`;
+    }
+
+    function toggleTiersTemps() {
+        tiersTempsActive = !tiersTempsActive;
+        document.getElementById('tt-bar').style.display = tiersTempsActive ? 'flex' : 'none';
+    }
+
+    function updateClock() {
+        const now = new Date();
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        const seconds = String(now.getSeconds()).padStart(2, '0');
+        
+        document.getElementById('clock').textContent = `${hours}:${minutes}:${seconds}`;
+        
+        const options = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' };
+        document.getElementById('date-display').textContent = now.toLocaleDateString('fr-FR', options);
+        
+        const endStr = document.getElementById('end-time').value;
+        if(endStr) {
+            const endParts = endStr.split(':');
+            const endToday = new Date(now);
+            endToday.setHours(parseInt(endParts[0], 10), parseInt(endParts[1], 10), 0);
+            
+            const diffMs = endToday - now;
+            
+            if (diffMs > 0) {
+                const diffH = Math.floor(diffMs / (1000 * 60 * 60));
+                const diffM = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+                document.getElementById('time-remaining').textContent = `${diffH}h${String(diffM).padStart(2, '0')}`;
+                document.getElementById('remaining-card').classList.remove('finished');
+            } else {
+                document.getElementById('time-remaining').textContent = "TERMINÉ";
+                document.getElementById('remaining-card').classList.add('finished');
+            }
+        }
+    }
+
+    setInterval(updateClock, 1000);
+    updateClock();
+    calculateTimes();
+
+    const currentYear = new Date().getFullYear();
+    document.getElementById('field-session').textContent = currentYear;
+
+</script>
+
+</body>
+</html>
