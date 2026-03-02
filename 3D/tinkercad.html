@@ -11,6 +11,11 @@
         .gradient-bg { background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%); }
         .step-card { transition: all 0.3s ease; }
         .step-card:hover { transform: translateY(-5px); border-color: #3b82f6; }
+        @keyframes pulse-slow {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+        }
+        .pulse { animation: pulse-slow 3s infinite ease-in-out; }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-900 leading-relaxed">
@@ -27,6 +32,20 @@
     </header>
 
     <main class="max-w-4xl mx-auto px-6 py-12">
+
+        <!-- REGLE DU SILENCE (AGRANDIE ET PLUS VISIBLE) -->
+        <div class="mb-12 bg-orange-600 text-white p-6 rounded-3xl shadow-xl flex flex-col md:flex-row items-center gap-6 border-4 border-orange-400 pulse">
+            <div class="bg-white/20 p-4 rounded-full">
+                <span class="text-5xl">🔇</span>
+            </div>
+            <div>
+                <h2 class="text-2xl font-black mb-1 uppercase tracking-wider">Rappel de Silence Impératif</h2>
+                <p class="text-lg font-bold leading-tight">
+                    Les haut-parleurs de vos ordinateurs doivent rester en mode <span class="underline decoration-white underline-offset-4">MUET</span>. 
+                    Utilisez vos écouteurs ou lisez attentivement les consignes visuelles.
+                </p>
+            </div>
+        </div>
 
         <!-- INTRODUCTION PEDAGOGIQUE -->
         <section class="mb-12 grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -58,12 +77,6 @@
             </div>
         </section>
 
-        <!-- REGLE DU SILENCE -->
-        <div class="mb-12 bg-amber-50 border-l-4 border-amber-500 p-4 rounded-r-xl flex items-center gap-4">
-            <span class="text-2xl">🔇</span>
-            <p class="text-amber-800 font-bold text-sm">RAPPEL IMPORTANT : Les haut-parleurs de vos ordinateurs doivent rester en mode MUET. Utilisez vos écouteurs si vous en avez, sinon lisez bien les consignes visuelles.</p>
-        </div>
-
         <!-- ETAPE 1: CONNEXION -->
         <section class="mb-12">
             <div class="flex items-center mb-6">
@@ -76,20 +89,13 @@
                     <h3 class="text-xl font-bold mb-2">Instructions de départ</h3>
                     <p class="text-slate-600 mb-6">
                         Vous devez d'abord rejoindre la classe virtuelle. Votre travail est enregistré automatiquement. 
-                        <strong>Étape 1 :</strong> Cliquez sur le bouton bleu. 
-                        <strong>Étape 2 :</strong> Entrez votre pseudonyme (voir liste PDF).
+                        Cliquez sur le bouton bleu ci-dessous pour commencer.
                     </p>
                 </div>
                 
-                <div class="flex flex-col md:flex-row gap-4 w-full">
-                    <a href="https://www.tinkercad.com/joinclass/9WFMTPTQ4" target="_blank" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-xl font-bold text-lg shadow-lg transition-all active:scale-95 text-center">
+                <div class="w-full">
+                    <a href="https://www.tinkercad.com/joinclass/9WFMTPTQ4" target="_blank" class="block bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-xl font-bold text-lg shadow-lg transition-all active:scale-95 text-center">
                         👉 Accéder à ma Classe
-                    </a>
-                    <a href="pseudo.pdf" target="_blank" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 px-8 py-4 rounded-xl font-bold text-lg border-2 border-slate-200 transition-all active:scale-95 text-center flex items-center justify-center gap-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                        </svg>
-                        Trouver mon Pseudo (PDF)
                     </a>
                 </div>
             </div>
