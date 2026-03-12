@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LudoTech - Prompt Factory</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&family=Orbitron:wght@400;700&display=swap');
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #fcfcfd;
+        }
+
+        .gradient-brand {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+        }
+
+        .glass {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+        }
+
+        .drop-shadow-premium {
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 10px 10px -5px rgba(0, 0, 0, 0.02);
+        }
+
+        .scrollbar-custom::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .scrollbar-custom::-webkit-scrollbar-thumb {
+            background: #e2e8f0;
+            border-radius: 10px;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-fade {
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+
+        .theme-btn.active {
+            border-color: #4f46e5;
+            background-color: #f5f3ff;
+        }
+
+        .path-btn.active {
+            border-color: #4f46e5;
+            background-color: #f5f3ff;
+        }
+
+        .board-layout-btn.active {
+            border-color: #4f46e5;
+            background-color: #f5f3ff;
+        }
+
+        .board-layout-btn.active span {
+            color: #4f46e5 !important;
+        }
+    </style>
+</head>
+
+<body class="min-h-screen">
+
+    <!-- Barre de navigation -->
+    <nav class="border-b border-slate-100 bg-white/70 sticky top-0 z-50 glass">
+        <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div
+                    class="w-10 h-10 gradient-brand rounded-xl flex items-center justify-center text-white text-xl shadow-lg">
+                    🕹️</div>
+                <div>
+                    <h1 class="font-extrabold text-slate-900 text-xl tracking-tight leading-none uppercase">LudoTech
+                    </h1>
+                    <span class="text-[10px] font-bold text-indigo-600 uppercase tracking-widest">Factory • Plateforme
+                        de Gamification</span>
+                </div>
+            </div>
+            <div class="hidden md:flex gap-6 text-[11px] font-black text-slate-400 uppercase tracking-wider">
+                <span>Dé 3D Holographique</span>
+                <span class="text-slate-200">|</span>
+                <span>Cyber-Lab UI</span>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto px-6 py-10 grid grid-cols-1 lg:grid-cols-12 gap-10">
+
+        <!-- Configuration (Gauche) -->
+        <div class="lg:col-span-7 space-y-8 animate-fade">
+
+            <section class="bg-white rounded-[32px] p-8 border border-slate-100 drop-shadow-premium">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-lg font-extrabold text-slate-800 flex items-center gap-3 uppercase tracking-tight">
+                        <span
+                            class="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center text-xs">01</span>
+                        Contenu de la Leçon
+                    </h2>
+                    <label
+                        class="cursor-pointer text-[10px] font-black text-indigo-600 hover:text-indigo-800 transition-colors bg-indigo-50 px-4 py-2 rounded-full uppercase tracking-widest text-slate-900">
+                        Importer .txt
+                        <input type="file" id="fileImport" class="hidden" accept=".txt,.md">
+                    </label>
+                </div>
+                <textarea id="courseText"
+                    class="w-full h-80 p-6 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none text-slate-600 text-sm leading-relaxed scrollbar-custom"
+                    placeholder="Collez ici le texte intégral de votre cours de technologie..."></textarea>
+            </section>
+
+            <section class="bg-white rounded-[32px] p-8 border border-slate-100 drop-shadow-premium text-slate-900">
+                <h2 class="text-lg font-extrabold flex items-center gap-3 mb-6 uppercase tracking-tight">
+                    <span
+                        class="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center text-xs">03</span>
+                    Ambiance Visuelle
+                </h2>
+
+                <div class="grid grid-cols-3 gap-3 mb-8">
+                    <button onclick="setTheme('industrial')"
+                        class="theme-btn p-3 rounded-2xl border-2 border-slate-50 hover:bg-slate-50 transition-all text-center"
+                        id="theme-industrial">
+                        <div class="flex justify-center gap-1 mb-2">
+                            <div class="w-5 h-5 rounded-lg bg-slate-800 shadow-sm"></div>
+                            <div class="w-5 h-5 rounded-lg bg-indigo-600 shadow-sm"></div>
+                        </div>
+                        <span
+                            class="text-[9px] font-extrabold uppercase tracking-tighter text-slate-500">Industriel</span>
+                    </button>
+                    <button onclick="setTheme('nature')"
+                        class="theme-btn p-3 rounded-2xl border-2 border-slate-50 hover:bg-slate-50 transition-all text-center"
+                        id="theme-nature">
+                        <div class="flex justify-center gap-1 mb-2">
+                            <div class="w-5 h-5 rounded-lg bg-emerald-600 shadow-sm"></div>
+                            <div class="w-5 h-5 rounded-lg bg-amber-200 shadow-sm"></div>
+                        </div>
+                        <span class="text-[9px] font-extrabold uppercase tracking-tighter text-slate-500">Nature</span>
+                    </button>
+                    <button onclick="setTheme('cyber')"
+                        class="theme-btn p-3 rounded-2xl border-2 border-slate-50 hover:bg-slate-50 transition-all text-center active"
+                        id="theme-cyber">
+                        <div class="flex justify-center gap-1 mb-2">
+                            <div class="w-5 h-5 rounded-lg bg-cyan-400 shadow-sm shadow-cyan-500/50"></div>
+                            <div class="w-5 h-5 rounded-lg bg-fuchsia-600 shadow-sm shadow-fuchsia-500/50"></div>
+                        </div>
+                        <span
+                            class="text-[9px] font-extrabold uppercase tracking-tighter text-indigo-600">Cyber-Lab</span>
+                    </button>
+                    <button onclick="setTheme('spatial')"
+                        class="theme-btn p-3 rounded-2xl border-2 border-slate-50 hover:bg-slate-50 transition-all text-center"
+                        id="theme-spatial">
+                        <div class="flex justify-center gap-1 mb-2">
+                            <div class="w-5 h-5 rounded-lg bg-slate-950 shadow-sm"></div>
+                            <div class="w-5 h-5 rounded-lg bg-blue-500 shadow-sm"></div>
+                        </div>
+                        <span class="text-[9px] font-extrabold uppercase tracking-tighter text-slate-500">Spatial</span>
+                    </button>
+                    <button onclick="setTheme('arcade')"
+                        class="theme-btn p-3 rounded-2xl border-2 border-slate-50 hover:bg-slate-50 transition-all text-center"
+                        id="theme-arcade">
+                        <div class="flex justify-center gap-1 mb-2">
+                            <div class="w-5 h-5 rounded-lg bg-pink-500 shadow-sm"></div>
+                            <div class="w-5 h-5 rounded-lg bg-yellow-400 shadow-sm"></div>
+                        </div>
+                        <span class="text-[9px] font-extrabold uppercase tracking-tighter text-slate-500">Rétro
+                            Arcade</span>
+                    </button>
+                    <button onclick="setTheme('ocean')"
+                        class="theme-btn p-3 rounded-2xl border-2 border-slate-50 hover:bg-slate-50 transition-all text-center"
+                        id="theme-ocean">
+                        <div class="flex justify-center gap-1 mb-2">
+                            <div class="w-5 h-5 rounded-lg bg-cyan-500 shadow-sm"></div>
+                            <div class="w-5 h-5 rounded-lg bg-orange-400 shadow-sm"></div>
+                        </div>
+                        <span class="text-[9px] font-extrabold uppercase tracking-tighter text-slate-500">Océan</span>
+                    </button>
+                    <button onclick="setTheme('synthwave')"
+                        class="theme-btn p-3 rounded-2xl border-2 border-slate-50 hover:bg-slate-50 transition-all text-center"
+                        id="theme-synthwave">
+                        <div class="flex justify-center gap-1 mb-2">
+                            <div class="w-5 h-5 rounded-lg bg-pink-600 shadow-sm shadow-pink-500/50"></div>
+                            <div class="w-5 h-5 rounded-lg bg-purple-600 shadow-sm shadow-purple-500/50"></div>
+                        </div>
+                        <span
+                            class="text-[9px] font-extrabold uppercase tracking-tighter text-slate-500">Synthwave</span>
+                    </button>
+                    <button onclick="setTheme('pastel')"
+                        class="theme-btn p-3 rounded-2xl border-2 border-slate-50 hover:bg-slate-50 transition-all text-center"
+                        id="theme-pastel">
+                        <div class="flex justify-center gap-1 mb-2">
+                            <div class="w-5 h-5 rounded-lg bg-pink-200 shadow-sm"></div>
+                            <div class="w-5 h-5 rounded-lg bg-purple-200 shadow-sm"></div>
+                        </div>
+                        <span class="text-[9px] font-extrabold uppercase tracking-tighter text-slate-500">Pastel
+                            Doux</span>
+                    </button>
+                    <button onclick="setTheme('forest')"
+                        class="theme-btn p-3 rounded-2xl border-2 border-slate-50 hover:bg-slate-50 transition-all text-center"
+                        id="theme-forest">
+                        <div class="flex justify-center gap-1 mb-2">
+                            <div class="w-5 h-5 rounded-lg bg-green-700 shadow-sm"></div>
+                            <div class="w-5 h-5 rounded-lg bg-amber-700 shadow-sm"></div>
+                        </div>
+                        <span class="text-[9px] font-extrabold uppercase tracking-tighter text-slate-500">Forêt</span>
+                    </button>
+                </div>
+
+                <div class="group border-2 border-dashed border-slate-200 rounded-2xl p-10 text-center hover:border-indigo-400 hover:bg-indigo-50/20 transition-all cursor-pointer relative"
+                    id="dropZone">
+                    <div class="text-indigo-600 text-3xl mb-3">📸</div>
+                    <p class="text-slate-800 text-sm font-black mb-1 uppercase tracking-tight">Design Personnalisé</p>
+                    <p class="text-[11px] text-slate-400 font-medium tracking-wide">Collez une capture (Ctrl+V) pour
+                        cloner le style</p>
+                    <div id="imagePreview" class="mt-6 hidden animate-fade">
+                        <img id="screenshotImg" src=""
+                            class="max-h-48 mx-auto rounded-xl shadow-2xl border-4 border-white">
+                        <button onclick="clearImage()"
+                            class="mt-4 text-[10px] font-black text-red-500 uppercase tracking-widest hover:underline">Supprimer</button>
+                    </div>
+                </div>
+            </section>
+
+            <section class="bg-white rounded-[32px] p-8 border border-slate-100 drop-shadow-premium text-slate-900">
+                <h2 class="text-lg font-extrabold flex items-center gap-3 mb-6 uppercase tracking-tight">
+                    <span
+                        class="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center text-xs">04</span>
+                    Paramètres Pédagogiques
+                </h2>
+
+                <div class="space-y-6">
+                    <div>
+                        <label class="flex items-center justify-between mb-3">
+                            <span class="text-sm font-black uppercase tracking-tight text-slate-700">Seuil de Réussite
+                                pour le Mot Secret</span>
+                            <span class="text-2xl font-black text-indigo-600" id="thresholdValue">80%</span>
+                        </label>
+                        <input type="range" id="successThreshold" min="50" max="100" value="80" step="5"
+                            class="w-full h-3 bg-slate-100 rounded-full appearance-none cursor-pointer"
+                            oninput="document.getElementById('thresholdValue').innerText = this.value + '%'">
+                        <div
+                            class="flex justify-between text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-2">
+                            <span>50% - Facile</span>
+                            <span>80% - Standard</span>
+                            <span>100% - Expert</span>
+                        </div>
+                        <p class="text-xs text-slate-500 mt-3 leading-relaxed">
+                            💡 L'élève devra atteindre ce pourcentage de bonnes réponses pour débloquer le mot secret
+                            final.
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+            <section class="bg-white rounded-[32px] p-8 border border-slate-100 drop-shadow-premium text-slate-900">
+                <h2 class="text-lg font-extrabold flex items-center gap-3 mb-6 uppercase tracking-tight">
+                    <span
+                        class="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center text-xs">02</span>
+                    Design du Parcours
+                </h2>
+
+                <p class="text-xs text-slate-500 mb-4 leading-relaxed">
+                    🎨 Choisis la forme visuelle du plateau de jeu (40 cases avec courbes élégantes)
+                </p>
+
+                <div class="grid grid-cols-2 gap-4 mb-6">
+                    <button onclick="setBoardLayout('spiral')"
+                        class="board-layout-btn p-4 rounded-2xl border-2 border-slate-200 hover:border-indigo-400 hover:bg-indigo-50/20 transition-all text-center active"
+                        id="layout-spiral">
+                        <svg viewBox="0 0 120 120" class="w-full h-24 mb-2">
+                            <path
+                                d="M60,60 Q80,60 80,40 Q80,20 60,20 Q40,20 40,40 Q40,70 60,70 Q90,70 90,40 Q90,10 60,10 Q30,10 30,40 Q30,80 60,80 Q100,80 100,40"
+                                fill="none" stroke="#4f46e5" stroke-width="3" stroke-linecap="round" opacity="0.6" />
+                            <circle cx="60" cy="60" r="4" fill="#4f46e5" />
+                            <circle cx="100" cy="40" r="5" fill="#10b981" opacity="0.8" />
+                        </svg>
+                        <span
+                            class="text-[10px] font-extrabold uppercase tracking-tighter text-indigo-600">Spirale</span>
+                    </button>
+
+                    <button onclick="setBoardLayout('snake')"
+                        class="board-layout-btn p-4 rounded-2xl border-2 border-slate-200 hover:border-indigo-400 hover:bg-indigo-50/20 transition-all text-center"
+                        id="layout-snake">
+                        <svg viewBox="0 0 120 120" class="w-full h-24 mb-2">
+                            <path
+                                d="M10,20 L110,20 Q115,20 115,25 L115,35 Q115,40 110,40 L10,40 Q5,40 5,45 L5,55 Q5,60 10,60 L110,60 Q115,60 115,65 L115,75 Q115,80 110,80 L10,80"
+                                fill="none" stroke="#a855f7" stroke-width="3" stroke-linecap="round" opacity="0.6" />
+                            <circle cx="10" cy="20" r="4" fill="#a855f7" />
+                            <circle cx="10" cy="80" r="5" fill="#10b981" opacity="0.8" />
+                        </svg>
+                        <span
+                            class="text-[10px] font-extrabold uppercase tracking-tighter text-slate-500">Serpentin</span>
+                    </button>
+
+                    <button onclick="setBoardLayout('zigzag')"
+                        class="board-layout-btn p-4 rounded-2xl border-2 border-slate-200 hover:border-indigo-400 hover:bg-indigo-50/20 transition-all text-center"
+                        id="layout-zigzag">
+                        <svg viewBox="0 0 120 120" class="w-full h-24 mb-2">
+                            <path d="M10,20 L40,50 L10,80 L40,110 M40,50 L70,20 L100,50 L70,80 L100,110" fill="none"
+                                stroke="#ec4899" stroke-width="3" stroke-linecap="round" opacity="0.6" />
+                            <circle cx="10" cy="20" r="4" fill="#ec4899" />
+                            <circle cx="100" cy="110" r="5" fill="#10b981" opacity="0.8" />
+                        </svg>
+                        <span class="text-[10px] font-extrabold uppercase tracking-tighter text-slate-500">Zigzag</span>
+                    </button>
+
+                    <button onclick="setBoardLayout('circuit')"
+                        class="board-layout-btn p-4 rounded-2xl border-2 border-slate-200 hover:border-indigo-400 hover:bg-indigo-50/20 transition-all text-center"
+                        id="layout-circuit">
+                        <svg viewBox="0 0 120 120" class="w-full h-24 mb-2">
+                            <ellipse cx="60" cy="60" rx="50" ry="35" fill="none" stroke="#f59e0b" stroke-width="3"
+                                opacity="0.6" />
+                            <circle cx="60" cy="25" r="4" fill="#f59e0b" />
+                            <circle cx="60" cy="95" r="5" fill="#10b981" opacity="0.8" />
+                        </svg>
+                        <span class="text-[10px] font-extrabold uppercase tracking-tighter text-slate-500">Circuit
+                            Ovale</span>
+                    </button>
+
+                    <button onclick="setBoardLayout('labyrinth')"
+                        class="board-layout-btn p-4 rounded-2xl border-2 border-slate-200 hover:border-indigo-400 hover:bg-indigo-50/20 transition-all text-center"
+                        id="layout-labyrinth">
+                        <svg viewBox="0 0 120 120" class="w-full h-24 mb-2">
+                            <path
+                                d="M10,10 L50,10 L50,40 L80,40 L80,10 L110,10 L110,50 L80,50 L80,80 L50,80 L50,50 L20,50 L20,110 L110,110"
+                                fill="none" stroke="#06b6d4" stroke-width="3" stroke-linecap="round" opacity="0.6" />
+                            <circle cx="10" cy="10" r="4" fill="#06b6d4" />
+                            <circle cx="110" cy="110" r="5" fill="#10b981" opacity="0.8" />
+                        </svg>
+                        <span
+                            class="text-[10px] font-extrabold uppercase tracking-tighter text-slate-500">Labyrinthe</span>
+                    </button>
+
+                    <button onclick="setBoardLayout('wave')"
+                        class="board-layout-btn p-4 rounded-2xl border-2 border-slate-200 hover:border-indigo-400 hover:bg-indigo-50/20 transition-all text-center"
+                        id="layout-wave">
+                        <svg viewBox="0 0 120 120" class="w-full h-24 mb-2">
+                            <path d="M10,60 Q30,20 50,60 T90,60 T130,60" fill="none" stroke="#8b5cf6" stroke-width="3"
+                                stroke-linecap="round" opacity="0.6" />
+                            <path d="M90,60 Q95,80 100,100" fill="none" stroke="#8b5cf6" stroke-width="3"
+                                stroke-linecap="round" opacity="0.6" />
+                            <circle cx="10" cy="60" r="4" fill="#8b5cf6" />
+                            <circle cx="100" cy="100" r="5" fill="#10b981" opacity="0.8" />
+                        </svg>
+                        <span class="text-[10px] font-extrabold uppercase tracking-tighter text-slate-500">Vagues</span>
+                    </button>
+                </div>
+
+                <div class="bg-indigo-50/50 rounded-2xl p-4 border-2 border-indigo-100">
+                    <div class="flex items-start gap-3">
+                        <span class="text-xl">💡</span>
+                        <div class="text-xs text-slate-600 leading-relaxed">
+                            <p class="font-bold text-indigo-600 mb-1">Aperçu du design sélectionné</p>
+                            <p id="layoutDescription">Le parcours en spirale crée une progression concentrique élégante
+                                du centre vers l'extérieur, parfait pour une expérience immersive.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="bg-white rounded-[32px] p-8 border border-slate-100 drop-shadow-premium text-slate-900">
+                <h2 class="text-lg font-extrabold flex items-center gap-3 mb-6 uppercase tracking-tight">
+                    <span
+                        class="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center text-xs">05</span>
+                    Thème du Parcours
+                </h2>
+
+                <p class="text-xs text-slate-500 mb-4 leading-relaxed">
+                    🗺️ Choisis l'univers visuel du plateau de jeu (tracé en zig-zag ludique)
+                </p>
+
+                <div class="grid grid-cols-3 gap-3">
+                    <button onclick="setPath('urban')"
+                        class="path-btn p-3 rounded-2xl border-2 border-slate-50 hover:bg-slate-50 transition-all text-center active"
+                        id="path-urban">
+                        <div class="text-2xl mb-2">🏙️</div>
+                        <span class="text-[9px] font-extrabold uppercase tracking-tighter text-indigo-600">Urbain</span>
+                    </button>
+                    <button onclick="setPath('forest')"
+                        class="path-btn p-3 rounded-2xl border-2 border-slate-50 hover:bg-slate-50 transition-all text-center"
+                        id="path-forest">
+                        <div class="text-2xl mb-2">🌲</div>
+                        <span class="text-[9px] font-extrabold uppercase tracking-tighter text-slate-500">Forêt</span>
+                    </button>
+                    <button onclick="setPath('desert')"
+                        class="path-btn p-3 rounded-2xl border-2 border-slate-50 hover:bg-slate-50 transition-all text-center"
+                        id="path-desert">
+                        <div class="text-2xl mb-2">🏜️</div>
+                        <span class="text-[9px] font-extrabold uppercase tracking-tighter text-slate-500">Désert</span>
+                    </button>
+                    <button onclick="setPath('spatial')"
+                        class="path-btn p-3 rounded-2xl border-2 border-slate-50 hover:bg-slate-50 transition-all text-center"
+                        id="path-spatial">
+                        <div class="text-2xl mb-2">🚀</div>
+                        <span class="text-[9px] font-extrabold uppercase tracking-tighter text-slate-500">Spatial</span>
+                    </button>
+                    <button onclick="setPath('ocean')"
+                        class="path-btn p-3 rounded-2xl border-2 border-slate-50 hover:bg-slate-50 transition-all text-center"
+                        id="path-ocean">
+                        <div class="text-2xl mb-2">🌊</div>
+                        <span class="text-[9px] font-extrabold uppercase tracking-tighter text-slate-500">Océan</span>
+                    </button>
+                    <button onclick="setPath('mountain')"
+                        class="path-btn p-3 rounded-2xl border-2 border-slate-50 hover:bg-slate-50 transition-all text-center"
+                        id="path-mountain">
+                        <div class="text-2xl mb-2">🏔️</div>
+                        <span
+                            class="text-[9px] font-extrabold uppercase tracking-tighter text-slate-500">Montagne</span>
+                    </button>
+                </div>
+            </section>
+        </div>
+
+        <!-- Action (Droite) -->
+        <div class="lg:col-span-5 space-y-6 animate-fade" style="animation-delay: 0.2s">
+            <div class="gradient-brand p-8 rounded-[40px] text-white shadow-2xl shadow-indigo-200">
+                <h3 class="text-xl font-black mb-6 flex items-center gap-3 uppercase tracking-tighter italic">
+                    <span class="not-italic">⚡</span> Certification Pédagogique
+                </h3>
+                <div class="space-y-4 mb-12">
+                    <div class="flex gap-4 items-center bg-white/10 p-4 rounded-2xl border border-white/10">
+                        <span class="text-2xl">🧊</span>
+                        <div class="text-[11px] font-medium leading-tight">
+                            <p class="font-black uppercase tracking-widest mb-1">Dé Holographique</p>
+                            <p class="text-indigo-100/70">Cube 3D CSS avec rotation physique.</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-4 items-center bg-white/10 p-4 rounded-2xl border border-white/10">
+                        <span class="text-2xl">🕹️</span>
+                        <div class="text-[11px] font-medium leading-tight">
+                            <p class="font-black uppercase tracking-widest mb-1">UI Cyber-Lab</p>
+                            <p class="text-indigo-100/70">Fonds noirs, néons et polices Orbitron.</p>
+                        </div>
+                    </div>
+                </div>
+                <button onclick="buildPrompt()"
+                    class="w-full bg-white text-indigo-600 font-black py-6 rounded-2xl hover:scale-[1.03] active:scale-[0.98] transition-all shadow-xl text-lg uppercase tracking-tight">
+                    Créer le Prompt Maître
+                </button>
+            </div>
+
+            <div id="promptOutputContainer" class="hidden">
+                <div class="bg-slate-900 rounded-[32px] p-6 shadow-2xl border border-white/5">
+                    <div class="flex justify-between items-center mb-5 text-slate-900">
+                        <div class="flex items-center gap-2">
+                            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                            <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest">LudoTech
+                                Engine Ready</span>
+                        </div>
+                        <button onclick="copyPrompt()"
+                            class="bg-indigo-600 text-white text-[10px] px-5 py-2.5 rounded-full font-black hover:bg-indigo-500 transition-all uppercase shadow-lg shadow-indigo-900/40">Copier</button>
+                    </div>
+                    <div class="text-[10px] leading-relaxed text-slate-300 h-96 overflow-y-auto scrollbar-custom pr-3 font-mono bg-black/40 p-6 rounded-2xl"
+                        id="promptTextOutput">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        let selectedTheme = 'cyber';
+        let selectedPath = 'urban';
+        let selectedBoardLayout = 'spiral';
+        let hasImage = false;
+
+        const boardLayouts = {
+            spiral: {
+                name: "Spirale",
+                description: "Le parcours en spirale crée une progression concentrique élégante du centre vers l'extérieur, parfait pour une expérience immersive.",
+                technical: "PARCOURS EN SPIRALE : Les 40 cases forment une spirale partant du centre et s'étendant vers l'extérieur. Utilisez des courbes de Bézier CSS (border-radius élevé) pour chaque case. Le parcours doit visuellement créer un tourbillon hypnotique. Cases en cercles concentriques progressifs."
+            },
+            snake: {
+                name: "Serpentin",
+                description: "Parcours en serpentin classique avec virages fluides, idéal pour une progression linéaire intuitive.",
+                technical: "PARCOURS SERPENTIN : Tracé horizontal gauche-droite en aller-retour avec virages arrondis. 4-5 rangées horizontales, les cases font des demi-tours fluides à chaque extrémité. Bordures arrondies aux angles. Style classique de jeu de plateau."
+            },
+            zigzag: {
+                name: "Zigzag",
+                description: "Design dynamique en zigzag diagonal avec alternance de directions, créant un effet visuel énergique.",
+                technical: "PARCOURS ZIGZAG : Tracé en diagonales alternées formant des pointes (< > < >). Les cases doivent créer des virages à 90° nets et marqués. Effet visuel de montagne russe. Utiliser transform: rotate() pour incliner certaines sections."
+            },
+            circuit: {
+                name: "Circuit Ovale",
+                description: "Parcours en forme d'ovale comme un circuit de course, parfait pour simuler une compétition.",
+                technical: "PARCOURS CIRCUIT OVALE : Forme elliptique fermée (ou en fer à cheval avec départ et arrivée proches). Cases disposées le long d'un tracé courbe régulier. Ressemble à un circuit de Formule 1 vu du dessus. Utiliser position: absolute avec calculs trigonométriques."
+            },
+            labyrinth: {
+                name: "Labyrinthe",
+                description: "Parcours complexe avec virages à 90° simulant un labyrinthe structuré, pour une aventure mystérieuse.",
+                technical: "PARCOURS LABYRINTHE : Tracé rectangulaire avec virages à angle droit multiples. Le chemin serpente entre des 'murs' virtuels. Cases alignées sur une grille, mais le parcours fait des détours. Effet de couloir et d'exploration."
+            },
+            wave: {
+                name: "Vagues",
+                description: "Parcours ondulé fluide rappelant des vagues, créant un mouvement organique et apaisant.",
+                technical: "PARCOURS EN VAGUES : Tracé sinusoïdal vertical ou horizontal (comme des vagues marines). Utiliser des courbes de Bézier quadratiques répétées. Les cases suivent une ligne ondulée harmonieuse. Effet visuel de montagne russe fluide."
+            }
+        };
+
+
+        const themes = {
+            industrial: "Style Dashboard industriel. Couleurs : Indigo (#4f46e5), Ardoise (#1e293b). Fonts : sans-serif moderne.",
+            nature: "Style Organique/Eco-Tech. Couleurs : Émeraude (#059669), Ambre (#fbbf24). Fonts : arrondies.",
+            cyber: "Style Cyber-Lab/Hacker. Background : Noir profond (#020617). Couleurs : Cyan (#06b6d4) et Fuchsia (#d946ef). Typographie : 'Orbitron' pour les titres, 'Rajdhani' pour le contenu. Effets de bordures néon.",
+            spatial: "Style Spatial/Galaxie. Background : Noir spatial (#0a0e27). Couleurs : Bleu galaxie (#3b82f6), Violet spatial (#8b5cf6). Typographie : 'Space Grotesk' ou 'Exo 2'. Effets d'étoiles et particules.",
+            arcade: "Style Rétro Arcade années 80. Background : Noir (#000000). Couleurs vives : Rose néon (#ec4899), Jaune électrique (#fbbf24), Cyan (#06b6d4). Typographie : 'Press Start 2P' ou 'VT323'. Effets pixel art et bordures colorées.",
+            ocean: "Style Océan/Aquatique. Background : Bleu profond (#0c4a6e). Couleurs : Turquoise (#06b6d4), Corail (#fb923c), Blanc écume (#f0f9ff). Typographie : 'Quicksand' ou 'Poppins'. Effets de vagues et bulles.",
+            synthwave: "Style Néon Synthwave/Rétrofuturisme. Background : Noir violet (#1e1b4b). Couleurs : Rose néon (#ec4899), Violet (#a855f7), Cyan (#22d3ee). Typographie : 'Russo One' ou 'Audiowide'. Grilles rétro et effets de glow intense.",
+            pastel: "Style Pastel Doux/Kawaii. Background : Blanc crème (#fefce8). Couleurs douces : Rose pâle (#fecdd3), Lavande (#e9d5ff), Menthe (#d1fae5). Typographie : 'Comfortaa' ou 'Nunito'. Bordures arrondies et ombres légères.",
+            forest: "Style Forêt/Nature. Background : Vert foncé (#14532d). Couleurs : Vert émeraude (#059669), Brun chêne (#92400e), Doré automne (#f59e0b). Typographie : 'Merriweather' ou 'Lora'. Textures bois et feuillage."
+        };
+
+        const pathThemes = {
+            urban: "Parcours URBAIN : Tracé en zig-zag à travers une ville. Décors : immeubles, lampadaires, passages piétons, panneaux de signalisation. Cases = intersections de rues. Style graphique de carte urbaine stylisée.",
+            forest: "Parcours FORÊT : Chemin sinueux zig-zag à travers une forêt enchantée. Décors : arbres, buissons, champignons, clairières, ponts en bois. Cases = étapes du sentier forestier. Ambiance nature verdoyante.",
+            desert: "Parcours DÉSERT : Route en zig-zag à travers les dunes. Décors : cactus, oasis, rochers, temple ancien. Cases = points d'étape dans le sable. Couleurs chaudes (sable, orange, ocre).",
+            spatial: "Parcours SPATIAL : Voyage interstellaire en zig-zag entre les planètes. Décors : planètes colorées, astéroïdes, étoiles, station spatiale. Cases = points de navigation cosmique. Fond noir étoilé.",
+            ocean: "Parcours OCÉAN : Plongée sous-marine en zig-zag. Décors : coraux, poissons, algues, épaves, grotte. Cases = zones d'exploration aquatique. Couleurs bleues et turquoise avec bulles.",
+            mountain: "Parcours MONTAGNE : Ascension alpine en zig-zag. Décors : rochers, sapins, refuge, drapeaux, sommet enneigé. Cases = paliers d'ascension. Vue en coupe du versant montagneux."
+        };
+
+        function setTheme(t) {
+            selectedTheme = t;
+            document.querySelectorAll('.theme-btn').forEach(b => {
+                b.classList.remove('active');
+                const span = b.querySelector('span');
+                if (span) {
+                    span.classList.remove('text-indigo-600');
+                    span.classList.add('text-slate-500');
+                }
+            });
+            const active = document.getElementById('theme-' + t);
+            if (active) {
+                active.classList.add('active');
+                const span = active.querySelector('span');
+                if (span) {
+                    span.classList.remove('text-slate-500');
+                    span.classList.add('text-indigo-600');
+                }
+            }
+        }
+
+        function setBoardLayout(layout) {
+            selectedBoardLayout = layout;
+            document.querySelectorAll('.board-layout-btn').forEach(b => {
+                b.classList.remove('active');
+                const span = b.querySelector('span');
+                if (span) {
+                    span.classList.remove('text-indigo-600');
+                    span.classList.add('text-slate-500');
+                }
+            });
+            const active = document.getElementById('layout-' + layout);
+            if (active) {
+                active.classList.add('active');
+                const span = active.querySelector('span');
+                if (span) {
+                    span.classList.remove('text-slate-500');
+                    span.classList.add('text-indigo-600');
+                }
+            }
+
+            // Mettre à jour la description
+            const descElement = document.getElementById('layoutDescription');
+            if (descElement && boardLayouts[layout]) {
+                descElement.textContent = boardLayouts[layout].description;
+            }
+        }
+
+
+        function setPath(p) {
+            selectedPath = p;
+            document.querySelectorAll('.path-btn').forEach(b => {
+                b.classList.remove('active');
+                const span = b.querySelector('span');
+                if (span) {
+                    span.classList.remove('text-indigo-600');
+                    span.classList.add('text-slate-500');
+                }
+            });
+            const active = document.getElementById('path-' + p);
+            if (active) {
+                active.classList.add('active');
+                const span = active.querySelector('span');
+                if (span) {
+                    span.classList.remove('text-slate-500');
+                    span.classList.add('text-indigo-600');
+                }
+            }
+        }
+
+        document.getElementById('fileImport').addEventListener('change', function (e) {
+            const file = e.target.files[0];
+            const reader = new FileReader();
+            reader.onload = (event) => document.getElementById('courseText').value = event.target.result;
+            reader.readAsText(file);
+        });
+
+        window.addEventListener('paste', e => {
+            const items = e.clipboardData.items;
+            for (let i = 0; i < items.length; i++) {
+                if (items[i].type.indexOf('image') !== -1) {
+                    const blob = items[i].getAsFile();
+                    const reader = new FileReader();
+                    reader.onload = event => {
+                        document.getElementById('screenshotImg').src = event.target.result;
+                        document.getElementById('imagePreview').classList.remove('hidden');
+                        hasImage = true;
+                    };
+                    reader.readAsDataURL(blob);
+                }
+            }
+        });
+
+        function clearImage() {
+            document.getElementById('screenshotImg').src = "";
+            document.getElementById('imagePreview').classList.add('hidden');
+            hasImage = false;
+        }
+
+        function buildPrompt() {
+            const course = document.getElementById('courseText').value;
+            if (!course) { alert("Veuillez d'abord fournir le contenu du cours."); return; }
+
+            const threshold = document.getElementById('successThreshold').value;
+
+            const designInstruction = hasImage
+                ? "IMPORTANT : Analyse la capture d'écran fournie. Reproduis fidèlement ce style visuel (couleurs, polices, effets néon) pour l'interface du jeu."
+                : themes[selectedTheme];
+
+            const pathInstruction = pathThemes[selectedPath];
+            const layoutInstruction = boardLayouts[selectedBoardLayout].technical;
+
+            const prompt = `Agis en tant que Développeur Full-Stack Senior & Ingénieur Pédagogique spécialisé en Gamification.
+Mission : Coder un jeu de plateau numérique pédagogique nommé "LUDOTECH : Le Défi" en UN SEUL FICHIER HTML autonome.
+
+INTERFACE UTILISATEUR - RÈGLES DU JEU :
+- Au DÉMARRAGE du jeu (avant le premier lancer), afficher un panneau "📋 RÈGLES DU JEU" avec :
+  • Objectif : Atteindre la case 40 et obtenir ${threshold}% de bonnes réponses pour découvrir le MOT SECRET
+  • Lancers disponibles : 15 lancers (+3 bonus si nécessaire)
+  • Mécanique : Lance le dé, réponds aux défis, ton pion avance automatiquement
+  • Particularité : Aucun feedback pendant le jeu, verdict final uniquement à l'arrivée
+  • Bouton "C'est parti !" pour démarrer la partie
+
+STRUCTURE DU JEU :
+- Plateau de 40 cases avec le design suivant :
+
+${layoutInstruction}
+
+- Le parcours doit former un chemin visuellement dynamique et attractif, avec des virages, des diagonales.
+- DÉ : Un cube holographique 3D interactif (CSS transform-style: preserve-3d) avec faces animées (valeurs 1 à 6).
+- IMPORTANT : TOUTES les cases de 2 à 39 contiennent OBLIGATOIREMENT un défi (38 défis au total).
+  • Case 1 = DÉPART (pas de défi)
+  • Cases 2 à 39 = 38 DÉFIS (un défi par case, AUCUNE case vide autorisée)
+  • Case 40 = ARRIVÉE (pas de défi, seulement le verdict final)
+
+THÈME DU PARCOURS :
+${pathInstruction}
+
+VISUALISATION DU PARCOURS (INTERFACE OBLIGATOIRE) :
+- Afficher une LIGNE DE PROGRESSION qui relie visuellement les cases du parcours (du départ à l'arrivée).
+- Cette ligne doit permettre à l'élève de voir CLAIREMENT :
+  • D'où il vient (cases déjà parcourues)
+  • Où il se trouve actuellement
+  • Où il doit arriver (cases restantes)
+- Le PION de l'élève doit être positionné AU CENTRE de la case actuelle (pas sur le bord ou le coin).
+- Utiliser des couleurs ou opacités différentes pour distinguer : cases parcourues / case actuelle / cases à venir.
+
+IMPLÉMENTATION DU DÉ (TECHNIQUE OBLIGATOIRE) :
+- Le lancer de dé DOIT utiliser Math.random() JavaScript natif pour générer un nombre aléatoire entre 1 et 6.
+- INTERDICTION ABSOLUE : Pas de seed fixe, pas de séquence prédéfinie, pas de cache.
+- Chaque instance du jeu (chaque navigateur/élève) doit avoir sa propre séquence aléatoire INDÉPENDANTE.
+- Code requis : Math.floor(Math.random() * 6) + 1
+- Résultat : Deux élèves jouant simultanément sur des PC différents auront des lancers DIFFÉRENTS.
+
+DÉFIS (Mixité stricte entre ces 3 types exclusivement) :
+1. QCM : 3 options, une seule correcte.
+2. QUESTION SIMPLE : Réponse en un seul mot (insensible à la casse).
+3. ASSOCIATIONS : Appairage interactif de 3 termes avec 3 définitions.
+
+NIVEAU DE DIFFICULTÉ DES QUESTIONS (CALIBRAGE PÉDAGOGIQUE OBLIGATOIRE) :
+- Public cible : Élèves de collège, niveau 4ème/3ème (environ 14 ans).
+- Vocabulaire : Accessible et clair, éviter le jargon trop technique sans explication.
+- Complexité : Questions ni trop simplistes (pas niveau primaire), ni trop complexes (pas niveau lycée/supérieur).
+- Formulation : Phrases courtes et directes, consignes claires.
+- QCM : Les distracteurs (mauvaises réponses) doivent être plausibles mais distinguables avec une bonne compréhension du cours.
+- Questions simples : Réponses en 1 mot (ou expression courte de 2-3 mots max) que l'élève peut retrouver dans le cours.
+- Associations : Définitions de 1-2 lignes maximum, pas de paragraphes.
+- INTERDICTION : Pas de questions pièges, pas de double négation, pas de formulations ambiguës.
+
+RÉPARTITION DES TYPES DE DÉFIS (RÈGLE OBLIGATOIRE) :
+- Les 38 défis doivent être répartis de manière APPROXIMATIVEMENT ÉQUILIBRÉE entre les 3 types.
+- Distribution cible : environ 13 QCM + 13 Questions Simples + 12 Associations (ou 12-13-13, peu importe).
+- PLACEMENT ALÉATOIRE : Les types de défis doivent être MÉLANGÉS de façon aléatoire sur les cases 2 à 39.
+- INTERDICTION : Pas de séquences prévisibles (ex: pas 10 QCM d'affilée, pas d'alternance régulière QCM-Simple-Asso-QCM-Simple-Asso...).
+- Objectif : L'élève ne doit JAMAIS pouvoir prédire quel type de défi l'attend sur la prochaine case.
+
+SYSTÈME DE LANCERS (LIMITATION IMPORTANTE) :
+- L'élève dispose de 15 LANCERS DE DÉ pour atteindre la case 40.
+- Affiche en permanence le compteur : "🎲 Lancers restants : X/15" (décrémenter après chaque lancer).
+- Si l'élève N'ATTEINT PAS la case 40 après 15 lancers, il obtient automatiquement 3 LANCERS BONUS.
+- Le compteur passe alors à : "🎲 Lancers BONUS : X/3".
+- Si après les 18 lancers (15+3) l'élève n'a toujours pas atteint la case 40 → ÉCHEC : "Mission échouée : ligne d'arrivée non atteinte."
+
+RÈGLE IMPORTANTE - CASE FINALE (LIGNE D'ARRIVÉE) :
+- La case 40 est une CASE D'ARRIVÉE, pas une case traversable.
+- Si le lancer du dé fait atteindre OU DÉPASSER la case 40, le pion s'arrête EXACTEMENT à la case 40 et le jeu se termine immédiatement.
+- Exemple : Élève à la case 37, lance un 6 → arrive à 40 (et NON à 43), le jeu termine.
+- Aucun dépassement ou "rebond" n'est possible : la case 40 = ligne d'arrivée finale.
+
+MÉCANIQUE DE PROGRESSION :
+- L'élève lance le dé et tombe sur une case.
+- Le défi s'affiche. L'élève valide sa réponse.
+- LE PION AVANCE SYSTÉMATIQUEMENT du nombre de cases indiqué par le dé, même si la réponse est fausse.
+- CORRECTION AVEUGLE : Aucun message de validation (juste/faux) n'est affiché pendant le jeu. L'élève reste dans l'incertitude.
+
+LOGIQUE DE RÉUSSITE (Verdict final - À la case 40 uniquement) :
+- Calcule le score de précision global (nombre de bonnes réponses / total de défis affrontés).
+- Ignore totalement la casse (majuscules/minuscules) pour toutes les réponses saisies.
+
+AFFICHAGE DU BILAN FINAL (OBLIGATOIRE DANS TOUS LES CAS) :
+- Afficher un panneau "📊 BILAN DE MISSION" contenant TOUJOURS ces informations :
+  • Nombre de défis affrontés : X/38
+  • Bonnes réponses : X (avec pourcentage)
+  • Mauvaises réponses : X (avec pourcentage)
+  • Score de précision : XX%
+  • Lancers utilisés : X/15 (ou X/18 avec bonus)
+
+- Si précision >= ${threshold}% :
+  • Afficher : "🎉 MISSION RÉUSSIE !"
+  • Révéler le MOT SECRET en grand et en surbrillance : [LE MOT-CLÉ DU COURS]
+  • Message : "Tu as débloqué le mot secret ! Bravo !"
+  • Bouton "Rejouer" pour recommencer
+
+- Si précision < ${threshold}% :
+  • Afficher : "📚 MISSION INCOMPLÈTE"
+  • Message : "Il te faut ${threshold}% de réussite pour obtenir le mot secret. Continue tes efforts !"
+  • Bouton "Recommencer le parcours" pour retenter sa chance
+
+DESIGN :
+${designInstruction}
+
+CONTENU DU COURS POUR GÉNÉRER LES DÉFIS :
+${course}`;
+
+            document.getElementById('promptTextOutput').innerText = prompt;
+            document.getElementById('promptOutputContainer').classList.remove('hidden');
+            document.getElementById('promptOutputContainer').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function copyPrompt() {
+            const text = document.getElementById('promptTextOutput').innerText;
+            const el = document.createElement('textarea');
+            el.value = text;
+            document.body.appendChild(el);
+            el.select();
+            document.execCommand('copy');
+            document.body.removeChild(el);
+            alert("LudoTech : Prompt copié !");
+        }
+
+        setTheme('cyber');
+        setPath('urban');
+        setBoardLayout('spiral');
+    </script>
+</body>
+
+</html>

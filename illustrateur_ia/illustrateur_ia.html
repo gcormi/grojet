@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="fr" class="scroll-smooth">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Illustrateur IA - Studio Enseignant</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                        heading: ['"Outfit"', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: { 50: '#f0f9ff', 100: '#e0f2fe', 500: '#0ea5e9', 600: '#0284c7', 700: '#0369a1' },
+                        violet: { 50: '#f5f3ff', 500: '#8b5cf6', 600: '#7c3aed' }
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.6s ease-out forwards',
+                        'slide-up': 'slideUp 0.6s ease-out forwards',
+                    },
+                    keyframes: {
+                        fadeIn: { '0%': { opacity: '0' }, '100%': { opacity: '1' } },
+                        slideUp: { '0%': { opacity: '0', transform: 'translateY(20px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } }
+                    },
+                    boxShadow: {
+                        'glass': '0 8px 32px 0 rgba(31, 38, 135, 0.07)',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #f8fafc;
+            background-image:
+                radial-gradient(at 0% 0%, rgba(56, 189, 248, 0.1) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(139, 92, 246, 0.1) 0px, transparent 50%);
+            background-attachment: fixed;
+            min-height: 100vh;
+        }
+
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.05);
+        }
+
+        .step-active {
+            border-color: #0ea5e9;
+            color: #0284c7;
+            background-color: #f0f9ff;
+        }
+
+        .step-inactive {
+            border-color: #e2e8f0;
+            color: #94a3b8;
+        }
+
+        .style-card.selected {
+            border-color: #8b5cf6;
+            background-color: #f5f3ff;
+            box-shadow: 0 0 0 2px #8b5cf6;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+</head>
+
+<body class="text-slate-600 antialiased flex flex-col min-h-screen">
+
+    <!-- Header -->
+    <header class="sticky top-0 z-50 glass-panel border-b border-indigo-100/50">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <a href="boite.html"
+                    class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white shadow-lg hover:scale-105 transition-transform">
+                    <i class="fas fa-magic"></i>
+                </a>
+                <div>
+                    <h1 class="font-heading font-bold text-xl text-slate-800 leading-tight">Illustrateur <span
+                            class="text-indigo-600">IA</span></h1>
+                    <p class="text-xs text-slate-500 font-medium">Générateur de Prompts & Placement</p>
+                </div>
+            </div>
+            <a href="boite.html"
+                class="text-sm font-medium text-slate-500 hover:text-indigo-600 transition-colors flex items-center gap-2">
+                <i class="fas fa-arrow-left"></i> <span class="hidden sm:inline">Retour Boîte à Outils</span>
+            </a>
+        </div>
+    </header>
+
+    <main class="flex-grow container mx-auto px-4 py-8 max-w-5xl">
+
+        <!-- Progress Steps -->
+        <div class="flex justify-between mb-10 relative">
+            <div class="absolute top-1/2 left-0 w-full h-1 bg-slate-200 -z-10 -translate-y-1/2 rounded-full"></div>
+            <div class="flex flex-col items-center gap-2 group cursor-pointer" onclick="goToStep(1)">
+                <div id="step-marker-1"
+                    class="w-10 h-10 rounded-full border-2 flex items-center justify-center bg-white font-bold transition-all step-active shadow-sm">
+                    1</div>
+                <span class="text-xs font-bold bg-white px-2 text-slate-600">Contenu</span>
+            </div>
+            <div class="flex flex-col items-center gap-2 group cursor-pointer" onclick="goToStep(2)">
+                <div id="step-marker-2"
+                    class="w-10 h-10 rounded-full border-2 flex items-center justify-center bg-white font-bold transition-all step-inactive shadow-sm">
+                    2</div>
+                <span class="text-xs font-bold bg-white px-2 text-slate-400">Paramètres</span>
+            </div>
+            <div class="flex flex-col items-center gap-2 group cursor-pointer" onclick="goToStep(3)">
+                <div id="step-marker-3"
+                    class="w-10 h-10 rounded-full border-2 flex items-center justify-center bg-white font-bold transition-all step-inactive shadow-sm">
+                    3</div>
+                <span class="text-xs font-bold bg-white px-2 text-slate-400">Résultat</span>
+            </div>
+        </div>
+
+        <!-- STEP 1: CONTENT INPUT -->
+        <div id="step-1" class="animate-slide-up">
+            <div class="glass-panel p-8 rounded-3xl">
+                <div class="text-center mb-8">
+                    <h2 class="text-2xl font-bold font-heading text-slate-800 mb-4">Importez votre cours</h2>
+
+                    <div class="bg-indigo-50 border border-indigo-100 rounded-xl p-4 text-left mb-6 max-w-3xl mx-auto">
+                        <h3 class="font-bold text-indigo-700 mb-2"><i class="fas fa-info-circle mr-2"></i>Comment ça
+                            marche ?</h3>
+                        <ol class="list-decimal list-inside text-sm text-slate-600 space-y-1 ml-1">
+                            <li><strong>Importez</strong> votre fichier HTML ou collez votre texte de cours.</li>
+                            <li><strong>Configurez</strong> le style global et l'IA générera vos propositions.</li>
+                            <li><strong>Personnalisez</strong> ensuite le style de chaque image individuellement si
+                                besoin.</li>
+                            <li><strong>Copiez</strong> les marqueurs (ex: [IMAGE 1]) et les prompts pour créer vos
+                                images.</li>
+                        </ol>
+                        <div class="mt-3 pt-3 border-t border-indigo-100 text-sm text-slate-600">
+                            <span class="font-bold text-red-500"><i class="fas fa-exclamation-triangle mr-1"></i>Note
+                                :</span>
+                            L'outil vous indique exactement où placer chaque image dans votre cours.
+                        </div>
+                    </div>
+
+                    <p class="text-slate-500">Collez votre texte ou importez un fichier HTML pour commencer l'analyse.
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <!-- File Upload -->
+                    <div class="border-2 border-dashed border-slate-300 rounded-2xl p-8 text-center hover:border-indigo-400 hover:bg-indigo-50/30 transition-all cursor-pointer group bg-white/50"
+                        onclick="document.getElementById('fileInput').click()">
+                        <input type="file" id="fileInput" accept=".html,.txt,.md" class="hidden"
+                            onchange="handleFileUpload(this)">
+                        <div
+                            class="w-16 h-16 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
+                            <i class="fas fa-file-upload text-2xl"></i>
+                        </div>
+                        <h3 class="font-bold text-slate-700 mb-1">Importer un fichier</h3>
+                        <p class="text-sm text-slate-400">HTML, TXT ou Markdown</p>
+                        <p id="fileNameDisplay" class="text-sm font-semibold text-indigo-600 mt-2 hidden"></p>
+                    </div>
+
+                    <!-- OR Divider for mobile/visual -->
+                    <div class="md:hidden flex items-center justify-center gap-4 text-slate-300 font-bold">
+                        <div class="h-px bg-slate-300 w-full"></div>
+                        OU
+                        <div class="h-px bg-slate-300 w-full"></div>
+                    </div>
+
+                    <!-- Paste Text -->
+                    <div class="relative">
+                        <textarea id="textInput"
+                            class="w-full h-full min-h-[200px] bg-white border border-slate-200 rounded-2xl p-4 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all resize-none text-sm leading-relaxed shadow-inner"
+                            placeholder="Collez votre contenu ici..."></textarea>
+                        <div
+                            class="absolute bottom-4 right-4 text-xs text-slate-400 bg-white/80 px-2 py-1 rounded-md border border-slate-100">
+                            <span id="charCount">0</span> caractères
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex justify-end">
+                    <button onclick="goToStep(2)"
+                        class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-8 rounded-xl shadow-lg shadow-indigo-200 transition-all transform hover:-translate-y-1 flex items-center gap-2">
+                        Suivant <i class="fas fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- STEP 2: SETTINGS -->
+        <div id="step-2" class="hidden animate-slide-up">
+            <div class="glass-panel p-8 rounded-3xl">
+                <h2 class="text-2xl font-bold font-heading text-slate-800 mb-8 flex items-center gap-3">
+                    <span
+                        class="w-8 h-8 rounded-lg bg-indigo-100 text-indigo-600 flex items-center justify-center text-sm">2</span>
+                    Configuration de l'Imagerie
+                </h2>
+
+                <!-- Number of Images -->
+                <div class="mb-10">
+                    <label class="block text-sm font-bold text-slate-700 mb-3">Combien d'images souhaitez-vous générer
+                        ?</label>
+                    <div class="flex items-center gap-4">
+                        <input type="range" id="imageCount" min="1" max="20" value="5"
+                            class="w-full max-w-md h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-indigo-600"
+                            oninput="document.getElementById('imageCountDisplay').innerText = this.value">
+                        <div
+                            class="w-16 h-10 border border-indigo-200 bg-white rounded-lg flex items-center justify-center font-bold text-indigo-700 shadow-sm">
+                            <span id="imageCountDisplay">5</span>
+                        </div>
+                    </div>
+                    <p class="text-xs text-slate-400 mt-2">L'IA sélectionnera les <span
+                            class="font-bold text-indigo-500">meilleurs emplacements</span> dans le texte.</p>
+                </div>
+
+                <!-- Style Selector -->
+                <div class="mb-10">
+                    <label class="block text-sm font-bold text-slate-700 mb-3">Style Artistique</label>
+                    <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+                        <div class="style-card border bg-white rounded-xl p-2 cursor-pointer hover:shadow-lg transition-all text-center group"
+                            data-style="Photoréaliste" onclick="selectStyle(this)">
+                            <div class="aspect-square rounded-lg mb-2 overflow-hidden bg-slate-100">
+                                <img src="https://images.unsplash.com/photo-1629812456605-4a044aa38fbc?auto=format&fit=crop&w=300&q=80"
+                                    class="w-full h-full object-cover group-hover:scale-110 transition-transform"
+                                    alt="Rendu Photo">
+                            </div>
+                            <span class="block text-xs font-bold text-slate-800">Photoréaliste</span>
+                            <span class="block text-[10px] text-slate-400">Rendu photographique</span>
+                        </div>
+                        <div class="style-card border bg-white rounded-xl p-2 cursor-pointer hover:shadow-lg transition-all text-center group"
+                            data-style="3D Isométrique" onclick="selectStyle(this)">
+                            <div class="aspect-square rounded-lg mb-2 overflow-hidden bg-slate-100">
+                                <img src="https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=300&q=80"
+                                    class="w-full h-full object-cover group-hover:scale-110 transition-transform"
+                                    alt="3D">
+                            </div>
+                            <span class="block text-xs font-bold text-slate-800">3D Isométrique</span>
+                            <span class="block text-[10px] text-slate-400">Vue 3D de dessus</span>
+                        </div>
+                        <div class="style-card border bg-white rounded-xl p-2 cursor-pointer hover:shadow-lg transition-all text-center group"
+                            data-style="Flat Design" onclick="selectStyle(this)">
+                            <div class="aspect-square rounded-lg mb-2 overflow-hidden bg-slate-100">
+                                <img src="https://images.unsplash.com/photo-1509343256512-d77a5cb3791b?auto=format&fit=crop&w=300&q=80"
+                                    class="w-full h-full object-cover group-hover:scale-110 transition-transform"
+                                    alt="Flat">
+                            </div>
+                            <span class="block text-xs font-bold text-slate-800">Flat Design</span>
+                            <span class="block text-[10px] text-slate-400">Aplat moderne</span>
+                        </div>
+                        <div class="style-card border bg-white rounded-xl p-2 cursor-pointer hover:shadow-lg transition-all text-center group"
+                            data-style="Cyberpunk" onclick="selectStyle(this)">
+                            <div class="aspect-square rounded-lg mb-2 overflow-hidden bg-slate-100">
+                                <img src="https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?auto=format&fit=crop&w=300&q=80"
+                                    class="w-full h-full object-cover group-hover:scale-110 transition-transform"
+                                    alt="Cyberpunk">
+                            </div>
+                            <span class="block text-xs font-bold text-slate-800">Cyberpunk</span>
+                            <span class="block text-[10px] text-slate-400">Néons & Futur</span>
+                        </div>
+                        <div class="style-card border bg-white rounded-xl p-2 cursor-pointer hover:shadow-lg transition-all text-center group"
+                            data-style="Aquarelle" onclick="selectStyle(this)">
+                            <div class="aspect-square rounded-lg mb-2 overflow-hidden bg-slate-100">
+                                <img src="https://images.unsplash.com/photo-1605721911519-3dfeb3be25e7?auto=format&fit=crop&w=300&q=80"
+                                    class="w-full h-full object-cover group-hover:scale-110 transition-transform"
+                                    alt="Water">
+                            </div>
+                            <span class="block text-xs font-bold text-slate-800">Aquarelle</span>
+                            <span class="block text-[10px] text-slate-400">Peinture douce</span>
+                        </div>
+                        <div class="style-card border bg-white rounded-xl p-2 cursor-pointer hover:shadow-lg transition-all text-center group"
+                            data-style="Dessin Crayon" onclick="selectStyle(this)">
+                            <div
+                                class="aspect-square rounded-lg mb-2 overflow-hidden bg-white border border-slate-100 relative">
+                                <!-- Embedded SVG for reliability -->
+                                <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMDAgMjAwIiBmaWxsPSJub25lIj4KICA8cGF0aCBkPSJNMjAgMTgwUzgwIDE2MCAxMDAgMTAwczYwLTYwIDEwMC0yMCIgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjIiIGZpbGw9Im5vbmUiIHN0cm9rZS1kYXNoYXJyYXk9IjQgMiIvPgogIDxwYXRoIGQ9Ik00MCAxOTBTOTAgMTgwIDExMCAxMjBzczcwLTUwIDkwLTMwIiBzdHJva2U9IiM1NTUiIHN0cm9rZS13aWR0aD0iMSIgZmlsbD0ibm9uZSIvPgogIDxwYXRoIGQ9Ik0xMCAxNTBTNTAlMjAxMjAgNTAgMjAwIiBzdHJva2U9IiMzMzMiIHN0cm9rZS13aWR0aD0iMyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+Cjwvc3ZnPg=="
+                                    class="w-full h-full object-cover group-hover:scale-110 transition-transform p-4 opacity-80"
+                                    alt="Sketch">
+                            </div>
+                            <span class="block text-xs font-bold text-slate-800">Croquis</span>
+                            <span class="block text-[10px] text-slate-400">Trait noir & blanc</span>
+                        </div>
+                        <div class="style-card border bg-white rounded-xl p-2 cursor-pointer hover:shadow-lg transition-all text-center group"
+                            data-style="Pixel Art" onclick="selectStyle(this)">
+                            <div class="aspect-square rounded-lg mb-2 overflow-hidden bg-slate-100">
+                                <img src="https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=300&q=80"
+                                    class="w-full h-full object-cover group-hover:scale-110 transition-transform"
+                                    alt="Pixel">
+                            </div>
+                            <span class="block text-xs font-bold text-slate-800">Pixel Art</span>
+                            <span class="block text-[10px] text-slate-400">Rétro gaming</span>
+                        </div>
+                        <div class="style-card border bg-white rounded-xl p-2 cursor-pointer hover:shadow-lg transition-all text-center group"
+                            data-style="Schéma Technique" onclick="selectStyle(this)">
+                            <div class="aspect-square rounded-lg mb-2 overflow-hidden bg-slate-100">
+                                <img src="https://images.unsplash.com/photo-1594729095022-e2f6d2eece9c?auto=format&fit=crop&w=300&q=80"
+                                    class="w-full h-full object-cover group-hover:scale-110 transition-transform"
+                                    alt="Blueprint">
+                            </div>
+                            <span class="block text-xs font-bold text-slate-800">Blueprint</span>
+                            <span class="block text-[10px] text-slate-400">Plan industriel</span>
+                        </div>
+                        <div class="style-card border bg-white rounded-xl p-2 cursor-pointer hover:shadow-lg transition-all text-center group"
+                            data-style="Paper Cutout" onclick="selectStyle(this)">
+                            <div class="aspect-square rounded-lg mb-2 overflow-hidden bg-indigo-50 relative">
+                                <!-- Embedded SVG for reliability -->
+                                <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMDAgMjAwIj4KICA8Y2lyY2xlIGN4PSIxMDAiIGN5PSIxMDAiIHI9IjgwIiBmaWxsPSIjNDMzOGNhIiAvPgogIDxjaXJjbGUgY3g9IjEyMCIgY3k9IjgwIiByPSI1MCIgZmlsbD0iIzYzNjZmMSIgLz4KICA8Y2lyY2xlIGN4PSI4MCIgY3k9IjEyMCIgcj0iNDAiIGZpbGw9IiM4MThjZjgiIC8+Cjwvc3ZnPg=="
+                                    class="w-full h-full object-cover group-hover:scale-110 transition-transform scale-90"
+                                    alt="Paper">
+                            </div>
+                            <span class="block text-xs font-bold text-slate-800">Papier Découpé</span>
+                            <span class="block text-[10px] text-slate-400">Collage texturé</span>
+                        </div>
+                        <div class="style-card border bg-white rounded-xl p-2 cursor-pointer hover:shadow-lg transition-all text-center group"
+                            data-style="Low Poly" onclick="selectStyle(this)">
+                            <div class="aspect-square rounded-lg mb-2 overflow-hidden bg-slate-100">
+                                <img src="https://images.unsplash.com/photo-1550684848-fac1c5b4e853?auto=format&fit=crop&w=300&q=80"
+                                    class="w-full h-full object-cover group-hover:scale-110 transition-transform"
+                                    alt="Poly">
+                            </div>
+                            <span class="block text-xs font-bold text-slate-800">Low Poly</span>
+                            <span class="block text-[10px] text-slate-400">Facettes 3D/Geo</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Layout Options -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10">
+                    <div>
+                        <label class="block text-sm font-bold text-slate-700 mb-3">Alignement Préféré</label>
+                        <div class="flex gap-2 bg-slate-100 p-1 rounded-xl">
+                            <button
+                                class="flex-1 py-2 rounded-lg text-sm font-medium transition-all bg-white shadow-sm text-indigo-600 layout-btn"
+                                data-align="auto" onclick="setAlign(this)">Auto IA</button>
+                            <button
+                                class="flex-1 py-2 rounded-lg text-sm font-medium text-slate-500 hover:text-indigo-600 transition-all layout-btn"
+                                data-align="left" onclick="setAlign(this)">Gauche</button>
+                            <button
+                                class="flex-1 py-2 rounded-lg text-sm font-medium text-slate-500 hover:text-indigo-600 transition-all layout-btn"
+                                data-align="center" onclick="setAlign(this)">Centré</button>
+                            <button
+                                class="flex-1 py-2 rounded-lg text-sm font-medium text-slate-500 hover:text-indigo-600 transition-all layout-btn"
+                                data-align="right" onclick="setAlign(this)">Droite</button>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-slate-700 mb-3">Taille des Images</label>
+                        <div class="flex gap-2 bg-slate-100 p-1 rounded-xl">
+                            <button
+                                class="flex-1 py-2 rounded-lg text-sm font-medium transition-all bg-white shadow-sm text-indigo-600 size-btn"
+                                data-size="auto" onclick="setSize(this)">Auto IA</button>
+                            <button
+                                class="flex-1 py-2 rounded-lg text-sm font-medium text-slate-500 hover:text-indigo-600 transition-all size-btn"
+                                data-size="small" onclick="setSize(this)">Petite</button>
+                            <button
+                                class="flex-1 py-2 rounded-lg text-sm font-medium text-slate-500 hover:text-indigo-600 transition-all size-btn"
+                                data-size="medium" onclick="setSize(this)">Moyenne</button>
+                            <button
+                                class="flex-1 py-2 rounded-lg text-sm font-medium text-slate-500 hover:text-indigo-600 transition-all size-btn"
+                                data-size="large" onclick="setSize(this)">Grande</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex justify-between pt-4 border-t border-slate-100">
+                    <button onclick="goToStep(1)"
+                        class="text-slate-500 font-bold hover:text-slate-800 transition-colors px-4 py-2">
+                        Retour
+                    </button>
+                    <button onclick="processAndGenerate()"
+                        class="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-bold py-3 px-8 rounded-xl shadow-lg shadow-indigo-200 transition-all transform hover:-translate-y-1 flex items-center gap-2">
+                        <i class="fas fa-robot"></i> Analyser & Générer
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- STEP 3: RESULTS -->
+        <div id="step-3" class="hidden animate-slide-up">
+            <div class="bg-white/90 backdrop-blur border border-white rounded-3xl p-8 shadow-xl">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+                    <div>
+                        <h2 class="text-2xl font-bold font-heading text-slate-800">Plan d'Illustration</h2>
+                        <p class="text-slate-500 text-sm">Voici les <span id="res-count"
+                                class="font-bold text-indigo-600">0</span> images suggérées pour votre document.</p>
+                    </div>
+                    <div class="flex gap-3">
+                        <button onclick="copyAllPrompts()"
+                            class="bg-indigo-50 border border-indigo-200 text-indigo-700 font-bold py-2 px-4 rounded-lg hover:bg-indigo-100 transition-colors text-sm">
+                            <i class="fas fa-copy mr-2"></i> Copier tout
+                        </button>
+                        <button onclick="downloadReport()"
+                            class="bg-slate-800 text-white font-bold py-2 px-4 rounded-lg hover:bg-slate-700 transition-colors text-sm">
+                            <i class="fas fa-download mr-2"></i> Exporter Liste
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Results List -->
+                <div class="mb-4 flex items-center justify-end gap-2">
+                    <label class="text-xs text-slate-500 font-bold">Format de copie :</label>
+                    <select id="copyFormat"
+                        class="text-xs border border-indigo-200 rounded-lg p-1 text-slate-600 focus:outline-none focus:border-indigo-500 bg-white">
+                        <option value="line">Liste (1 par ligne)</option>
+                        <option value="break">Séparateur (---)</option>
+                        <option value="json">Format JSON</option>
+                    </select>
+                </div>
+
+                <div id="results-container" class="flex flex-col gap-6">
+                    <!-- Cards will be injected here -->
+                </div>
+
+                <div class="flex justify-start pt-8">
+                    <button onclick="goToStep(2)"
+                        class="text-slate-500 font-bold hover:text-slate-800 transition-colors px-4 py-2">
+                        <i class="fas fa-arrow-left mr-2"></i> Modifier les paramètres
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        /* --- STATE MANAGEMENT --- */
+        let state = {
+            rawText: "",
+            imageCount: 5,
+            selectedStyle: "Photoréaliste",
+            align: "auto",
+            size: "auto",
+            results: []
+        };
+
+        /* --- UI NAVIGATION --- */
+        function goToStep(step) {
+            // Validate step 1
+            if (step === 2 && !document.getElementById('textInput').value.trim()) {
+                alert("Veuillez entrer du texte ou importer un fichier.");
+                return;
+            }
+
+            // Hide all steps
+            document.getElementById('step-1').classList.add('hidden');
+            document.getElementById('step-2').classList.add('hidden');
+            document.getElementById('step-3').classList.add('hidden');
+
+            // Show target step
+            const target = document.getElementById(`step-${step}`);
+            target.classList.remove('hidden');
+            target.classList.remove('animate-slide-up'); // reset anim
+            void target.offsetWidth; // trigger reflow
+            target.classList.add('animate-slide-up');
+
+            // Update markers
+            for (let i = 1; i <= 3; i++) {
+                const marker = document.getElementById(`step-marker-${i}`);
+                if (i === step) {
+                    marker.className = "w-10 h-10 rounded-full border-2 flex items-center justify-center bg-indigo-600 text-white border-indigo-600 font-bold transition-all shadow-lg scale-110";
+                } else if (i < step) {
+                    marker.className = "w-10 h-10 rounded-full border-2 flex items-center justify-center bg-indigo-50 text-indigo-600 border-indigo-200 font-bold transition-all";
+                    marker.innerHTML = '<i class="fas fa-check"></i>';
+                } else {
+                    marker.className = "w-10 h-10 rounded-full border-2 flex items-center justify-center bg-white text-slate-300 border-slate-200 font-bold transition-all";
+                    marker.innerHTML = i;
+                }
+            }
+        }
+
+        /* --- INPUT HANDLING --- */
+        document.getElementById('textInput').addEventListener('input', function (e) {
+            document.getElementById('charCount').innerText = e.target.value.length;
+            state.rawText = e.target.value;
+        });
+
+        function handleFileUpload(input) {
+            const file = input.files[0];
+            if (!file) return;
+
+            document.getElementById('fileNameDisplay').innerText = file.name;
+            document.getElementById('fileNameDisplay').classList.remove('hidden');
+
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const content = e.target.result;
+                document.getElementById('textInput').value = content;
+                document.getElementById('charCount').innerText = content.length;
+                state.rawText = content;
+
+                // Si c'est du HTML, on peut essayer d'enlever les tags pour l'affichage brut ou garder pour l'analyse
+                // Pour l'instant on garde tout
+            };
+            reader.readAsText(file);
+        }
+
+        /* --- SELECTION UI --- */
+        function selectStyle(element) {
+            document.querySelectorAll('.style-card').forEach(el => {
+                el.classList.remove('selected', 'ring-2', 'ring-indigo-500');
+            });
+            element.classList.add('selected');
+            state.selectedStyle = element.getAttribute('data-style');
+        }
+
+        function setAlign(btn) {
+            document.querySelectorAll('.layout-btn').forEach(b => {
+                b.classList.remove('bg-white', 'text-indigo-600', 'shadow-sm');
+                b.classList.add('text-slate-500');
+            });
+            btn.classList.add('bg-white', 'text-indigo-600', 'shadow-sm');
+            btn.classList.remove('text-slate-500');
+            state.align = btn.getAttribute('data-align');
+        }
+
+        function setSize(btn) {
+            document.querySelectorAll('.size-btn').forEach(b => {
+                b.classList.remove('bg-white', 'text-indigo-600', 'shadow-sm');
+                b.classList.add('text-slate-500');
+            });
+            btn.classList.add('bg-white', 'text-indigo-600', 'shadow-sm');
+            btn.classList.remove('text-slate-500');
+            state.size = btn.getAttribute('data-size');
+        }
+
+        /* --- SMART PROMPT LOGIC --- */
+        function cleanHTML(html) {
+            let tmp = document.createElement("DIV");
+            tmp.innerHTML = html;
+            return tmp.textContent || tmp.innerText || "";
+        }
+
+        function processAndGenerate() {
+            state.imageCount = parseInt(document.getElementById('imageCount').value);
+            state.imagesInserted = false;
+            state.currentDoc = null;
+
+            // 1. Analyse text structure
+            // On sépare par paragraphes ou sauts de ligne double
+            let textToProcess = state.rawText;
+
+            // Si c'est du HTML, on essaie d'être malin et de choper les H2/H3
+            let segments = [];
+
+            if (textToProcess.includes('<html') || textToProcess.includes('<div') || textToProcess.includes('<p>')) {
+                // Mode HTML Basic Parsing
+                state.isHTML = true;
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(textToProcess, 'text/html');
+                state.currentDoc = doc;
+
+                // On cherche les titres et paragraphes
+                const elements = doc.querySelectorAll('h1, h2, h3, h4, p, li');
+
+                let buffer = "";
+                let currentTitle = "Introduction";
+
+                elements.forEach(el => {
+                    const txt = el.innerText.trim();
+                    if (!txt) return;
+
+                    if (['H1', 'H2', 'H3', 'H4'].includes(el.tagName)) {
+                        currentTitle = txt;
+                    } else if (txt.length > 50) {
+                        segments.push({
+                            title: currentTitle,
+                            content: txt,
+                            score: txt.length,
+                            element: el
+                        });
+                    }
+                });
+            } else {
+                // Mode Texte Brut
+                state.isHTML = false;
+                const paragraphs = textToProcess.split(/\n\s*\n/);
+                paragraphs.forEach(p => {
+                    const cleanP = p.trim();
+                    if (cleanP.length > 50) {
+                        // On essaie de deviner un titre (première phrase)
+                        const firstSentenceEnd = cleanP.indexOf('.');
+                        const title = firstSentenceEnd > 0 && firstSentenceEnd < 100 ? cleanP.substring(0, firstSentenceEnd) : "Section du cours";
+                        segments.push({
+                            title: title,
+                            content: cleanP,
+                            score: cleanP.length,
+                            element: null
+                        });
+                    }
+                });
+            }
+
+            // Si pas assez de segments, on duplique ou on prend tout
+            if (segments.length === 0) {
+                segments.push({ title: "Contenu Principal", content: textToProcess.substring(0, 500), score: 100 });
+            }
+
+            // 2. Selection algorithm (distribution équitable)
+            // On veut N images. On a M segments.
+            // On trie par score pour avoir les gros morceaux si M < N, ou on spread si M > N
+
+            // 2. Selection algorithm
+            let selectedSegments = [];
+
+            if (state.imageCount <= segments.length) {
+                // Si on a assez de segments, on les répartit équitablement
+                const step = segments.length / state.imageCount;
+                for (let i = 0; i < state.imageCount; i++) {
+                    const index = Math.min(Math.floor(i * step), segments.length - 1);
+                    selectedSegments.push(segments[index]);
+                }
+            } else {
+                // Si on veut PLUS d'images que de segments, on boucle (Round Robin)
+                for (let i = 0; i < state.imageCount; i++) {
+                    selectedSegments.push(segments[i % segments.length]);
+                }
+            }
+
+            // 3. Generate Prompts && Avoid identical duplicates
+            let usageCount = {};
+
+            state.results = selectedSegments.map((seg, idx) => {
+                const alignVal = state.align === 'auto' ? (idx % 2 === 0 ? 'Droite' : 'Gauche') : (state.align === 'left' ? 'Gauche' : (state.align === 'right' ? 'Droite' : 'Centré'));
+                const sizeVal = state.size === 'auto' ? 'Moyenne' : (state.size === 'small' ? 'Petite' : (state.size === 'medium' ? 'Moyenne' : 'Grande'));
+
+                const contextSnippet = seg.content.substring(0, 150).replace(/\n/g, " ") + "...";
+
+                let styleFR = state.selectedStyle;
+                if (styleFR === 'Low Poly') styleFR = 'Low Poly (3D géométrique)';
+                if (styleFR === 'Blueprint') styleFR = 'Schéma technique bleu';
+
+                if (!usageCount[seg.title]) usageCount[seg.title] = 0;
+                usageCount[seg.title]++;
+                const variation = usageCount[seg.title] > 1 ? ` (Variation ${usageCount[seg.title]})` : "";
+
+                const basePrompt = `IMAGE UNIQUE ET INDIVIDUELLE. Style: ${styleFR}. Sujet central: "${seg.title}". Scène: ${contextSnippet}. Cadrage: Vue unique centrée. INTERDIT: Planche, collage, grille, multiples vignettes, texte, division d'écran.${variation}`;
+
+                return {
+                    id: idx + 1,
+                    location: `Section : ${seg.title}${variation}`,
+                    context: contextSnippet,
+                    prompt: basePrompt,
+                    align: alignVal,
+                    size: sizeVal,
+                    element: seg.element
+                };
+            });
+
+            renderResults();
+            goToStep(3);
+        }
+
+        function renderResults() {
+            const container = document.getElementById('results-container');
+            document.getElementById('res-count').innerText = state.results.length;
+            container.innerHTML = '';
+
+            state.results.forEach((res, idx) => {
+                const card = document.createElement('div');
+                card.className = "bg-white border-2 border-indigo-50 rounded-xl p-6 hover:shadow-xl transition-all group relative";
+
+                card.innerHTML = `
+                    <div class="absolute top-4 right-4 flex gap-2">
+                        <span class="px-3 py-1 rounded-full bg-indigo-100 text-xs font-bold text-indigo-700 uppercase tracking-wide">${res.align}</span>
+                    </div>
+                    
+                    <div class="flex flex-col gap-4 mb-6">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-full bg-slate-800 text-white flex items-center justify-center font-bold text-sm shadow-md">
+                                ${res.id}
+                            </div>
+                            <h3 class="font-bold text-slate-800 text-lg">${res.location}</h3>
+                        </div>
+
+                        <div class="bg-amber-50 border-l-4 border-amber-400 p-4 rounded-r-lg">
+                            <p class="text-xs font-bold text-amber-600 mb-1 uppercase tracking-wider">
+                                <i class="fas fa-arrow-down mr-1"></i> À insérer APRÈS ce texte :
+                            </p>
+                            <p class="text-sm text-slate-700 italic font-medium leading-relaxed">
+                                "...${res.context}"
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="bg-indigo-50/50 rounded-xl p-4 border border-indigo-100 relative">
+                        <div class="flex justify-between items-center mb-3">
+                            <label class="text-xs font-bold text-indigo-400 uppercase tracking-widest">Prompt (Français)</label>
+                            <select onchange="updatePrompt(${idx}, this.value)" class="text-xs border border-indigo-200 rounded px-2 py-1 text-slate-600 bg-white focus:outline-none focus:border-indigo-500">
+                                <option value="Photoréaliste" ${state.selectedStyle === 'Photoréaliste' ? 'selected' : ''}>Photoréaliste</option>
+                                <option value="3D Isométrique" ${state.selectedStyle === '3D Isométrique' ? 'selected' : ''}>3D Isométrique</option>
+                                <option value="Flat Design" ${state.selectedStyle === 'Flat Design' ? 'selected' : ''}>Flat Design</option>
+                                <option value="Cyberpunk" ${state.selectedStyle === 'Cyberpunk' ? 'selected' : ''}>Cyberpunk</option>
+                                <option value="Aquarelle" ${state.selectedStyle === 'Aquarelle' ? 'selected' : ''}>Aquarelle</option>
+                                <option value="Dessin Crayon" ${state.selectedStyle === 'Dessin Crayon' ? 'selected' : ''}>Dessin Crayon</option>
+                                <option value="Pixel Art" ${state.selectedStyle === 'Pixel Art' ? 'selected' : ''}>Pixel Art</option>
+                                <option value="Schéma Technique" ${state.selectedStyle === 'Schéma Technique' ? 'selected' : ''}>Schéma Technique</option>
+                                <option value="Paper Cutout" ${state.selectedStyle === 'Paper Cutout' ? 'selected' : ''}>Paper Cutout</option>
+                                <option value="Low Poly" ${state.selectedStyle === 'Low Poly' ? 'selected' : ''}>Low Poly</option>
+                            </select>
+                        </div>
+                        <textarea id="prompt-${idx}" class="w-full bg-transparent border-none focus:ring-0 text-slate-700 text-sm font-medium resize-none h-24" readonly>${res.prompt}</textarea>
+                        
+                        <button onclick="copyToClipboard(document.getElementById('prompt-${idx}').value)" class="absolute bottom-3 right-3 bg-white text-indigo-600 hover:text-indigo-700 p-2 rounded-lg shadow-sm border border-indigo-100 text-xs font-bold transition-transform hover:scale-105">
+                            <i class="fas fa-copy"></i> COPIER PROMPT
+                        </button>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function updatePrompt(index, newStyle) {
+            const res = state.results[index];
+            let styleFR = newStyle;
+            if (styleFR === 'Low Poly') styleFR = 'Low Poly (3D géométrique)';
+            if (styleFR === 'Schéma Technique') styleFR = 'Schéma technique bleu (Blueprint)';
+
+            // Reconstruct prompt
+            const variation = res.location.includes('Variation') ? res.location.match(/\((.*?)\)/)[0] : "";
+            // We need to clean location from variation title for strict re-use or just use the raw title if stored, 
+            // but here we can just rebuild the string structure.
+
+            // Simplified rebuild based on stored context and title logic would be complex to reverse engineer 100% perfectly without storing raw title in result object.
+            // Let's assume we update the prompt string directly by replacing the style part.
+
+            // Better approach: Regenerate prompt cleanly
+            // We need the raw title again. We stored 'Location' which is 'Section : Title'.
+            // Let's extract title.
+            let rawTitle = res.location.replace('Section : ', '').replace(variation, '').trim();
+
+            const newPrompt = `IMAGE UNIQUE ET INDIVIDUELLE. Style: ${styleFR}. Sujet central: "${rawTitle}". Scène: ${res.context}. Cadrage: Vue unique centrée. INTERDIT: Planche, collage, grille, multiples vignettes, texte, division d'écran.${variation}`;
+
+            // Update UI
+            document.getElementById(`prompt-${index}`).value = newPrompt;
+
+            // Update State
+            state.results[index].prompt = newPrompt;
+        }
+
+        /* --- UTILS --- */
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                // Determine what was copied based on content/length
+                const msg = text.includes("<!--") ? "Marqueur copié !" : "Prompt copié !";
+                alert(msg);
+            });
+        }
+
+        function copyAllPrompts() {
+            const format = document.getElementById('copyFormat').value;
+            let textToCopy = "";
+            let message = "";
+
+            if (format === 'json') {
+                textToCopy = JSON.stringify(state.results.map(r => r.prompt));
+                message = "Prompts copiés au format JSON !";
+            } else if (format === 'break') {
+                textToCopy = state.results.map(r => r.prompt).join('\n---\n');
+                message = "Prompts copiés avec séparateur '---' !";
+            } else {
+                textToCopy = state.results.map(r => r.prompt).join('\n');
+                message = "Prompts copiés ligne par ligne !\nRappel : Utilisez le mode 'Batch/Queue' de votre IA.";
+            }
+
+            navigator.clipboard.writeText(textToCopy).then(() => alert(message));
+        }
+
+        function downloadReport() {
+            // Export txt propre pour import batch
+            const content = state.results.map(r => r.prompt).join('\n');
+
+            const blob = new Blob([content], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'prompts_batch.txt';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+
+        // Init default selection (first card)
+        document.querySelector('.style-card').classList.add('selected', 'ring-2', 'ring-indigo-500');
+
+    </script>
+</body>
+
+</html>
