@@ -1,9 +1,10 @@
 pages:
   stage: deploy
   script:
-    - mkdir .public
-    - cp -r * .public
-    - mv .public public
+    - rm -rf public
+    - mkdir public
+    - cp -r * public/
+    - mv public/public/ .tmp 2>/dev/null || true # Évite une boucle infinie
   artifacts:
     paths:
       - public
