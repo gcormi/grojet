@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Veille automatisée avec gestion de dossiers et synchronisation par mot de passe.">
+    <meta name="description" content="Veille automatisée avec gestion de dossiers et synchronisation.">
     <title>Veille Stratégique Pro | Gilles Cormi EI</title>
 
     <script src="https://cdn.tailwindcss.com"></script>
@@ -136,7 +136,7 @@
                 <button id="btn-refresh" title="Actualiser les flux" class="text-xs font-bold bg-indigo-50 text-indigo-600 px-4 py-2 rounded-lg hover:bg-indigo-600 hover:text-white transition-all">
                     <i class="fas fa-sync-alt"></i>
                 </button>
-                <button id="btn-session-ui" class="text-[10px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-500 px-4 py-2 rounded-lg hover:bg-indigo-50 hover:text-indigo-600 transition-all">
+                <button id="btn-session-ui" class="text-[10px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-500 px-4 py-2 rounded-lg hover:bg-indigo-100 hover:text-indigo-600 transition-all">
                     <i class="fas fa-key mr-2"></i> Ma Session
                 </button>
             </div>
@@ -145,9 +145,9 @@
 
     <main class="container mx-auto max-w-7xl px-6 py-12 flex-grow">
         
-        <div id="local-warning" class="hidden mb-8 bg-amber-50 border border-amber-200 text-amber-700 p-4 rounded-2xl text-xs flex items-center gap-3">
-            <i class="fas fa-exclamation-triangle"></i>
-            <span>Mode Local : La synchronisation Cloud est indisponible. Hébergez ce fichier sur la Forge pour activer la sauvegarde à distance.</span>
+        <div id="local-status-msg" class="mb-8 bg-blue-50 border border-blue-100 text-blue-700 p-4 rounded-2xl text-xs flex items-center gap-3">
+            <i class="fas fa-info-circle"></i>
+            <span id="status-text">Chargement du système...</span>
         </div>
 
         <section class="mb-12 bg-white dark:bg-slate-800 p-8 rounded-3xl border border-slate-100 dark:border-slate-700 shadow-xl shadow-indigo-500/5">
@@ -205,10 +205,10 @@
             <h3 class="text-xl font-bold mb-4 flex items-center gap-2">
                 <i class="fas fa-lock text-indigo-500"></i> Accès à ma veille
             </h3>
-            <p class="text-sm text-slate-500 mb-6">Utilisez votre code (ex: 6463) pour synchroniser votre veille entre vos appareils.</p>
+            <p class="text-sm text-slate-500 mb-6">Entrez votre code secret pour synchroniser vos données entre vos appareils.</p>
             
-            <label class="block text-[10px] font-bold uppercase text-slate-400 mb-2">Code de Session</label>
-            <input type="password" id="master-password" placeholder="Votre code..." class="w-full bg-slate-50 dark:bg-slate-900 p-4 rounded-2xl text-sm border border-slate-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-indigo-500/20 mb-6">
+            <label class="block text-[10px] font-bold uppercase text-slate-400 mb-2">Code Secret</label>
+            <input type="password" id="master-password" placeholder="Ex: 6463" class="w-full bg-slate-50 dark:bg-slate-900 p-4 rounded-2xl text-sm border border-slate-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-indigo-500/20 mb-6">
 
             <div class="flex flex-col gap-3">
                 <button onclick="saveAndSync()" class="w-full py-4 bg-indigo-600 text-white rounded-2xl font-bold hover:bg-indigo-700 transition-all flex items-center justify-center gap-2">
@@ -220,13 +220,13 @@
             </div>
             
             <div id="session-info" class="mt-6 pt-6 border-t border-slate-100 dark:border-slate-700 text-center">
-                <p class="text-[10px] text-slate-400 uppercase tracking-widest font-bold mb-1">ID Technique</p>
-                <code id="current-session-id" class="text-[11px] text-indigo-500 font-mono">Cloud déconnecté</code>
+                <p class="text-[10px] text-slate-400 uppercase tracking-widest font-bold mb-1">Status de connexion</p>
+                <code id="current-session-id" class="text-[11px] text-indigo-500 font-mono italic">Déconnecté</code>
             </div>
         </div>
     </div>
 
-    <!-- Pied de page (Footer) -->
+    <!-- Footer -->
     <footer class="border-t border-slate-100 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm mt-20">
         <div class="container mx-auto max-w-7xl px-6 py-16">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-12 mb-12">
@@ -239,7 +239,6 @@
                     </div>
                     <p class="text-sm text-slate-500 leading-relaxed">Ingénierie pédagogique augmentée pour les enseignants. Suite d'outils libres et gratuits.</p>
                 </div>
-
                 <div>
                     <h3 class="text-xs font-extrabold uppercase tracking-widest text-slate-400 mb-5">Ressources</h3>
                     <ul class="space-y-3">
@@ -247,7 +246,6 @@
                         <li><a href="mailto:gilles@gcormi.fr" class="text-sm font-medium text-slate-500 hover:text-indigo-600 flex items-center gap-2"><i class="fas fa-envelope text-xs text-slate-300"></i> Contact : gilles@gcormi.fr</a></li>
                     </ul>
                 </div>
-
                 <div>
                     <h3 class="text-xs font-extrabold uppercase tracking-widest text-slate-400 mb-5">Outils phares</h3>
                     <ul class="space-y-3">
@@ -257,7 +255,6 @@
                     </ul>
                 </div>
             </div>
-
             <div class="border-t border-slate-100 dark:border-slate-800 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-slate-400">
                 <div class="text-xs font-bold tracking-tight">© 2026 Gilles Cormi EI · Ingénierie Pédagogique</div>
                 <div class="text-[10px] font-bold uppercase tracking-widest">Sous licence <a href="https://creativecommons.org/licenses/by-nc-nd/4.0/deed.fr" target="_blank" class="underline decoration-dotted">CC BY-NC-ND 4.0</a></div>
@@ -277,6 +274,7 @@
         let isCloudEnabled = false;
 
         try {
+            // Tentative de récupération des variables d'environnement
             if (typeof __firebase_config !== 'undefined' && __firebase_config) {
                 const firebaseConfig = JSON.parse(__firebase_config);
                 const app = initializeApp(firebaseConfig);
@@ -284,11 +282,12 @@
                 db = getFirestore(app);
                 appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
                 isCloudEnabled = true;
+                document.getElementById('status-text').textContent = "Cloud Activé : Synchronisation maison/bureau opérationnelle.";
             } else {
-                document.getElementById('local-warning').classList.remove('hidden');
+                document.getElementById('status-text').textContent = "Mode Local : Vos données sont enregistrées uniquement sur ce navigateur. Hébergez sur la Forge avec configuration pour le Cloud.";
             }
         } catch (e) {
-            document.getElementById('local-warning').classList.remove('hidden');
+            document.getElementById('status-text').textContent = "Mode Local activé.";
         }
 
         let currentUser = null;
@@ -323,41 +322,55 @@
                     let effectiveUid = user.uid;
                     if (storedPassword) effectiveUid = await hashPassword(storedPassword);
                     currentUser = { uid: effectiveUid };
-                    document.getElementById('current-session-id').textContent = effectiveUid.substring(0,12) + "...";
+                    document.getElementById('current-session-id').textContent = "Connecté : " + effectiveUid.substring(0,8);
                     listenToData(effectiveUid);
                 }
             });
         } else {
+            // Mode Local : On récupère les données du localStorage
+            loadLocalData();
             fetchAllFeeds();
         }
 
-        window.toggleSessionModal = () => document.getElementById('session-modal').classList.toggle('active');
+        window.toggleSessionModal = () => {
+            document.getElementById('session-modal').classList.toggle('active');
+            document.getElementById('master-password').value = ""; // Clear password visibility
+        };
         
         window.saveAndSync = async () => {
-            if (!isCloudEnabled) { showToast("Action impossible en mode local", true); return; }
             const pwd = document.getElementById('master-password').value.trim();
-            if (pwd.length < 4) { showToast("Code trop court (min. 4 car.)", true); return; }
+            if (pwd.length < 4) { showToast("Code trop court", true); return; }
             localStorage.setItem('veille_master_password', pwd);
-            showToast("Session synchronisée avec le code : " + pwd);
+            showToast("Code enregistré. Synchronisation...");
             setTimeout(() => window.location.reload(), 1000);
         };
 
         document.getElementById('btn-session-ui').addEventListener('click', toggleSessionModal);
 
+        // --- DATA MANAGEMENT ---
         function listenToData(uid) {
             if (!db) return;
             if(unsubscribeFolders) unsubscribeFolders();
             if(unsubscribeSources) unsubscribeSources();
+            
             const foldersRef = collection(db, 'artifacts', appId, 'users', uid, 'folders');
             const sourcesRef = collection(db, 'artifacts', appId, 'users', uid, 'sources');
+            
             unsubscribeFolders = onSnapshot(foldersRef, (snap) => {
                 folders = snap.docs.map(d => ({ id: d.id, ...d.data() }));
                 updateFolderUI();
             });
+            
             unsubscribeSources = onSnapshot(sourcesRef, (snap) => {
                 sources = snap.docs.map(d => ({ id: d.id, ...d.data() }));
                 fetchAllFeeds();
             });
+        }
+
+        function loadLocalData() {
+            folders = JSON.parse(localStorage.getItem('local_folders') || '[]');
+            sources = JSON.parse(localStorage.getItem('local_sources') || '[]');
+            updateFolderUI();
         }
 
         function updateFolderUI() {
@@ -386,7 +399,9 @@
             const rssContainer = document.getElementById('rss-container');
             const allItems = results.flatMap(r => r.items).sort((a,b) => new Date(b.pubDate) - new Date(a.pubDate));
             rssContainer.innerHTML = '';
-            if (allItems.length === 0) rssContainer.innerHTML = '<p class="col-span-full text-center opacity-40 py-10">Aucune actualité trouvée.</p>';
+            
+            if (allItems.length === 0) rssContainer.innerHTML = '<p class="col-span-full text-center opacity-40 py-10">Aucune actualité. Ajoutez un blog pour voir ses articles.</p>';
+            
             allItems.forEach(item => {
                 rssContainer.innerHTML += `
                     <div class="card-rss rounded-3xl p-6 flex flex-col h-full group">
@@ -405,9 +420,11 @@
             const container = document.getElementById('folders-container');
             container.innerHTML = '';
             const displayFolders = [...folders.sort((a,b) => a.name.localeCompare(b.name)), { id: null, name: 'Favoris non classés' }];
+            
             displayFolders.forEach(f => {
                 const folderLinks = sources.filter(s => s.folderId === f.id);
                 if (folderLinks.length === 0 && f.id === null) return;
+                
                 const section = document.createElement('div');
                 section.className = "folder-section";
                 section.innerHTML = `
@@ -435,53 +452,77 @@
             });
         }
 
-        window.moveLink = async (id) => {
-            if (!isCloudEnabled) return;
-            const folderList = folders.map((f, i) => `${i + 1}. ${f.name}`).join('\n');
-            const choice = prompt(`Dans quel dossier voulez-vous déplacer ce lien ?\n0. Favoris non classés\n${folderList}\n\nEntrez le numéro :`);
-            
-            if (choice === null) return;
-            const index = parseInt(choice);
-            
-            let newFolderId = null;
-            if (index > 0 && index <= folders.length) {
-                newFolderId = folders[index - 1].id;
-            } else if (index !== 0) {
-                showToast("Choix invalide", true);
-                return;
-            }
-
-            try {
-                await updateDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'sources', id), {
-                    folderId: newFolderId
-                });
-                showToast("Lien déplacé !");
-            } catch (e) { showToast("Erreur de déplacement", true); }
-        };
-
+        // --- ACTIONS (Supporte Local + Cloud) ---
         document.getElementById('btn-add-source').addEventListener('click', async () => {
-            if (!isCloudEnabled) { showToast("Hébergez l'appli pour sauvegarder", true); return; }
             const urlInput = document.getElementById('new-url');
             const folderId = document.getElementById('folder-select').value;
             const url = urlInput.value.trim();
-            if (!url || !currentUser) return;
-            try {
-                const domain = new URL(url).hostname;
-                await addDoc(collection(db, 'artifacts', appId, 'users', currentUser.uid, 'sources'), {
-                    name: domain, url, rss_url: url.includes('feed') ? url : (url.endsWith('/') ? url + 'feed' : url + '/feed'),
-                    folderId: folderId === 'none' ? null : folderId, addedAt: new Date().toISOString()
-                });
-                urlInput.value = "";
-                showToast("Ajouté");
-            } catch (e) { showToast("URL invalide", true); }
+            if (!url) return;
+
+            const domain = new URL(url).hostname.replace('www.', '');
+            const newSource = {
+                id: isCloudEnabled ? null : Date.now().toString(),
+                name: domain, 
+                url, 
+                rss_url: url.includes('feed') ? url : (url.endsWith('/') ? url + 'feed' : url + '/feed'),
+                folderId: folderId === 'none' ? null : folderId, 
+                addedAt: new Date().toISOString()
+            };
+
+            if (isCloudEnabled && currentUser) {
+                await addDoc(collection(db, 'artifacts', appId, 'users', currentUser.uid, 'sources'), newSource);
+            } else {
+                sources.push(newSource);
+                localStorage.setItem('local_sources', JSON.stringify(sources));
+                fetchAllFeeds();
+            }
+            urlInput.value = "";
+            showToast("Ajouté");
         });
 
-        window.deleteLink = async (id) => {
-            if (!isCloudEnabled) return;
-            if(confirm("Supprimer ce lien ?")) {
-                await deleteDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'sources', id));
+        window.moveLink = async (id) => {
+            const folderList = folders.map((f, i) => `${i + 1}. ${f.name}`).join('\n');
+            const choice = prompt(`Déplacer vers :\n0. Non classés\n${folderList}\n\nEntrez le numéro :`);
+            if (choice === null) return;
+            const index = parseInt(choice);
+            let newFolderId = (index > 0 && index <= folders.length) ? folders[index - 1].id : null;
+
+            if (isCloudEnabled) {
+                await updateDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'sources', id), { folderId: newFolderId });
+            } else {
+                const sIdx = sources.findIndex(s => s.id === id);
+                if (sIdx > -1) {
+                    sources[sIdx].folderId = newFolderId;
+                    localStorage.setItem('local_sources', JSON.stringify(sources));
+                    fetchAllFeeds();
+                }
             }
         };
+
+        window.deleteLink = async (id) => {
+            if(!confirm("Supprimer ce lien ?")) return;
+            if (isCloudEnabled) {
+                await deleteDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'sources', id));
+            } else {
+                sources = sources.filter(s => s.id !== id);
+                localStorage.setItem('local_sources', JSON.stringify(sources));
+                fetchAllFeeds();
+            }
+        };
+
+        document.getElementById('btn-new-folder').addEventListener('click', async () => {
+            const name = prompt("Nom du dossier :");
+            if (!name) return;
+            const newFolder = { id: isCloudEnabled ? null : Date.now().toString(), name, createdAt: new Date().toISOString() };
+            
+            if (isCloudEnabled) {
+                await addDoc(collection(db, 'artifacts', appId, 'users', currentUser.uid, 'folders'), newFolder);
+            } else {
+                folders.push(newFolder);
+                localStorage.setItem('local_folders', JSON.stringify(folders));
+                updateFolderUI();
+            }
+        });
 
         function showToast(m, err = false) {
             const t = document.createElement('div');
