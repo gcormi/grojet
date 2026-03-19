@@ -1,0 +1,890 @@
+<!DOCTYPE html>
+<html lang="fr" class="">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Cormi Conseil | Gestion EI</title>
+<script>
+  // Configure Tailwind dark mode BEFORE loading Tailwind
+  window.tailwind = { config: { darkMode: 'class' } };
+</script>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap');
+  *, body { font-family: 'Inter', sans-serif; }
+  :root {
+    --bg-app: #f8fafc; --bg-side: #f1f5f9; --border: #e2e8f0;
+    --text: #1e293b; --text-muted: #64748b;
+  }
+  .dark { --bg-app: #0f172a; --bg-side: #1e293b; --border: #334155; --text: #f1f5f9; --text-muted: #94a3b8; }
+  body { background: var(--bg-app); color: var(--text); transition: background .2s, color .2s; }
+  .a4-page { width:210mm; min-height:297mm; padding:20mm; margin:0 auto; background:#fff; box-shadow:0 10px 25px rgba(0,0,0,.08); position:relative; }
+  @media print {
+    @page { size:A4; margin:0; }
+    body { background:#fff !important; margin:0; padding:0; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+    #app-ui { display:none !important; }
+    #print-area { display:block !important; }
+    .a4-page { box-shadow:none; margin:0; width:210mm; min-height:297mm; padding:15mm; }
+  }
+  .tab-content { display:none; }
+  .tab-content.active { display:block; animation:fadeIn .25s ease; }
+  @keyframes fadeIn { from { opacity:0; transform:translateY(4px); } to { opacity:1; transform:translateY(0); } }
+  .header-accent { border-left:4px solid #4f46e5; padding-left:20px; }
+  ::-webkit-scrollbar { width:6px; } ::-webkit-scrollbar-track { background:transparent; }
+  ::-webkit-scrollbar-thumb { background:#cbd5e1; border-radius:3px; }
+  .dark ::-webkit-scrollbar-thumb { background:#475569; }
+  textarea { resize:vertical; }
+  .dark .bg-white { background-color: #1e293b !important; }
+  .dark .bg-slate-50 { background-color: #1e293b !important; }
+  .dark .bg-slate-100 { background-color: #253347 !important; }
+  .dark .border-slate-200 { border-color: #334155 !important; }
+  .dark .border-slate-100 { border-color: #2d3f55 !important; }
+  .dark .text-slate-800 { color: #e2e8f0 !important; }
+  .dark .text-slate-700 { color: #cbd5e1 !important; }
+  .dark .text-slate-600 { color: #94a3b8 !important; }
+  .dark .text-slate-500 { color: #64748b !important; }
+  .dark .text-slate-400 { color: #475569 !important; }
+  .dark .shadow-sm { box-shadow: 0 1px 3px rgba(0,0,0,.5); }
+  .dark input, .dark textarea, .dark select { background-color:#0f172a !important; color:#e2e8f0 !important; border-color:#334155 !important; }
+  .client-suggestion { cursor:pointer; padding:7px 12px; font-size:.85rem; border-bottom:1px solid var(--border); }
+  .client-suggestion:hover { background: rgba(79,70,229,.07); }
+  .month-bar { display:flex; flex-direction:column-reverse; gap:0; cursor:default; position:relative; }
+  .month-bar:hover .bar-tooltip { opacity:1; }
+  .bar-tooltip { position:absolute; top:-28px; left:50%; transform:translateX(-50%); background:#1e293b; color:#fff; font-size:.65rem; padding:2px 6px; border-radius:4px; white-space:nowrap; opacity:0; pointer-events:none; transition:opacity .15s; z-index:10; }
+  .dark .bar-tooltip { background:#f1f5f9; color:#1e293b; }
+  .tva-ok { background: #dcfce7; color: #16a34a; }
+  .tva-warn { background: #fef3c7; color: #d97706; }
+  .tva-alert { background: #fee2e2; color: #dc2626; }
+  .dark .tva-ok { background: rgba(22,163,74,.15); }
+  .dark .tva-warn { background: rgba(217,119,6,.15); }
+  .dark .tva-alert { background: rgba(220,38,38,.15); }
+  /* Toast */
+  #toast { position:fixed; bottom:24px; right:24px; z-index:9999; display:flex; flex-direction:column; gap:8px; }
+  .toast-msg { padding:10px 18px; border-radius:10px; font-size:.84rem; font-weight:600; box-shadow:0 4px 16px rgba(0,0,0,.15); animation:slideIn .25s ease; }
+  @keyframes slideIn { from { transform:translateX(80px); opacity:0; } to { transform:translateX(0); opacity:1; } }
+  .toast-ok { background:#dcfce7; color:#16a34a; border:1px solid #86efac; }
+  .toast-err { background:#fee2e2; color:#dc2626; border:1px solid #fca5a5; }
+  .toast-info { background:#dbeafe; color:#2563eb; border:1px solid #93c5fd; }
+  .dark .toast-ok { background:#14532d; color:#4ade80; }
+  .dark .toast-err { background:#450a0a; color:#f87171; }
+  .dark .toast-info { background:#1e3a5f; color:#60a5fa; }
+</style>
+</head>
+<body class="text-slate-800 h-screen flex flex-col">
+
+<div id="toast"></div>
+
+<!-- ====================== UI ====================== -->
+<div id="app-ui" class="flex-grow flex flex-col md:flex-row overflow-hidden">
+
+  <!-- Sidebar -->
+  <aside class="w-full md:w-64 bg-slate-100 dark:bg-slate-800 text-slate-800 flex flex-col border-r border-slate-200 z-20 shrink-0 transition-colors">
+    <!-- Logo -->
+    <div class="p-5 border-b border-slate-200 flex items-center justify-between">
+      <div>
+        <h1 class="text-xl font-black tracking-tight text-slate-900 dark:text-white" id="app-brand">Cormi <span class="text-indigo-600">Conseil</span></h1>
+        <p class="text-[10px] text-slate-500 uppercase tracking-widest mt-0.5">Gestion EI</p>
+      </div>
+      <button onclick="toggleDark()" id="dark-toggle" title="Mode sombre" class="text-slate-400 hover:text-indigo-600 text-lg transition p-1 rounded-lg hover:bg-white/50">
+        <i class="fas fa-moon" id="dark-icon"></i>
+      </button>
+    </div>
+    <!-- Nav -->
+    <nav class="flex-grow p-3 space-y-1 overflow-y-auto">
+      <button onclick="switchTab('dashboard')" id="tab-btn-dashboard" class="nav-btn w-full flex items-center gap-3 text-left px-4 py-2.5 rounded-lg text-slate-600 hover:bg-white hover:text-indigo-600 hover:shadow-sm transition font-medium text-sm"><i class="fas fa-chart-pie w-4"></i> Tableau de bord</button>
+      <p class="px-4 pt-4 pb-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Facturation</p>
+      <button onclick="switchTab('create')" id="tab-btn-create" class="nav-btn w-full flex items-center gap-3 text-left px-4 py-2.5 rounded-lg text-slate-600 hover:bg-white hover:text-indigo-600 hover:shadow-sm transition font-medium text-sm"><i class="fas fa-pen-nib w-4"></i> Éditeur</button>
+      <button onclick="switchTab('history')" id="tab-btn-history" class="nav-btn w-full flex items-center gap-3 text-left px-4 py-2.5 rounded-lg text-slate-600 hover:bg-white hover:text-indigo-600 hover:shadow-sm transition font-medium text-sm"><i class="fas fa-folder-open w-4"></i> Documents</button>
+      <p class="px-4 pt-4 pb-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Comptabilité</p>
+      <button onclick="switchTab('ledger')" id="tab-btn-ledger" class="nav-btn w-full flex items-center gap-3 text-left px-4 py-2.5 rounded-lg text-slate-600 hover:bg-white hover:text-indigo-600 hover:shadow-sm transition font-medium text-sm"><i class="fas fa-book w-4"></i> Livre de comptes</button>
+      <p class="px-4 pt-4 pb-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Gestion</p>
+      <button onclick="switchTab('clients')" id="tab-btn-clients" class="nav-btn w-full flex items-center gap-3 text-left px-4 py-2.5 rounded-lg text-slate-600 hover:bg-white hover:text-indigo-600 hover:shadow-sm transition font-medium text-sm"><i class="fas fa-address-book w-4"></i> Clients</button>
+      <button onclick="switchTab('settings')" id="tab-btn-settings" class="nav-btn w-full flex items-center gap-3 text-left px-4 py-2.5 rounded-lg text-slate-600 hover:bg-white hover:text-indigo-600 hover:shadow-sm transition font-medium text-sm"><i class="fas fa-cog w-4"></i> Paramètres</button>
+      <button onclick="switchTab('preview')" id="tab-btn-preview" class="nav-btn hidden w-full flex items-center gap-3 text-left px-4 py-2.5 rounded-lg text-slate-600 hover:bg-white hover:text-indigo-600 hover:shadow-sm transition font-medium text-sm"><i class="fas fa-eye w-4"></i> Aperçu</button>
+    </nav>
+    <!-- Data + late invoices badge -->
+    <div class="p-4 border-t border-slate-200 text-xs text-slate-500">
+      <p class="mb-2 font-bold text-slate-700 dark:text-slate-300"><i class="fas fa-shield-alt text-emerald-500 mr-1"></i> Données locales</p>
+      <button onclick="exportData()" class="text-indigo-600 hover:text-indigo-800 font-medium transition flex items-center gap-2 mb-1.5 w-full"><i class="fas fa-download"></i> Sauvegarder (Export)</button>
+      <button onclick="document.getElementById('import-file').click()" class="text-slate-500 hover:text-slate-800 transition flex items-center gap-2 w-full"><i class="fas fa-upload"></i> Importer (Restauration)</button>
+      <input type="file" id="import-file" accept=".json" class="hidden" onchange="importData(event)"/>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="flex-grow overflow-y-auto p-6 md:p-10 relative">
+
+    <!-- ═══ DASHBOARD ═══ -->
+    <div id="tab-dashboard" class="tab-content max-w-5xl mx-auto">
+      <h2 class="text-2xl font-black mb-6 flex items-center gap-2"><i class="fas fa-chart-pie text-indigo-600"></i> Vue d'ensemble</h2>
+      <!-- TVA Alert Banner -->
+      <div id="tva-banner" class="hidden mb-5 p-4 rounded-xl flex items-center gap-3 font-semibold text-sm"></div>
+      <!-- Late invoices alert -->
+      <div id="late-banner" class="hidden mb-5 p-4 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 text-sm font-medium flex items-start gap-3">
+        <i class="fas fa-exclamation-triangle mt-0.5"></i>
+        <div id="late-banner-text"></div>
+      </div>
+      <!-- KPI Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-8">
+        <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-200">
+          <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">CA Encaissé <span class="text-slate-400 font-normal normal-case" id="dash-year-label"></span></h3>
+          <span class="text-4xl font-black text-slate-800" id="dash-ca">0,00 €</span>
+          <p class="text-xs text-slate-500 mt-3"><i class="fas fa-info-circle"></i> Limite franchise TVA: <span id="dash-tva-limit">39 100</span> €</p>
+          <div class="w-full bg-slate-100 rounded-full h-2 mt-2 overflow-hidden">
+            <div class="h-2 rounded-full transition-all duration-500" id="dash-tva-bar" style="width:0%"></div>
+          </div>
+          <p class="text-right text-[10px] text-slate-400 mt-1" id="dash-tva-pct">0%</p>
+        </div>
+        <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-200">
+          <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Factures en attente</h3>
+          <span class="text-4xl font-black text-amber-600" id="dash-pending">0,00 €</span>
+          <p class="text-xs text-slate-500 mt-3" id="dash-pending-count">0 facture(s)</p>
+        </div>
+        <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-200">
+          <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Devis en cours</h3>
+          <span class="text-4xl font-black text-blue-600" id="dash-quotes">0,00 €</span>
+          <p class="text-xs text-slate-500 mt-3" id="dash-quotes-count">0 devis</p>
+        </div>
+      </div>
+      <!-- Charts + Activity -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
+        <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-200">
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="text-sm font-bold text-slate-800">📊 CA Mensuel</h3>
+            <span class="text-[10px] text-slate-400" id="dash-chart-year"></span>
+          </div>
+          <div id="dash-chart" class="flex items-end gap-1.5 h-36"></div>
+          <div class="flex justify-between text-[9px] text-slate-400 mt-1" id="dash-chart-labels"></div>
+        </div>
+        <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-200">
+          <h3 class="text-sm font-bold text-slate-800 mb-4 border-b border-slate-100 pb-2">Activité Récente</h3>
+          <ul id="dash-recent-activity" class="space-y-2 text-sm"></ul>
+        </div>
+      </div>
+      <!-- Conversion rate + quick actions -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-200">
+          <h3 class="text-sm font-bold text-slate-800 mb-4 border-b border-slate-100 pb-2">Taux de Conversion Devis→Facture</h3>
+          <div class="flex items-center gap-4">
+            <div class="text-4xl font-black text-indigo-600" id="dash-conv-rate">—</div>
+            <div class="text-sm text-slate-500" id="dash-conv-detail"></div>
+          </div>
+          <div class="w-full bg-slate-100 rounded-full h-2 mt-3 overflow-hidden">
+            <div class="h-2 rounded-full bg-indigo-500 transition-all" id="dash-conv-bar" style="width:0%"></div>
+          </div>
+        </div>
+        <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-200">
+          <h3 class="text-sm font-bold text-slate-800 mb-4 border-b border-slate-100 pb-2">Actions Rapides</h3>
+          <div class="space-y-2.5">
+            <button onclick="createNewDoc('DEVIS')" class="w-full bg-indigo-50 hover:bg-indigo-100 border border-indigo-100 p-3 rounded-lg text-left transition text-sm font-medium flex items-center gap-3 text-indigo-900"><i class="fas fa-file-signature w-4 text-indigo-500"></i> Nouveau Devis</button>
+            <button onclick="createNewDoc('FACTURE')" class="w-full bg-emerald-50 hover:bg-emerald-100 border border-emerald-100 p-3 rounded-lg text-left transition text-sm font-medium flex items-center gap-3 text-emerald-900"><i class="fas fa-file-invoice-dollar w-4 text-emerald-500"></i> Nouvelle Facture</button>
+            <button onclick="switchTab('ledger')" class="w-full bg-slate-50 hover:bg-slate-100 border border-slate-200 p-3 rounded-lg text-left transition text-sm font-medium flex items-center gap-3 text-slate-700"><i class="fas fa-receipt w-4 text-slate-500"></i> Enregistrer une dépense</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ ÉDITEUR ═══ -->
+    <div id="tab-create" class="tab-content max-w-4xl mx-auto">
+      <div class="flex justify-between items-center mb-6">
+        <h2 class="text-2xl font-black flex items-center gap-2"><i class="fas fa-pen-nib text-indigo-600"></i> Éditeur de Document</h2>
+        <span id="doc-status-badge" class="px-3 py-1 rounded-full text-xs font-bold bg-slate-200 text-slate-600 uppercase tracking-wide">Nouveau</span>
+      </div>
+      <input type="hidden" id="doc-id"/>
+      <input type="hidden" id="doc-status" value="Brouillon"/>
+      <div class="bg-white dark:bg-slate-800 p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200 mb-5">
+        <!-- Info doc -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+          <div><label class="block text-xs font-bold text-slate-500 uppercase mb-2">Type</label>
+            <select id="doc-type" onchange="autoNumber()" class="w-full p-2.5 border border-slate-300 rounded-lg text-sm font-bold outline-none bg-slate-50 hover:bg-white transition"><option value="DEVIS">Devis</option><option value="FACTURE">Facture</option></select></div>
+          <div><label class="block text-xs font-bold text-slate-500 uppercase mb-2">Numéro</label>
+            <input type="text" id="doc-number" class="w-full p-2.5 border border-slate-300 rounded-lg text-sm font-medium outline-none"/></div>
+          <div><label class="block text-xs font-bold text-slate-500 uppercase mb-2">Date</label>
+            <input type="date" id="doc-date" class="w-full p-2.5 border border-slate-300 rounded-lg text-sm font-medium outline-none"/></div>
+          <div><label class="block text-xs font-bold text-slate-500 uppercase mb-2">Validité / Échéance</label>
+            <input type="text" id="doc-validity" class="w-full p-2.5 border border-slate-300 rounded-lg text-sm font-medium outline-none" value="30 jours"/></div>
+        </div>
+        <!-- Client avec autocomplete -->
+        <div class="mb-6 p-5 rounded-xl border border-slate-200 bg-slate-50/50 relative">
+          <label class="block text-xs font-bold text-slate-500 uppercase mb-3"><i class="fas fa-building text-slate-400 mr-1"></i> Informations Client</label>
+          <div class="relative">
+            <input type="text" id="client-name" placeholder="Nom du client / Raison sociale" autocomplete="off" oninput="showClientSuggestions()" onfocus="showClientSuggestions()" onblur="setTimeout(()=>document.getElementById('client-suggestions').classList.add('hidden'),200)" class="w-full p-3 mb-3 border border-slate-300 rounded-lg outline-none font-bold text-lg focus:ring-2 focus:ring-indigo-500 transition"/>
+            <div id="client-suggestions" class="hidden absolute left-0 right-0 top-14 bg-white border border-slate-200 rounded-xl shadow-lg z-30 overflow-hidden"></div>
+          </div>
+          <textarea id="client-details" placeholder="Adresse complète, contact, n° TVA..." class="w-full p-3 border border-slate-300 rounded-lg outline-none h-20 text-sm resize-y focus:ring-2 focus:ring-indigo-500 transition"></textarea>
+        </div>
+        <!-- Notes -->
+        <div class="mb-6">
+          <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Contexte / Notes globales (Optionnel)</label>
+          <p class="text-[10px] text-slate-400 mb-2 leading-relaxed">Ce texte apparaîtra juste avant le tableau des prix.</p>
+          <textarea id="doc-notes" placeholder="Ex: Suite à notre échange, voici la proposition..." class="w-full p-3 border border-slate-300 rounded-lg outline-none min-h-[80px] text-sm resize-y focus:ring-2 focus:ring-indigo-500 transition"></textarea>
+        </div>
+        <!-- Items -->
+        <div>
+          <div class="flex justify-between items-center mb-4 border-b border-slate-100 pb-2">
+            <label class="block text-xs font-bold text-slate-500 uppercase">Détail des Prestations</label>
+            <button onclick="addItem()" class="text-xs bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-3 py-1.5 rounded-lg font-bold transition flex items-center gap-2 border border-indigo-100"><i class="fas fa-plus"></i> Ajouter</button>
+          </div>
+          <div id="items-container" class="space-y-3"></div>
+          <div class="mt-5 flex justify-end">
+            <div class="w-64 p-4 bg-slate-50 rounded-xl border border-slate-200 text-right">
+              <p class="text-xs text-slate-500 font-bold uppercase mb-1">Total HT</p>
+              <p class="text-2xl font-black text-slate-800" id="live-total">0.00 €</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="flex flex-wrap gap-3">
+        <button onclick="saveDocument()" id="btn-save" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white p-4 rounded-xl font-bold shadow-sm transition flex justify-center items-center gap-2"><i class="fas fa-save"></i> Enregistrer</button>
+        <button onclick="generatePreview()" class="flex-1 bg-slate-800 hover:bg-slate-900 text-white p-4 rounded-xl font-bold shadow-sm transition flex justify-center items-center gap-2"><i class="fas fa-eye"></i> Aperçu & Impression</button>
+      </div>
+    </div>
+
+    <!-- ═══ HISTORIQUE ═══ -->
+    <div id="tab-history" class="tab-content max-w-5xl mx-auto">
+      <div class="flex justify-between items-center mb-5">
+        <h2 class="text-2xl font-black flex items-center gap-2"><i class="fas fa-folder-open text-indigo-600"></i> Documents</h2>
+        <button onclick="createNewDoc('DEVIS')" class="bg-indigo-600 text-white text-sm font-bold px-4 py-2 rounded-lg hover:bg-indigo-700 transition shadow-sm"><i class="fas fa-plus mr-1"></i> Nouveau</button>
+      </div>
+      <!-- Filters -->
+      <div class="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 mb-4 flex flex-wrap gap-3 items-center">
+        <div class="flex-grow relative">
+          <i class="fas fa-search absolute left-3 top-2.5 text-slate-400 text-sm"></i>
+          <input type="text" id="hist-search" placeholder="Chercher par numéro, client..." oninput="loadHistoryTable()" class="w-full pl-9 pr-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-indigo-300 transition"/>
+        </div>
+        <select id="hist-type" onchange="loadHistoryTable()" class="border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-300 transition">
+          <option value="">Tous types</option><option value="DEVIS">Devis</option><option value="FACTURE">Factures</option>
+        </select>
+        <select id="hist-status" onchange="loadHistoryTable()" class="border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-300 transition">
+          <option value="">Tous statuts</option>
+          <option value="Brouillon">Brouillon</option><option value="En attente">En attente</option>
+          <option value="Envoyée">Envoyée</option><option value="Payée">Payée</option>
+          <option value="Accepté">Accepté</option><option value="Refusé">Refusé</option><option value="En retard">En retard</option>
+        </select>
+        <button onclick="document.getElementById('hist-search').value='';document.getElementById('hist-type').value='';document.getElementById('hist-status').value='';loadHistoryTable()" class="text-xs text-slate-400 hover:text-slate-600 transition">Réinitialiser</button>
+      </div>
+      <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left whitespace-nowrap">
+            <thead class="bg-slate-50 border-b border-slate-200 text-xs uppercase text-slate-500">
+              <tr>
+                <th class="p-4 font-bold">Document</th><th class="p-4 font-bold">Date</th>
+                <th class="p-4 font-bold">Client</th><th class="p-4 font-bold text-right">Montant HT</th>
+                <th class="p-4 font-bold text-center">Statut</th><th class="p-4 font-bold text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="history-table-body" class="text-sm"></tbody>
+          </table>
+        </div>
+        <div id="empty-history" class="p-10 text-center text-slate-400 hidden"><i class="fas fa-file-invoice text-5xl mb-4 opacity-30"></i><p class="font-medium text-slate-500">Aucun document trouvé.</p></div>
+      </div>
+    </div>
+
+    <!-- ═══ LIVRE DE COMPTES ═══ -->
+    <div id="tab-ledger" class="tab-content max-w-5xl mx-auto">
+      <div class="flex justify-between items-center mb-5">
+        <div>
+          <h2 class="text-2xl font-black flex items-center gap-2"><i class="fas fa-book text-indigo-600"></i> Livre de Recettes & Dépenses</h2>
+          <p class="text-sm text-slate-500 mt-1">Registre chronologique des mouvements financiers.</p>
+        </div>
+        <button onclick="toggleLedgerForm()" class="bg-indigo-600 text-white text-sm font-bold px-4 py-2 rounded-lg hover:bg-indigo-700 transition shadow-sm"><i class="fas fa-plus mr-1"></i> Ajouter</button>
+      </div>
+      <div id="ledger-form" class="bg-indigo-50 dark:bg-indigo-900/20 p-6 rounded-2xl border border-indigo-100 mb-5 hidden shadow-sm">
+        <h3 class="font-bold text-indigo-800 dark:text-indigo-300 mb-4 text-sm uppercase tracking-wide">Nouvelle Entrée</h3>
+        <div class="grid grid-cols-1 md:grid-cols-6 gap-4 items-end">
+          <div><label class="block text-xs font-bold text-slate-600 mb-1">Date</label><input type="date" id="ledger-date" class="w-full p-2.5 border border-slate-300 rounded-lg text-sm bg-white outline-none"/></div>
+          <div><label class="block text-xs font-bold text-slate-600 mb-1">Type</label>
+            <select id="ledger-type" class="w-full p-2.5 border border-slate-300 rounded-lg text-sm bg-white outline-none">
+              <option value="RECETTE">Recette</option><option value="DEPENSE">Dépense</option>
+            </select></div>
+          <div><label class="block text-xs font-bold text-slate-600 mb-1">Catégorie</label>
+            <select id="ledger-cat" class="w-full p-2.5 border border-slate-300 rounded-lg text-sm bg-white outline-none">
+              <option value="Prestation">Prestation</option><option value="Remboursement">Remboursement</option>
+              <option value="Logiciel/Abonnement">Logiciel/Abonnement</option><option value="Matériel">Matériel</option>
+              <option value="Déplacement">Déplacement</option><option value="Formation">Formation</option>
+              <option value="Communication">Communication</option><option value="Banque/Frais">Banque/Frais</option>
+              <option value="Autre">Autre</option>
+            </select></div>
+          <div class="md:col-span-2"><label class="block text-xs font-bold text-slate-600 mb-1">Libellé / Origine</label>
+            <input type="text" id="ledger-label" placeholder="Ex: Facture F2026-01-001 / Abonnement..." class="w-full p-2.5 border border-slate-300 rounded-lg text-sm bg-white outline-none"/></div>
+          <div><label class="block text-xs font-bold text-slate-600 mb-1">Montant (€)</label>
+            <input type="number" step="0.01" id="ledger-amount" placeholder="0.00" class="w-full p-2.5 border border-slate-300 rounded-lg text-sm bg-white outline-none"/></div>
+        </div>
+        <div class="mt-4 flex justify-end gap-2">
+          <button onclick="toggleLedgerForm()" class="px-4 py-2 text-sm font-bold text-slate-500 hover:text-slate-800 transition">Annuler</button>
+          <button onclick="saveLedgerEntry()" class="bg-indigo-600 text-white px-6 py-2 rounded-lg text-sm font-bold hover:bg-indigo-700 shadow-sm transition">Enregistrer</button>
+        </div>
+      </div>
+      <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+        <table class="w-full text-left whitespace-nowrap">
+          <thead class="bg-slate-50 border-b border-slate-200 text-xs uppercase text-slate-500">
+            <tr><th class="p-4 font-bold">Date</th><th class="p-4 font-bold">Type</th><th class="p-4 font-bold">Catégorie</th><th class="p-4 font-bold">Libellé</th><th class="p-4 font-bold text-right">Recette</th><th class="p-4 font-bold text-right">Dépense</th><th class="p-4 font-bold text-center">Action</th></tr>
+          </thead>
+          <tbody id="ledger-table-body" class="text-sm"></tbody>
+          <tfoot class="bg-slate-50 border-t border-slate-200 font-bold">
+            <tr><td colspan="4" class="p-4 text-right text-slate-600">TOTAUX :</td><td class="p-4 text-right text-emerald-600" id="ledger-total-in">0.00 €</td><td class="p-4 text-right text-red-600" id="ledger-total-out">0.00 €</td><td></td></tr>
+            <tr class="border-t border-slate-200 bg-indigo-50/50"><td colspan="4" class="p-4 text-right text-indigo-900 font-black">SOLDE :</td><td colspan="2" class="p-4 text-center text-lg font-black text-indigo-700" id="ledger-balance">0.00 €</td><td></td></tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+
+    <!-- ═══ CLIENTS ═══ -->
+    <div id="tab-clients" class="tab-content max-w-4xl mx-auto">
+      <div class="flex justify-between items-center mb-5">
+        <h2 class="text-2xl font-black flex items-center gap-2"><i class="fas fa-address-book text-indigo-600"></i> Carnet de Clients</h2>
+        <button onclick="toggleClientForm()" class="bg-indigo-600 text-white text-sm font-bold px-4 py-2 rounded-lg hover:bg-indigo-700 transition shadow-sm"><i class="fas fa-plus mr-1"></i> Nouveau client</button>
+      </div>
+      <!-- Client form -->
+      <div id="client-form-panel" class="hidden bg-indigo-50 dark:bg-indigo-900/20 p-6 rounded-2xl border border-indigo-100 mb-5 shadow-sm">
+        <h3 class="font-bold text-indigo-800 dark:text-indigo-300 mb-4 text-sm uppercase tracking-wide" id="client-form-title">Nouveau Client</h3>
+        <input type="hidden" id="client-form-id"/>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div><label class="block text-xs font-bold text-slate-600 mb-1">Nom / Raison sociale *</label><input type="text" id="cf-name" class="w-full p-2.5 border border-slate-300 rounded-lg text-sm bg-white outline-none" placeholder="ACME Corp"/></div>
+          <div><label class="block text-xs font-bold text-slate-600 mb-1">Contact</label><input type="text" id="cf-contact" class="w-full p-2.5 border border-slate-300 rounded-lg text-sm bg-white outline-none" placeholder="Jean Dupont"/></div>
+          <div><label class="block text-xs font-bold text-slate-600 mb-1">Email</label><input type="email" id="cf-email" class="w-full p-2.5 border border-slate-300 rounded-lg text-sm bg-white outline-none" placeholder="jean@acme.fr"/></div>
+          <div><label class="block text-xs font-bold text-slate-600 mb-1">Téléphone</label><input type="text" id="cf-phone" class="w-full p-2.5 border border-slate-300 rounded-lg text-sm bg-white outline-none" placeholder="+33 6 00 00 00 00"/></div>
+          <div class="md:col-span-2"><label class="block text-xs font-bold text-slate-600 mb-1">Adresse complète (pour documents)</label><textarea id="cf-address" class="w-full p-2.5 border border-slate-300 rounded-lg text-sm bg-white outline-none min-h-[70px]" placeholder="42 rue de la Paix&#10;75001 Paris, France&#10;N° TVA: FR..."></textarea></div>
+          <div><label class="block text-xs font-bold text-slate-600 mb-1">SIRET / N° TVA</label><input type="text" id="cf-siret" class="w-full p-2.5 border border-slate-300 rounded-lg text-sm bg-white outline-none" placeholder="123 456 789 00010"/></div>
+        </div>
+        <div class="mt-4 flex justify-end gap-2">
+          <button onclick="toggleClientForm()" class="px-4 py-2 text-sm font-bold text-slate-500 hover:text-slate-800 transition">Annuler</button>
+          <button onclick="saveClient()" class="bg-indigo-600 text-white px-6 py-2 rounded-lg text-sm font-bold hover:bg-indigo-700 shadow-sm transition">Enregistrer</button>
+        </div>
+      </div>
+      <!-- Client list -->
+      <div id="clients-list" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+      <div id="clients-empty" class="hidden text-center text-slate-400 py-16"><i class="fas fa-users text-5xl opacity-20 mb-4"></i><p>Aucun client enregistré.</p></div>
+    </div>
+
+    <!-- ═══ PARAMÈTRES ═══ -->
+    <div id="tab-settings" class="tab-content max-w-3xl mx-auto">
+      <h2 class="text-2xl font-black mb-6 flex items-center gap-2"><i class="fas fa-cog text-indigo-600"></i> Paramètres</h2>
+      <div class="space-y-5">
+        <!-- Identity -->
+        <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-200">
+          <h3 class="font-bold text-slate-800 mb-4 text-sm uppercase tracking-wider border-b border-slate-100 pb-2"><i class="fas fa-user text-indigo-500 mr-2"></i>Identité professionnelle</h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1.5">Nom complet</label><input type="text" id="s-name" class="w-full p-2.5 border border-slate-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-indigo-300" placeholder="Gilles CORMI"/></div>
+            <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1.5">Titre / Activité</label><input type="text" id="s-title" class="w-full p-2.5 border border-slate-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-indigo-300" placeholder="Expert Stratégie IA"/></div>
+            <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1.5">SIRET</label><input type="text" id="s-siret" class="w-full p-2.5 border border-slate-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-indigo-300" placeholder="123 456 789 00010"/></div>
+            <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1.5">Code APE</label><input type="text" id="s-ape" class="w-full p-2.5 border border-slate-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-indigo-300" placeholder="62.02A"/></div>
+            <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1.5">Email</label><input type="email" id="s-email" class="w-full p-2.5 border border-slate-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-indigo-300" placeholder="contact@example.fr"/></div>
+            <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1.5">Téléphone</label><input type="text" id="s-phone" class="w-full p-2.5 border border-slate-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-indigo-300" placeholder="+33 6 00 00 00 00"/></div>
+            <div class="md:col-span-2"><label class="block text-xs font-bold text-slate-500 uppercase mb-1.5">Adresse</label><textarea id="s-address" class="w-full p-2.5 border border-slate-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-indigo-300 min-h-[70px]" placeholder="42 rue de la Paix, 75001 Paris"></textarea></div>
+          </div>
+        </div>
+        <!-- Banking -->
+        <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-200">
+          <h3 class="font-bold text-slate-800 mb-4 text-sm uppercase tracking-wider border-b border-slate-100 pb-2"><i class="fas fa-university text-indigo-500 mr-2"></i>Coordonnées bancaires</h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1.5">Banque</label><input type="text" id="s-bank" class="w-full p-2.5 border border-slate-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-indigo-300" placeholder="Revolut Business"/></div>
+            <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1.5">Titulaire du compte</label><input type="text" id="s-bank-owner" class="w-full p-2.5 border border-slate-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-indigo-300" placeholder="Gilles CORMI EI"/></div>
+            <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1.5">IBAN</label><input type="text" id="s-iban" class="w-full p-2.5 border border-slate-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-indigo-300 font-mono" placeholder="FR76 0000 0000 0000 0000 0000 000"/></div>
+            <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1.5">BIC</label><input type="text" id="s-bic" class="w-full p-2.5 border border-slate-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-indigo-300 font-mono" placeholder="XXXXXXXX"/></div>
+          </div>
+        </div>
+        <!-- TVA & legal -->
+        <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-200">
+          <h3 class="font-bold text-slate-800 mb-4 text-sm uppercase tracking-wider border-b border-slate-100 pb-2"><i class="fas fa-balance-scale text-indigo-500 mr-2"></i>Fiscal & Mentions légales</h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1.5">Seuil Franchise TVA (€)</label><input type="number" id="s-tva-limit" class="w-full p-2.5 border border-slate-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-indigo-300" value="39100"/></div>
+            <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1.5">Mention TVA par défaut</label><input type="text" id="s-tva-mention" class="w-full p-2.5 border border-slate-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-indigo-300" placeholder="TVA non applicable, art. 293 B du CGI"/></div>
+            <div class="md:col-span-2"><label class="block text-xs font-bold text-slate-500 uppercase mb-1.5">Mentions pénalités (factures)</label><textarea id="s-penalites" class="w-full p-2.5 border border-slate-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-indigo-300 min-h-[60px]" placeholder="En cas de retard de paiement..."></textarea></div>
+            <div class="md:col-span-2"><label class="block text-xs font-bold text-slate-500 uppercase mb-1.5">Mentions devis (bas de page)</label><textarea id="s-devis-footer" class="w-full p-2.5 border border-slate-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-indigo-300 min-h-[60px]" placeholder="Ce devis est valable selon les conditions définies ensemble..."></textarea></div>
+          </div>
+        </div>
+        <div class="flex justify-end">
+          <button onclick="saveSettings()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-3 rounded-xl font-bold shadow-sm transition flex items-center gap-2"><i class="fas fa-save"></i> Sauvegarder les paramètres</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ APERÇU ═══ -->
+    <div id="tab-preview" class="tab-content">
+      <div class="max-w-3xl mx-auto mb-5 flex justify-between items-center bg-white dark:bg-slate-800 p-4 rounded-xl shadow-sm border border-slate-200">
+        <button onclick="switchTab('create')" class="text-slate-500 hover:text-slate-800 font-medium text-sm flex items-center gap-2 transition"><i class="fas fa-arrow-left"></i> Retour à l'éditeur</button>
+        <div class="flex gap-3">
+          <p class="text-xs text-slate-500 self-center"><i class="fas fa-info-circle text-indigo-500"></i> Utilisez <strong>Ctrl+P</strong> ou le bouton ci-dessous pour imprimer/PDF</p>
+          <button onclick="window.print()" class="bg-indigo-600 text-white px-5 py-2 rounded-lg font-bold shadow-sm hover:bg-indigo-700 transition flex items-center gap-2"><i class="fas fa-print"></i> Imprimer / PDF</button>
+        </div>
+      </div>
+      <div id="print-area" class="pb-20">
+        <div class="a4-page text-slate-800" id="document-render"></div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- ====================== JAVASCRIPT ====================== -->
+<script>
+'use strict';
+const T_DEVIS='DEVIS', T_FACTURE='FACTURE';
+let currentItems=[];
+const LS={
+  get:(k,d)=>{try{const v=localStorage.getItem(k);return v!==null?JSON.parse(v):d;}catch{return d;}},
+  set:(k,v)=>localStorage.setItem(k,JSON.stringify(v))
+};
+const getSettings=()=>LS.get('cormi_settings',{
+  name:'Gilles CORMI',title:'Expert Stratégie IA & Ingénierie',
+  siret:'995 184 157 00015',ape:'62.02A',email:'',phone:'',
+  address:"Bât. B, Résidence Les Jardins d'Erbalunga\n20222 Brando, France",
+  bank:'Revolut Business (FR)',bankOwner:'Gilles CORMI EI',
+  iban:'FR76 [À COMPLÉTER]',bic:'[À COMPLÉTER]',tvaLimit:39100,
+  tvaMention:'TVA non applicable, art. 293 B du CGI.',
+  penalites:"En cas de retard de paiement, des pénalités égales à 10% par an seront appliquées. Indemnité forfaitaire pour frais de recouvrement : 40 €.",
+  devisFooter:"Facturation à terme échoir selon les conditions définies ensemble."
+});
+
+window.onload=()=>{
+  if(LS.get('cormi_docs_history',null)===null) LS.set('cormi_docs_history',[]);
+  if(LS.get('cormi_ledger',null)===null) LS.set('cormi_ledger',[]);
+  if(LS.get('cormi_clients',null)===null) LS.set('cormi_clients',[]);
+  applyDarkMode(LS.get('cormi_dark',false));
+  loadSettingsForm();
+  createNewDoc('DEVIS',false);
+  switchTab('dashboard');
+  document.getElementById('ledger-date').valueAsDate=new Date();
+  autoLateCheck();
+};
+
+/* DARK MODE */
+function applyDarkMode(on){
+  document.documentElement.classList.toggle('dark',on);
+  document.getElementById('dark-icon').className=on?'fas fa-sun':'fas fa-moon';
+}
+function toggleDark(){
+  const on=!document.documentElement.classList.contains('dark');
+  LS.set('cormi_dark',on); applyDarkMode(on);
+}
+
+/* TOAST */
+function toast(msg,type='ok'){
+  const d=document.createElement('div');
+  d.className=`toast-msg toast-${type}`;d.textContent=msg;
+  document.getElementById('toast').appendChild(d);
+  setTimeout(()=>d.remove(),3200);
+}
+
+/* NAVIGATION */
+function switchTab(tabId){
+  document.querySelectorAll('.tab-content').forEach(el=>el.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(el=>{
+    el.classList.remove('bg-white','text-indigo-700','shadow-sm');
+    el.classList.add('text-slate-600');
+  });
+  document.getElementById(`tab-${tabId}`).classList.add('active');
+  const btn=document.getElementById(`tab-btn-${tabId}`);
+  if(btn){btn.classList.remove('text-slate-600');btn.classList.add('bg-white','text-indigo-700','shadow-sm');}
+  if(tabId==='dashboard') loadDashboard();
+  if(tabId==='history') loadHistoryTable();
+  if(tabId==='ledger') loadLedgerTable();
+  if(tabId==='clients') loadClientsList();
+  if(tabId==='settings') loadSettingsForm();
+}
+
+/* AUTO LATE CHECK */
+function autoLateCheck(){
+  let h=LS.get('cormi_docs_history',[]);let ch=false;
+  h.forEach(d=>{
+    if(d.type===T_FACTURE&&d.status==='Envoyée'){
+      if((Date.now()-new Date(d.date))/(864e5)>30){d.status='En retard';ch=true;}
+    }
+  });
+  if(ch) LS.set('cormi_docs_history',h);
+}
+
+/* SETTINGS */
+function loadSettingsForm(){
+  const s=getSettings();
+  const m={'s-name':s.name,'s-title':s.title,'s-siret':s.siret,'s-ape':s.ape,'s-email':s.email,'s-phone':s.phone,'s-address':s.address,'s-bank':s.bank,'s-bank-owner':s.bankOwner,'s-iban':s.iban,'s-bic':s.bic,'s-tva-limit':s.tvaLimit,'s-tva-mention':s.tvaMention,'s-penalites':s.penalites,'s-devis-footer':s.devisFooter};
+  Object.entries(m).forEach(([id,v])=>{const el=document.getElementById(id);if(el)el.value=v??'';});
+}
+function saveSettings(){
+  const g=id=>document.getElementById(id)?.value||'';
+  LS.set('cormi_settings',{name:g('s-name'),title:g('s-title'),siret:g('s-siret'),ape:g('s-ape'),email:g('s-email'),phone:g('s-phone'),address:g('s-address'),bank:g('s-bank'),bankOwner:g('s-bank-owner'),iban:g('s-iban'),bic:g('s-bic'),tvaLimit:+g('s-tva-limit')||39100,tvaMention:g('s-tva-mention'),penalites:g('s-penalites'),devisFooter:g('s-devis-footer')});
+  toast('✅ Paramètres sauvegardés');
+}
+
+/* CLIENTS */
+function toggleClientForm(editData){
+  const p=document.getElementById('client-form-panel');
+  const wasHidden=p.classList.contains('hidden');
+  p.classList.toggle('hidden');
+  if(wasHidden){
+    document.getElementById('client-form-title').textContent=editData?'Modifier le client':'Nouveau Client';
+    document.getElementById('client-form-id').value=editData?.id||'';
+    ['cf-name','cf-contact','cf-email','cf-phone','cf-address','cf-siret'].forEach(id=>{
+      const key=id.replace('cf-','');
+      const map={name:'name',contact:'contact',email:'email',phone:'phone',address:'address',siret:'siret'};
+      document.getElementById(id).value=editData?.[map[key]]||'';
+    });
+  }
+}
+function saveClient(){
+  const n=document.getElementById('cf-name').value.trim();
+  if(!n){toast('Nom requis','err');return;}
+  let clients=LS.get('cormi_clients',[]);
+  const c={id:document.getElementById('client-form-id').value||Date.now().toString(),name:n,contact:document.getElementById('cf-contact').value.trim(),email:document.getElementById('cf-email').value.trim(),phone:document.getElementById('cf-phone').value.trim(),address:document.getElementById('cf-address').value.trim(),siret:document.getElementById('cf-siret').value.trim()};
+  const idx=clients.findIndex(x=>x.id===c.id);
+  if(idx>=0) clients[idx]=c; else clients.push(c);
+  LS.set('cormi_clients',clients);
+  toggleClientForm();loadClientsList();toast('✅ Client enregistré');
+}
+function deleteClient(id){
+  if(!confirm('Supprimer ce client ?')) return;
+  LS.set('cormi_clients',LS.get('cormi_clients',[]).filter(c=>c.id!==id));
+  loadClientsList();toast('Client supprimé','info');
+}
+function loadClientsList(){
+  const clients=LS.get('cormi_clients',[]);
+  const list=document.getElementById('clients-list');
+  const empty=document.getElementById('clients-empty');
+  list.innerHTML='';
+  if(!clients.length){empty.classList.remove('hidden');list.classList.add('hidden');return;}
+  empty.classList.add('hidden');list.classList.remove('hidden');
+  clients.forEach(c=>{
+    const card=document.createElement('div');
+    card.className='bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-sm border border-slate-200';
+    card.innerHTML=`<div class="flex justify-between items-start mb-2"><h3 class="font-black text-slate-800">${c.name}</h3><div class="flex gap-1"><button onclick='editClientById("${c.id}")' class="text-slate-400 hover:text-indigo-600 p-1 transition text-sm"><i class="fas fa-pen"></i></button><button onclick="deleteClient('${c.id}')" class="text-slate-300 hover:text-red-500 p-1 transition text-sm"><i class="fas fa-trash"></i></button></div></div>${c.contact?`<p class="text-sm text-slate-600"><i class="fas fa-user w-4 text-slate-400 mr-1"></i>${c.contact}</p>`:''} ${c.email?`<p class="text-sm text-slate-600"><i class="fas fa-envelope w-4 text-slate-400 mr-1"></i>${c.email}</p>`:''} ${c.phone?`<p class="text-sm text-slate-600"><i class="fas fa-phone w-4 text-slate-400 mr-1"></i>${c.phone}</p>`:''} ${c.siret?`<p class="text-xs text-slate-400 mt-1">SIRET: ${c.siret}</p>`:''}<button onclick="useClient('${c.id}')" class="mt-3 w-full text-xs text-indigo-600 hover:text-indigo-800 font-bold border border-indigo-100 hover:border-indigo-300 p-2 rounded-lg transition"><i class="fas fa-file-signature mr-1"></i>Utiliser dans l'éditeur</button>`;
+    list.appendChild(card);
+  });
+}
+function editClientById(id){
+  const c=LS.get('cormi_clients',[]).find(x=>x.id===id);
+  if(c) toggleClientForm(c);
+}
+function useClient(id){
+  const c=LS.get('cormi_clients',[]).find(x=>x.id===id);
+  if(!c) return;
+  document.getElementById('client-name').value=c.name;
+  let det=c.address||'';if(c.siret) det+='\nSIRET: '+c.siret;
+  document.getElementById('client-details').value=det.trim();
+  switchTab('create');toast(`✅ Client "${c.name}" chargé`);
+}
+function showClientSuggestions(){
+  const val=document.getElementById('client-name').value.toLowerCase();
+  const clients=LS.get('cormi_clients',[]);
+  const box=document.getElementById('client-suggestions');
+  const filtered=clients.filter(c=>c.name.toLowerCase().includes(val));
+  if(!filtered.length||!val){box.classList.add('hidden');return;}
+  box.innerHTML='';
+  filtered.slice(0,5).forEach(c=>{
+    const div=document.createElement('div');div.className='client-suggestion';
+    div.innerHTML=`<strong>${c.name}</strong>${c.contact?' · '+c.contact:''}`;
+    div.onclick=()=>{
+      document.getElementById('client-name').value=c.name;
+      let det=c.address||'';if(c.siret) det+='\nSIRET: '+c.siret;
+      document.getElementById('client-details').value=det.trim();
+      box.classList.add('hidden');
+    };
+    box.appendChild(div);
+  });
+  box.classList.remove('hidden');
+}
+
+/* EDITOR */
+function createNewDoc(type,switchToTab=true){
+  document.getElementById('doc-id').value='';
+  document.getElementById('doc-type').value=type;
+  document.getElementById('doc-date').valueAsDate=new Date();
+  document.getElementById('doc-validity').value=type===T_DEVIS?'30 jours':'Réception de facture';
+  ['client-name','client-details','doc-notes'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('doc-status').value=type===T_DEVIS?'En attente':'Brouillon';
+  currentItems=[{title:'Mission de conseil',desc:'',qty:1,price:0}];
+  autoNumber();updateDocStatusBadge();renderItems();
+  if(switchToTab) switchTab('create');
+}
+function autoNumber(){
+  const type=document.getElementById('doc-type').value;
+  const h=LS.get('cormi_docs_history',[]);
+  const prefix=type===T_DEVIS?'D':'F';
+  const year=new Date().getFullYear().toString();
+  const typed=h.filter(d=>d.type===type&&d.number.includes(year));
+  let next=1;
+  if(typed.length){const last=typed.sort((a,b)=>b.number.localeCompare(a.number))[0];const p=last.number.split('-');const n=parseInt(p[p.length-1]);if(!isNaN(n)) next=n+1;}
+  const mo=String(new Date().getMonth()+1).padStart(2,'0');
+  document.getElementById('doc-number').value=`${prefix}${year}-${mo}-${String(next).padStart(3,'0')}`;
+  updateDocStatusBadge();
+}
+function updateDocStatusBadge(){
+  const s=document.getElementById('doc-status').value;
+  const b=document.getElementById('doc-status-badge');
+  b.innerText=s;b.className='px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide '+getStatusColor(s);
+}
+function renderItems(){
+  const c=document.getElementById('items-container');c.innerHTML='';let total=0;
+  currentItems.forEach((it,i)=>{
+    total+=it.qty*it.price;
+    c.innerHTML+=`<div class="flex flex-col sm:flex-row gap-3 items-start bg-white dark:bg-slate-800 p-3 rounded-xl border border-slate-200 shadow-sm hover:border-indigo-200 transition"><div class="flex-grow space-y-2 w-full"><input type="text" value="${it.title.replace(/"/g,'&quot;')}" oninput="updateItem(${i},'title',this.value)" placeholder="Titre" class="w-full p-2 border border-slate-200 focus:border-indigo-500 rounded-lg text-sm font-bold outline-none bg-slate-50 focus:bg-white"/><textarea oninput="updateItem(${i},'desc',this.value)" placeholder="Description (optionnel)" class="w-full p-2 border border-slate-200 focus:border-indigo-500 rounded-lg text-xs outline-none min-h-[52px] resize-y bg-slate-50 focus:bg-white">${it.desc}</textarea></div><div class="flex gap-3 w-full sm:w-auto"><input type="number" step="0.5" value="${it.qty}" oninput="updateItem(${i},'qty',this.value)" class="w-20 p-2 border border-slate-200 rounded-lg text-sm text-center outline-none bg-slate-50 focus:bg-white"/><input type="number" step="10" value="${it.price}" oninput="updateItem(${i},'price',this.value)" class="w-28 p-2 border border-slate-200 rounded-lg text-sm text-right outline-none bg-slate-50 focus:bg-white"/><button onclick="removeItem(${i})" class="text-slate-300 hover:text-red-500 p-2 transition"><i class="fas fa-trash-alt"></i></button></div></div>`;
+  });
+  document.getElementById('live-total').innerText=total.toFixed(2)+' €';
+}
+function addItem(){currentItems.push({title:'',desc:'',qty:1,price:0});renderItems();}
+function removeItem(i){currentItems.splice(i,1);renderItems();}
+function updateItem(i,f,v){currentItems[i][f]=(f==='title'||f==='desc')?v:parseFloat(v)||0;if(f==='qty'||f==='price'){const t=currentItems.reduce((s,it)=>s+it.qty*it.price,0);document.getElementById('live-total').innerText=t.toFixed(2)+' €';}}
+function getFormData(){
+  const t=currentItems.reduce((s,it)=>s+it.qty*it.price,0);
+  return{id:document.getElementById('doc-id').value||Date.now().toString(),type:document.getElementById('doc-type').value,number:document.getElementById('doc-number').value,date:document.getElementById('doc-date').value,validity:document.getElementById('doc-validity').value,clientName:document.getElementById('client-name').value,clientDetails:document.getElementById('client-details').value,notes:document.getElementById('doc-notes').value,status:document.getElementById('doc-status').value,items:[...currentItems],totalHT:t};
+}
+function saveDocument(){
+  const data=getFormData();
+  if(!data.clientName){toast('Nom du client requis','err');return;}
+  if(!data.number){toast('Numéro requis','err');return;}
+  let h=LS.get('cormi_docs_history',[]);
+  const idx=h.findIndex(d=>d.id===data.id);
+  if(idx>=0) h[idx]=data;else{h.push(data);document.getElementById('doc-id').value=data.id;}
+  LS.set('cormi_docs_history',h);
+  const btn=document.getElementById('btn-save');const orig=btn.innerHTML;
+  btn.innerHTML='<i class="fas fa-check"></i> Enregistré';btn.classList.replace('bg-emerald-600','bg-emerald-500');
+  setTimeout(()=>{btn.innerHTML=orig;btn.classList.replace('bg-emerald-500','bg-emerald-600');},1500);
+  toast('✅ Document enregistré');
+}
+
+/* STATUS */
+function getStatusColor(s){
+  switch(s){case 'Payée':case 'Accepté':return 'bg-emerald-100 text-emerald-700 border border-emerald-200';case 'En attente':case 'Envoyée':return 'bg-amber-100 text-amber-700 border border-amber-200';case 'Brouillon':return 'bg-slate-100 text-slate-600 border border-slate-200';case 'Refusé':case 'En retard':return 'bg-red-100 text-red-700 border border-red-200';default:return 'bg-slate-100 text-slate-600';}
+}
+
+/* HISTORY */
+function loadHistoryTable(){
+  let h=LS.get('cormi_docs_history',[]);
+  const search=(document.getElementById('hist-search')?.value||'').toLowerCase();
+  const tf=document.getElementById('hist-type')?.value||'';
+  const sf=document.getElementById('hist-status')?.value||'';
+  if(search) h=h.filter(d=>d.number.toLowerCase().includes(search)||d.clientName.toLowerCase().includes(search));
+  if(tf) h=h.filter(d=>d.type===tf);
+  if(sf) h=h.filter(d=>d.status===sf);
+  const tbody=document.getElementById('history-table-body');
+  const empty=document.getElementById('empty-history');
+  tbody.innerHTML='';
+  if(!h.length){empty.classList.remove('hidden');return;}
+  empty.classList.add('hidden');
+  h.sort((a,b)=>new Date(b.date)-new Date(a.date)).forEach(doc=>{
+    const ds=new Date(doc.date+'T12:00').toLocaleDateString('fr-FR');
+    const icon=doc.type===T_FACTURE?'fa-file-invoice-dollar text-emerald-400':'fa-file-signature text-blue-400';
+    let acts=`<button onclick="editDocument('${doc.id}')" class="text-slate-400 hover:text-indigo-600 px-1.5 py-1 transition" title="Éditer"><i class="fas fa-pen"></i></button>`;
+    acts+=`<button onclick="duplicateDocument('${doc.id}')" class="text-slate-400 hover:text-amber-500 px-1.5 py-1 transition" title="Dupliquer"><i class="fas fa-copy"></i></button>`;
+    acts+=`<button onclick="generatePreviewById('${doc.id}')" class="text-slate-400 hover:text-slate-700 px-1.5 py-1 transition" title="Aperçu"><i class="fas fa-eye"></i></button>`;
+    if(doc.type===T_DEVIS&&doc.status!=='Accepté') acts+=`<button onclick="convertToInvoice('${doc.id}')" class="text-indigo-400 hover:text-indigo-700 px-1.5 py-1 transition" title="→ Facture"><i class="fas fa-exchange-alt"></i></button>`;
+    if(doc.type===T_FACTURE&&doc.status!=='Payée') acts+=`<button onclick="markAsPaid('${doc.id}')" class="text-emerald-400 hover:text-emerald-700 px-1.5 py-1 transition" title="Marquer Payée"><i class="fas fa-check-circle"></i></button>`;
+    acts+=`<button onclick="deleteDocument('${doc.id}')" class="text-slate-300 hover:text-red-500 px-1.5 py-1 transition" title="Supprimer"><i class="fas fa-trash"></i></button>`;
+    tbody.innerHTML+=`<tr class="border-b border-slate-100 hover:bg-slate-50 transition"><td class="p-4"><div class="flex items-center gap-2"><i class="fas ${icon}"></i><div><span class="font-black">${doc.number}</span><p class="text-[10px] text-slate-400">${doc.type}</p></div></div></td><td class="p-4 text-slate-500 text-sm">${ds}</td><td class="p-4 font-bold text-sm">${doc.clientName}</td><td class="p-4 font-black text-right text-sm">${doc.totalHT.toFixed(2)} €</td><td class="p-4 text-center"><span class="text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider cursor-pointer hover:opacity-80 transition ${getStatusColor(doc.status)}" onclick="cycleStatus('${doc.id}')" title="Cliquer pour changer">${doc.status}</span></td><td class="p-4 text-right whitespace-nowrap">${acts}</td></tr>`;
+  });
+}
+function editDocument(id){
+  const doc=LS.get('cormi_docs_history',[]).find(d=>d.id===id);if(!doc) return;
+  document.getElementById('doc-id').value=doc.id;
+  document.getElementById('doc-type').value=doc.type;
+  document.getElementById('doc-number').value=doc.number;
+  document.getElementById('doc-date').value=doc.date;
+  document.getElementById('doc-validity').value=doc.validity;
+  document.getElementById('client-name').value=doc.clientName;
+  document.getElementById('client-details').value=doc.clientDetails;
+  document.getElementById('doc-notes').value=doc.notes||'';
+  document.getElementById('doc-status').value=doc.status||(doc.type===T_DEVIS?'En attente':'Brouillon');
+  updateDocStatusBadge();currentItems=[...doc.items];renderItems();switchTab('create');
+}
+function duplicateDocument(id){
+  const doc=LS.get('cormi_docs_history',[]).find(d=>d.id===id);if(!doc) return;
+  document.getElementById('doc-id').value='';
+  document.getElementById('doc-type').value=doc.type;
+  document.getElementById('doc-date').valueAsDate=new Date();
+  document.getElementById('doc-validity').value=doc.validity;
+  document.getElementById('client-name').value=doc.clientName;
+  document.getElementById('client-details').value=doc.clientDetails;
+  document.getElementById('doc-notes').value=doc.notes||'';
+  document.getElementById('doc-status').value=doc.type===T_DEVIS?'En attente':'Brouillon';
+  currentItems=doc.items.map(it=>({...it}));
+  autoNumber();updateDocStatusBadge();renderItems();switchTab('create');
+  toast(`📋 Dupliqué depuis ${doc.number}`,'info');
+}
+function cycleStatus(id){
+  let h=LS.get('cormi_docs_history',[]);const doc=h.find(d=>d.id===id);if(!doc) return;
+  const arr=doc.type===T_DEVIS?['En attente','Accepté','Refusé']:['Brouillon','Envoyée','En retard','Payée'];
+  doc.status=arr[(arr.indexOf(doc.status)+1)%arr.length];
+  LS.set('cormi_docs_history',h);loadHistoryTable();
+}
+function convertToInvoice(id){
+  const h=LS.get('cormi_docs_history',[]);const devis=h.find(d=>d.id===id);if(!devis) return;
+  devis.status='Accepté';LS.set('cormi_docs_history',h);
+  document.getElementById('doc-id').value='';
+  document.getElementById('doc-type').value=T_FACTURE;
+  document.getElementById('doc-date').valueAsDate=new Date();
+  document.getElementById('doc-validity').value='Réception';
+  document.getElementById('client-name').value=devis.clientName;
+  document.getElementById('client-details').value=devis.clientDetails;
+  document.getElementById('doc-notes').value=devis.notes||'';
+  document.getElementById('doc-status').value='Brouillon';
+  currentItems=[...devis.items];autoNumber();updateDocStatusBadge();renderItems();
+  toast(`✅ Devis ${devis.number} accepté — facture prête`);switchTab('create');
+}
+function markAsPaid(id){
+  let h=LS.get('cormi_docs_history',[]);const doc=h.find(d=>d.id===id);if(!doc) return;
+  if(confirm(`Marquer ${doc.number} comme PAYÉE et l'ajouter au livre de recettes ?`)){
+    doc.status='Payée';LS.set('cormi_docs_history',h);
+    addLedgerEntry({date:new Date().toISOString().split('T')[0],type:'RECETTE',category:'Prestation',label:`Encaissement ${doc.number} - ${doc.clientName}`,amount:doc.totalHT});
+    loadHistoryTable();toast(`💰 Facture ${doc.number} marquée Payée`);
+  }
+}
+function deleteDocument(id){
+  if(!confirm('Supprimer définitivement ?')) return;
+  LS.set('cormi_docs_history',LS.get('cormi_docs_history',[]).filter(d=>d.id!==id));
+  loadHistoryTable();toast('Document supprimé','info');
+}
+
+/* LEDGER */
+function toggleLedgerForm(){document.getElementById('ledger-form').classList.toggle('hidden');}
+function addLedgerEntry(entry){
+  let l=LS.get('cormi_ledger',[]);entry.id=Date.now().toString();l.push(entry);LS.set('cormi_ledger',l);
+  if(document.getElementById('tab-ledger').classList.contains('active')) loadLedgerTable();
+}
+function saveLedgerEntry(){
+  const date=document.getElementById('ledger-date').value;
+  const type=document.getElementById('ledger-type').value;
+  const cat=document.getElementById('ledger-cat').value;
+  const label=document.getElementById('ledger-label').value.trim();
+  const amount=parseFloat(document.getElementById('ledger-amount').value);
+  if(!date||!label||isNaN(amount)||amount<=0){toast('Remplissez tous les champs','err');return;}
+  addLedgerEntry({date,type,category:cat,label,amount});
+  document.getElementById('ledger-label').value='';document.getElementById('ledger-amount').value='';
+  toggleLedgerForm();toast('✅ Écriture enregistrée');
+}
+function deleteLedgerEntry(id){
+  if(!confirm('Supprimer ?')) return;
+  LS.set('cormi_ledger',LS.get('cormi_ledger',[]).filter(l=>l.id!==id));
+  loadLedgerTable();toast('Supprimé','info');
+}
+function loadLedgerTable(){
+  const ledger=LS.get('cormi_ledger',[]);const tbody=document.getElementById('ledger-table-body');
+  tbody.innerHTML='';let totalIn=0,totalOut=0;
+  ledger.sort((a,b)=>new Date(a.date)-new Date(b.date)).forEach(e=>{
+    const isR=e.type==='RECETTE';
+    if(isR) totalIn+=e.amount;else totalOut+=e.amount;
+    tbody.innerHTML+=`<tr class="border-b border-slate-100 hover:bg-slate-50 transition"><td class="p-4 text-slate-500 text-sm">${new Date(e.date+'T12:00').toLocaleDateString('fr-FR')}</td><td class="p-4"><span class="text-[10px] font-bold px-2 py-0.5 rounded uppercase ${isR?'bg-emerald-100 text-emerald-700':'bg-red-100 text-red-700'}">${e.type}</span></td><td class="p-4"><span class="text-[10px] px-2 py-0.5 rounded bg-slate-100 text-slate-500">${e.category||'—'}</span></td><td class="p-4 font-medium text-sm">${e.label}</td><td class="p-4 text-right font-bold text-emerald-600 text-sm">${isR?e.amount.toFixed(2)+' €':'—'}</td><td class="p-4 text-right font-bold text-red-600 text-sm">${!isR?e.amount.toFixed(2)+' €':'—'}</td><td class="p-4 text-center"><button onclick="deleteLedgerEntry('${e.id}')" class="text-slate-300 hover:text-red-500"><i class="fas fa-trash"></i></button></td></tr>`;
+  });
+  document.getElementById('ledger-total-in').innerText=totalIn.toFixed(2)+' €';
+  document.getElementById('ledger-total-out').innerText=totalOut.toFixed(2)+' €';
+  const bal=totalIn-totalOut;
+  const bEl=document.getElementById('ledger-balance');
+  bEl.innerText=bal.toFixed(2)+' €';bEl.className=`p-4 text-center text-lg font-black ${bal>=0?'text-indigo-700':'text-red-600'}`;
+}
+
+/* DASHBOARD */
+function autoLateCheckSilent(){autoLateCheck();}
+function loadDashboard(){
+  autoLateCheck();
+  const h=LS.get('cormi_docs_history',[]);
+  const s=getSettings();
+  const year=new Date().getFullYear();
+  document.getElementById('dash-year-label').textContent=`(${year})`;
+  document.getElementById('dash-chart-year').textContent=year;
+  document.getElementById('dash-tva-limit').textContent=s.tvaLimit.toLocaleString('fr-FR');
+
+  const caTotal=h.filter(d=>d.type===T_FACTURE&&d.status==='Payée'&&d.date.startsWith(year)).reduce((a,d)=>a+d.totalHT,0);
+  document.getElementById('dash-ca').innerText=caTotal.toLocaleString('fr-FR',{minimumFractionDigits:2})+' €';
+  const pct=Math.min(caTotal/s.tvaLimit*100,100);
+  const bar=document.getElementById('dash-tva-bar');
+  bar.style.width=pct+'%';
+  bar.className='h-2 rounded-full transition-all duration-500 '+(pct>=100?'bg-red-500':pct>=90?'bg-amber-500':pct>=70?'bg-yellow-400':'bg-indigo-500');
+  document.getElementById('dash-tva-pct').textContent=pct.toFixed(0)+'%';
+
+  const banner=document.getElementById('tva-banner');
+  if(pct>=100){banner.className='mb-5 p-4 rounded-xl flex items-center gap-3 font-semibold text-sm tva-alert border border-red-200';banner.innerHTML='<i class="fas fa-exclamation-circle text-xl"></i><span>🚨 <strong>Seuil TVA DÉPASSÉ !</strong> Consultez immédiatement votre expert-comptable.</span>';banner.classList.remove('hidden');}
+  else if(pct>=90){banner.className='mb-5 p-4 rounded-xl flex items-center gap-3 font-semibold text-sm tva-alert border border-red-200';banner.innerHTML=`<i class="fas fa-exclamation-triangle text-xl"></i><span>⚠️ <strong>${pct.toFixed(0)}% du seuil TVA atteint.</strong> Il vous reste <strong>${(s.tvaLimit-caTotal).toLocaleString('fr-FR',{maximumFractionDigits:0})} €</strong> de marge.</span>`;banner.classList.remove('hidden');}
+  else if(pct>=70){banner.className='mb-5 p-4 rounded-xl flex items-center gap-3 font-semibold text-sm tva-warn border border-amber-200';banner.innerHTML=`<i class="fas fa-info-circle text-xl"></i><span>📊 <strong>${pct.toFixed(0)}% du seuil TVA.</strong> Encore <strong>${(s.tvaLimit-caTotal).toLocaleString('fr-FR',{maximumFractionDigits:0})} €</strong> disponibles cette année.</span>`;banner.classList.remove('hidden');}
+  else{banner.classList.add('hidden');}
+
+  const late=h.filter(d=>d.type===T_FACTURE&&d.status==='En retard');
+  const lb=document.getElementById('late-banner');
+  if(late.length){
+    document.getElementById('late-banner-text').innerHTML=`<strong>${late.length} facture(s) en retard :</strong> ${late.map(d=>`${d.number} (${d.clientName} — ${d.totalHT.toFixed(2)} €)`).join(', ')} <button onclick="switchTab('history')" class="ml-2 underline font-bold">Voir →</button>`;
+    lb.classList.remove('hidden');
+  }else lb.classList.add('hidden');
+
+  const pending=h.filter(d=>d.type===T_FACTURE&&(d.status==='Envoyée'||d.status==='En retard'));
+  document.getElementById('dash-pending').innerText=pending.reduce((a,d)=>a+d.totalHT,0).toFixed(2)+' €';
+  document.getElementById('dash-pending-count').innerText=`${pending.length} facture(s)`;
+  const quotes=h.filter(d=>d.type===T_DEVIS&&d.status==='En attente');
+  document.getElementById('dash-quotes').innerText=quotes.reduce((a,d)=>a+d.totalHT,0).toFixed(2)+' €';
+  document.getElementById('dash-quotes-count').innerText=`${quotes.length} devis en attente`;
+
+  const totalD=h.filter(d=>d.type===T_DEVIS).length;
+  const accepted=h.filter(d=>d.type===T_DEVIS&&d.status==='Accepté').length;
+  const convEl=document.getElementById('dash-conv-rate');
+  const convBar=document.getElementById('dash-conv-bar');
+  const convD=document.getElementById('dash-conv-detail');
+  if(totalD>0){const r=Math.round(accepted/totalD*100);convEl.textContent=r+'%';convBar.style.width=r+'%';convD.textContent=`${accepted} accepté(s) sur ${totalD} devis`;}
+  else{convEl.textContent='—';convD.textContent='Aucun devis';convBar.style.width='0%';}
+
+  const months=['J','F','M','A','M','J','J','A','S','O','N','D'];
+  const md=Array(12).fill(0);
+  h.filter(d=>d.type===T_FACTURE&&d.status==='Payée'&&d.date.startsWith(year)).forEach(d=>{md[parseInt(d.date.split('-')[1])-1]+=d.totalHT;});
+  const maxV=Math.max(...md,1);
+  const chart=document.getElementById('dash-chart');const labels=document.getElementById('dash-chart-labels');
+  chart.innerHTML='';labels.innerHTML='';
+  md.forEach((val,i)=>{
+    const pct=Math.round(val/maxV*100);
+    const barWrap=document.createElement('div');barWrap.className='month-bar flex-1 flex flex-col justify-end items-center relative';
+    barWrap.innerHTML=`<span class="bar-tooltip">${val.toFixed(0)} €</span><div style="height:${Math.max(pct,0)}%;width:100%;border-radius:4px 4px 0 0;background:${val>0?'#6366f1':'#e2e8f0'};min-height:2px;transition:height .4s"></div>`;
+    chart.appendChild(barWrap);
+    const lbl=document.createElement('span');lbl.textContent=months[i];labels.appendChild(lbl);
+  });
+
+  const recent=[...h].sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,5);
+  const rl=document.getElementById('dash-recent-activity');rl.innerHTML='';
+  if(!recent.length){rl.innerHTML='<li class="text-slate-400 text-xs italic">Aucune activité récente.</li>';return;}
+  recent.forEach(d=>{
+    const icon=d.type===T_FACTURE?'fa-file-invoice-dollar text-emerald-500':'fa-file-signature text-blue-500';
+    rl.innerHTML+=`<li class="flex items-center justify-between p-2 hover:bg-slate-50 rounded cursor-pointer transition" onclick="editDocument('${d.id}')"><div class="flex items-center gap-3"><div class="bg-slate-50 p-2 rounded border border-slate-100"><i class="fas ${icon}"></i></div><div><p class="font-bold text-sm">${d.number}</p><p class="text-[10px] text-slate-500">${d.clientName}</p></div></div><div class="text-right"><p class="font-bold text-sm">${d.totalHT.toFixed(2)} €</p><span class="text-[9px] font-bold px-1.5 py-0.5 rounded-full uppercase tracking-wide ${getStatusColor(d.status)}">${d.status}</span></div></li>`;
+  });
+}
+
+/* PREVIEW */
+function generatePreviewById(id){const doc=LS.get('cormi_docs_history',[]).find(d=>d.id===id);if(!doc) return;editDocument(id);setTimeout(generatePreview,100);}
+function generatePreview(){
+  if(!document.getElementById('doc-id').value) saveDocument();
+  const data=getFormData();const s=getSettings();
+  const ds=new Date(data.date+'T12:00').toLocaleDateString('fr-FR');
+  let itemsHtml='';
+  data.items.forEach(it=>{itemsHtml+=`<tr class="border-b border-slate-100"><td class="py-4 pr-4"><p class="font-bold">${it.title}</p>${it.desc?`<p class="text-[11px] text-slate-500 mt-1 whitespace-pre-line">${it.desc}</p>`:''}</td><td class="py-4 text-center align-top">${it.qty}</td><td class="py-4 text-right align-top">${it.price.toFixed(2)} €</td><td class="py-4 text-right font-bold align-top">${(it.qty*it.price).toFixed(2)} €</td></tr>`;});
+  const notesBlock=data.notes?`<div class="mb-8 p-4 bg-slate-50 border border-slate-100 rounded-xl"><h4 class="text-[10px] font-bold text-indigo-400 uppercase mb-2 tracking-wider">Contexte & Périmètre</h4><div class="text-[11px] text-slate-700 whitespace-pre-line">${data.notes}</div></div>`:'';
+  const ribBlock=data.type===T_FACTURE?`<div><h4 class="text-[10px] font-bold text-slate-400 uppercase mb-2 tracking-wider">Règlement</h4><div class="bg-slate-50 p-4 rounded-xl text-[10px] font-mono border border-slate-200"><span class="text-indigo-600 font-bold block mb-1">${s.bank}</span>Titulaire : ${s.bankOwner}<br/>IBAN : ${s.iban}<br/>BIC : ${s.bic}<br/>Échéance : <b>${data.validity}</b></div></div>`:
+    `<div><h4 class="text-[10px] font-bold text-slate-400 uppercase mb-2 tracking-wider">Validité</h4><div class="p-4 bg-slate-50 border border-slate-100 rounded-xl"><p class="text-sm font-medium text-slate-600">Ce devis est valable <b>${data.validity}</b>.</p><p class="text-[10px] text-slate-400 mt-3 border-t border-slate-200 pt-3">Signature précédée de "Bon pour accord" :</p><div class="h-16 mt-2 border-2 border-dashed border-slate-200 rounded bg-white"></div></div></div>`;
+  let wm='';
+  if(data.status==='Brouillon') wm='<div style="position:absolute;top:40%;left:50%;transform:translate(-50%,-50%) rotate(-30deg);font-size:100px;font-weight:900;color:rgba(0,0,0,.03);z-index:0;pointer-events:none">BROUILLON</div>';
+  else if(data.status==='Payée') wm='<div style="position:absolute;top:40%;left:50%;transform:translate(-50%,-50%) rotate(-30deg);font-size:90px;font-weight:900;color:rgba(16,185,129,.05);z-index:0;pointer-events:none;border:8px solid rgba(16,185,129,.05);padding:20px;border-radius:20px">PAYÉE</div>';
+  const footer=data.type===T_FACTURE?s.penalites:s.devisFooter;
+  document.getElementById('document-render').innerHTML=`${wm}<div class="relative z-10 flex flex-col h-full"><div class="flex justify-between items-start mb-12"><div class="header-accent"><h2 class="text-2xl font-black uppercase tracking-tighter text-slate-900">${s.name}</h2><p class="text-[11px] font-bold text-indigo-600 uppercase tracking-widest mt-1">${s.title}</p><div class="text-[10px] text-slate-500 mt-3 leading-relaxed">Entrepreneur Individuel (EI)<br/>SIRET : ${s.siret}<br/>${s.address.replace(/\n/g,'<br/>')}${s.email?'<br/>'+s.email:''}${s.phone?'<br/>'+s.phone:''}</div></div><div class="text-right"><h3 class="text-4xl font-black text-slate-800 uppercase tracking-tighter mb-2">${data.type}</h3><p class="text-sm font-bold text-slate-600">N° ${data.number}</p><p class="text-xs text-slate-500 mt-1">Date : ${ds}</p></div></div><div class="grid grid-cols-2 gap-12 mb-8"><div><h4 class="text-[10px] font-bold text-slate-400 uppercase mb-3 tracking-wider border-b border-slate-100 pb-1">Client</h4><p class="font-black text-slate-900 text-lg mb-1">${data.clientName}</p><p class="text-slate-600 whitespace-pre-line text-xs leading-relaxed">${data.clientDetails}</p></div>${ribBlock}</div>${notesBlock}<table class="w-full text-left mb-8"><thead><tr class="border-b-2 border-slate-200 text-[10px] font-bold uppercase text-slate-500 tracking-wider"><th class="py-3 w-7/12">Désignation</th><th class="py-3 text-center">Qté</th><th class="py-3 text-right">PU HT</th><th class="py-3 text-right">Total HT</th></tr></thead><tbody class="text-sm">${itemsHtml}</tbody></table><div class="flex justify-end mb-16"><div class="w-1/2 min-w-[300px] bg-indigo-50/50 border border-indigo-100 rounded-2xl p-6 space-y-3"><div class="flex justify-between text-sm text-slate-600"><span>Total HT</span><span class="font-bold">${data.totalHT.toFixed(2)} €</span></div><div class="flex justify-between text-sm text-slate-500 border-b border-indigo-100 pb-3"><span>TVA (0%)</span><span>0,00 €</span></div><div class="flex justify-between pt-2 text-indigo-900"><span class="font-black text-lg">NET À PAYER</span><span class="text-2xl font-black">${data.totalHT.toFixed(2)} €</span></div></div></div><div class="mt-auto pt-8 border-t border-slate-100 text-[9px] text-slate-400 leading-relaxed text-center">* ${s.tvaMention}<br/>${footer}<br/>${s.name} EI – SIRET ${s.siret} – Code APE ${s.ape}</div></div>`;
+  switchTab('preview');
+}
+
+/* EXPORT / IMPORT */
+function exportData(){
+  const data={history:LS.get('cormi_docs_history',[]),ledger:LS.get('cormi_ledger',[]),clients:LS.get('cormi_clients',[]),settings:getSettings()};
+  const a=document.createElement('a');a.href='data:text/json;charset=utf-8,'+encodeURIComponent(JSON.stringify(data));
+  a.download='sauvegarde_cormi_'+new Date().toISOString().split('T')[0]+'.json';a.click();
+  toast('✅ Sauvegarde téléchargée');
+}
+function importData(event){
+  const file=event.target.files[0];if(!file) return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    try{
+      const data=JSON.parse(e.target.result);
+      if(confirm("Attention : cela remplacera toutes vos données actuelles. Continuer ?")){
+        if(data.history) LS.set('cormi_docs_history',data.history);
+        if(data.ledger) LS.set('cormi_ledger',data.ledger);
+        if(data.clients) LS.set('cormi_clients',data.clients);
+        if(data.settings) LS.set('cormi_settings',data.settings);
+        toast('✅ Restauration réussie !');setTimeout(()=>location.reload(),1200);
+      }
+    }catch{toast('Fichier invalide ou corrompu','err');}
+  };
+  reader.readAsText(file);event.target.value='';
+}
+</script>
+</body>
+</html>
