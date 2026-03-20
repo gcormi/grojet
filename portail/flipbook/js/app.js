@@ -212,12 +212,32 @@ $(document).ready(() => {
 
     // Charger le PDF pré-inscrit (Utile sur serveur web/forge)
     if (pdfUrl) {
-        logDiagnostic("Chargement auto. du cours distant : " + pdfUrl);
-        initialiserFlipbook(pdfUrl, pdfUrl);
+        logDiagnostic("Téléchargement du cours distant : " + pdfUrl);
         
-        // Tente de récupérer les octets pour générer les miniatures
-        fetch(pdfUrl).then(res => res.arrayBuffer()).then(buffer => {
-            genererVignettes(new Uint8Array(buffer));
-        }).catch(e => logDiagnostic("Miniatures indisponibles depuis le lien URL : " + e, "warn"));
+        // On force le téléchargement du fichier par le navigateur lui-même (Fetch)
+        // plutôt que de laisser DearFlip échouer avec son erreur interne "Cannot access file"
+        fetch(pdfUrl)
+            .then(res => {
+                if(!res.ok) throw new Error("Fichier introuvable sur le serveur");
+                return res.arrayBuffer();
+            })
+            .then(buffer => {
+                const octets = new Uint8Array(buffer);
+                const blob = new Blob([octets], { type: 'application/pdf' });
+                const blobUrl = URL.createObjectURL(blob);
+                
+                logDiagnostic("Document téléchargé. Initialisation du lecteur " + (isEleve ? "Élève..." : "Studio..."), "success");
+                
+                // On donne le BLOB à DearFlip
+                initialiserFlipbook(blobUrl, pdfUrl);
+                
+                // Et on génère les miniatures
+                genererVignettes(octets);
+            })
+            .catch(e => {
+                logDiagnostic("Erreur critique de récupération : " + e.message, "error");
+                // Fallback direct (sans garantie, mais au cas où)
+                initialiserFlipbook(pdfUrl, pdfUrl);
+            });
     }
 });
