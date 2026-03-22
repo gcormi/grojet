@@ -164,7 +164,7 @@
             border: none;
             width: 100%;
             height: 100%;
-            resize: none;
+            min-height: 400px;
             color: #cbd5e1;
             font-size: 1.6rem;
             line-height: 1.4;
@@ -172,7 +172,7 @@
             cursor: text;
         }
 
-        /* Crucial fixes for user-applied styles */
+        /* Forcing user styles to apply */
         .info-area font[color], .info-area span[style*="color"] {
             color: revert !important;
         }
@@ -286,7 +286,7 @@
                 <i class="fas fa-sun"></i>
             </div>
             <span id="meteo-temp" class="text-2xl font-display font-extrabold text-white">22°C</span>
-            <span id="meteo-desc" class="text-sm font-bold uppercase tracking-widest text-emerald-500">Ajaccio</span>
+            <span id="meteo-desc" class="text-sm font-bold uppercase tracking-widest text-emerald-500">Bastia</span>
         </div>
     </header>
 
@@ -341,6 +341,7 @@
                         </div>
                         <span class="text-xs font-bold uppercase tracking-widest text-amber-500">Informations & Travail à faire</span>
                     </div>
+                    <!-- EDITOR TOOLS -->
                     <div class="flex items-center gap-2 bg-black/20 p-1.5 rounded-xl border border-white/5 shadow-inner">
                         <button onmousedown="event.preventDefault(); execCmd('bold')" class="editor-btn font-black text-sm" title="Gras">B</button>
                         <button onmousedown="event.preventDefault(); execCmd('underline')" class="editor-btn underline text-sm" title="Souligner">U</button>
@@ -411,6 +412,8 @@
     </footer>
 
     <script>
+        const infoBoard = document.getElementById('info-board');
+
         function updateClock() {
             const now = new Date();
             const h = now.getHours(), m = now.getMinutes(), s = now.getSeconds();
@@ -470,18 +473,20 @@
             document.getElementById(id).className = `flex-grow py-3 rounded-xl border border-${color}-500/40 bg-${color}-500/20 text-${color}-400 text-xs font-bold pulse-${color}`;
         }
 
-        const infoBoard = document.getElementById('info-board');
         infoBoard.innerHTML = localStorage.getItem('classe_info_board_html') || "";
         infoBoard.addEventListener('input', () => localStorage.setItem('classe_info_board_html', infoBoard.innerHTML));
 
         function execCmd(cmd, value = null) {
-            infoBoard.focus(); document.execCommand('styleWithCSS', null, true); document.execCommand(cmd, false, value);
+            infoBoard.focus();
+            document.execCommand('styleWithCSS', null, true);
+            document.execCommand(cmd, false, value);
             localStorage.setItem('classe_info_board_html', infoBoard.innerHTML);
         }
 
         function changeFontSize(size) {
             infoBoard.focus();
-            if (window.getSelection().toString().length > 0) {
+            const selection = window.getSelection();
+            if (selection.toString().length > 0) {
                 const sizes = { 'large': '4', 'extra': '5', 'xxl': '6', 'giga': '7' };
                 document.execCommand('fontSize', false, sizes[size]);
             } else {
@@ -489,8 +494,13 @@
                 infoBoard.style.fontSize = cssSizes[size];
                 localStorage.setItem('classe_font_size', size);
             }
+            localStorage.setItem('classe_info_board_html', infoBoard.innerHTML);
         }
-        changeFontSize(localStorage.getItem('classe_font_size') || 'large');
+        
+        // Restore overall font size if no selection (for the whole block)
+        const savedSize = localStorage.getItem('classe_font_size') || 'large';
+        const cssSizes = { 'large': '2.5rem', 'extra': '4rem', 'xxl': '6rem', 'giga': '9rem' };
+        infoBoard.style.fontSize = cssSizes[savedSize];
     </script>
 </body>
 </html>
