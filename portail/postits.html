@@ -211,17 +211,21 @@
             font-family: 'Inter', sans-serif;
         }
 
-        .postit-delete {
-            position: absolute; top: 8px; right: 8px;
+        .postit-delete, .postit-edit {
+            position: absolute;
             width: 22px; height: 22px;
             background: none; border: none; border-radius: 50%;
-            color: rgba(0,0,0,0.22); cursor: pointer;
+            cursor: pointer;
             font-size: 0.7rem; display: flex; align-items: center; justify-content: center;
             transition: all 0.2s; opacity: 0;
             z-index: 10;
         }
-        .postit:hover .postit-delete { opacity: 1; }
+        .postit-delete { top: 8px; right: 8px; color: rgba(0,0,0,0.22); }
+        .postit-edit   { top: 8px; right: 34px; color: rgba(0,0,0,0.22); }
+        .postit:hover .postit-delete,
+        .postit:hover .postit-edit { opacity: 1; }
         .postit-delete:hover { background: rgba(220,38,38,0.15); color: #dc2626; transform: scale(1.2); }
+        .postit-edit:hover   { background: rgba(99,102,241,0.15); color: #6366f1; transform: scale(1.2); }
 
         /* ===== EMPTY STATE ===== */
         #empty-state {
@@ -263,6 +267,10 @@
         .modal-header h2 {
             font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 1.1rem; color: #0f172a;
             display: flex; align-items: center; gap: 8px;
+        }
+        .modal-edit-badge {
+            font-size: 0.65rem; background: #e0e7ff; color: #6366f1; border-radius: 6px;
+            padding: 2px 7px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em;
         }
         .modal-close {
             width: 34px; height: 34px; border-radius: 10px;
@@ -393,7 +401,7 @@
     <div class="modal-overlay" id="modal">
         <div class="modal-box">
             <div class="modal-header">
-                <h2><i class="fas fa-sticky-note" style="color:#fbbf24"></i> Nouveau post-it</h2>
+                <h2><i class="fas fa-sticky-note" style="color:#fbbf24"></i> <span id="modal-title-label">Nouveau post-it</span> <span class="modal-edit-badge" id="edit-badge" style="display:none">Édition</span></h2>
                 <button class="modal-close" onclick="closeModal()"><i class="fas fa-times"></i></button>
             </div>
 
@@ -450,6 +458,7 @@
         let currentSearch = '';
         let allPostits = [];
         let hintShown = false;
+        let editingId = null; // null = create mode, string = edit mode
 
         // Subtle random rotation pool
         const ROTS = [-2.5, -1.8, -1.2, -0.5, 0, 0.3, 0.9, 1.6, 2.2];
@@ -531,11 +540,16 @@
                         : '';
 
                     card.innerHTML = `
+                        <button class="postit-edit"   onclick="editPostit('${p.id}')" title="Modifier"><i class="fas fa-pen"></i></button>
                         <button class="postit-delete" onclick="deletePostit('${p.id}')" title="Supprimer"><i class="fas fa-times"></i></button>
                         ${titleHtml}
                         <div class="postit-content">${esc(p.content)}</div>
                         ${dateStr ? `<div class="postit-date">${dateStr}</div>` : ''}
                     `;
+                    // Double-click to edit
+                    card.addEventListener('dblclick', (e) => {
+                        if(!e.target.closest('.postit-delete') && !e.target.closest('.postit-edit')) editPostit(p.id);
+                    });
 
                     makeDraggable(card, p.id);
                     board.appendChild(card);
@@ -636,7 +650,26 @@
             el.addEventListener('touchstart', onStart, { passive: false });
         }
 
-        // ====== SAVE POSTIT ======
+        // ====== EDIT POSTIT ======
+        function editPostit(id) {
+            const p = allPostits.find(x => x.id === id);
+            if(!p) return;
+            editingId = id;
+            document.getElementById('modal-title').value   = p.title   || '';
+            document.getElementById('modal-content').value = p.content || '';
+            // Set color
+            selectedColor = p.color || 'pi-yellow';
+            document.querySelectorAll('.color-dot').forEach(d => d.classList.toggle('selected', d.dataset.color === selectedColor));
+            document.getElementById('modal-content').style.background = colorBgMap[selectedColor] || 'white';
+            // Update modal labels
+            document.getElementById('modal-title-label').textContent = 'Modifier le post-it';
+            document.getElementById('edit-badge').style.display = 'inline';
+            document.getElementById('save-btn').innerHTML = '<i class="fas fa-check" style="margin-right:6px"></i>Mettre à jour';
+            document.getElementById('modal').classList.add('active');
+            setTimeout(() => document.getElementById('modal-content').focus(), 100);
+        }
+
+        // ====== SAVE / UPDATE POSTIT ======
         async function savePostit() {
             const title   = document.getElementById('modal-title').value.trim();
             const content = document.getElementById('modal-content').value.trim();
@@ -653,19 +686,23 @@
             btn.innerHTML = '<i class="fas fa-spinner fa-spin" style="margin-right:6px"></i>Sauvegarde...';
             setSyncStatus('syncing');
 
-            // Determine position in center of current view
-            const board = document.getElementById('board');
-            const x = board.scrollLeft + board.clientWidth  / 2 - 110;
-            const y = board.scrollTop  + board.clientHeight / 2 - 80;
-
             try {
-                await postitsRef.add({
-                    title, content,
-                    color: selectedColor,
-                    x: Math.max(0, x),
-                    y: Math.max(0, y),
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                });
+                if(editingId) {
+                    // UPDATE existing
+                    await postitsRef.doc(editingId).update({ title, content, color: selectedColor });
+                } else {
+                    // CREATE new
+                    const board = document.getElementById('board');
+                    const x = board.scrollLeft + board.clientWidth  / 2 - 110;
+                    const y = board.scrollTop  + board.clientHeight / 2 - 80;
+                    await postitsRef.add({
+                        title, content,
+                        color: selectedColor,
+                        x: Math.max(0, x),
+                        y: Math.max(0, y),
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                }
                 closeModal();
             } catch(e) {
                 alert('Erreur Firebase : ' + e.message);
@@ -685,17 +722,23 @@
 
         // ====== MODAL ======
         function openModal() {
+            editingId = null;
             document.getElementById('modal-title').value = '';
             document.getElementById('modal-content').value = '';
             document.getElementById('modal-content').style.background = '#fff9c4';
             selectedColor = 'pi-yellow';
             document.querySelectorAll('.color-dot').forEach(d => d.classList.toggle('selected', d.dataset.color === 'pi-yellow'));
+            // Reset modal labels to "create" mode
+            document.getElementById('modal-title-label').textContent = 'Nouveau post-it';
+            document.getElementById('edit-badge').style.display = 'none';
+            document.getElementById('save-btn').innerHTML = '<i class="fas fa-save" style="margin-right:6px"></i>Enregistrer';
             document.getElementById('modal').classList.add('active');
             setTimeout(() => document.getElementById('modal-title').focus(), 100);
         }
 
         function closeModal() {
             document.getElementById('modal').classList.remove('active');
+            editingId = null;
         }
 
         // Overlay click / Escape
