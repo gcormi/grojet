@@ -130,20 +130,20 @@
         <div class="container mx-auto max-w-7xl px-6 py-4 flex justify-between items-center">
             <div class="flex items-center gap-3">
                 <div class="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white shadow-lg">
-                    <i class="fas fa-folder-tree"></i>
+                    <i class="fas fa-satellite-dish"></i>
                 </div>
                 <div>
-                    <h1 class="font-bold text-slate-900 dark:text-white leading-tight">Veille & Favoris</h1>
-                    <p class="text-[10px] uppercase tracking-widest text-slate-400 font-bold">Gilles Cormi EI • Gestion par Dossiers</p>
+                    <h1 class="font-bold text-slate-900 dark:text-white leading-tight">Centre de Veille Pro</h1>
+                    <p class="text-[10px] uppercase tracking-widest text-slate-400 font-bold">Gilles Cormi EI • Écosystème Sécurisé</p>
                 </div>
             </div>
             <div class="flex gap-2 items-center">
                 <button id="btn-refresh" title="Actualiser les flux" class="text-xs font-bold bg-indigo-50 text-indigo-600 px-4 py-2 rounded-lg hover:bg-indigo-600 hover:text-white transition-all">
-                    <i class="fas fa-sync-alt"></i>
+                    <i class="fas fa-sync-alt"></i> Actualiser
                 </button>
-                <button id="btn-session-ui" class="text-[10px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-500 px-4 py-2 rounded-lg hover:bg-indigo-100 hover:text-indigo-600 transition-all">
-                    <i class="fas fa-key mr-2"></i> Ma Session
-                </button>
+                <div class="flex items-center gap-2 px-4 py-2 bg-emerald-50 text-emerald-600 rounded-lg text-xs font-bold">
+                    <i class="fas fa-lock text-[10px]"></i> Portail Déverrouillé
+                </div>
             </div>
         </div>
     </header>
@@ -197,9 +197,9 @@
         <div class="pt-8 border-t border-slate-200 dark:border-slate-700">
             <div class="flex items-center gap-3 mb-8">
                 <i class="fas fa-star text-amber-500"></i>
-                <h2 class="text-2xl font-extrabold">Mes Dossiers de Favoris</h2>
+                <h2 class="text-2xl font-extrabold">Mes Dossiers</h2>
             </div>
-            <div id="folders-container" class="space-y-8"></div>
+            <div id="folders-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"></div>
         </div>
 
     </main>
@@ -233,29 +233,32 @@
         </div>
     </div>
 
-    <!-- Modal de Session -->
-    <div id="session-modal">
-        <div class="bg-white dark:bg-slate-800 p-8 rounded-3xl max-w-md w-full mx-4 shadow-2xl">
-            <h3 class="text-xl font-bold mb-4 flex items-center gap-2">
-                <i class="fas fa-lock text-indigo-500"></i> Accès à ma veille
-            </h3>
-            <p class="text-sm text-slate-500 mb-6">Entrez votre code secret pour synchroniser vos données entre vos appareils.</p>
-            
-            <label class="block text-[10px] font-bold uppercase text-slate-400 mb-2">Code Secret</label>
-            <input type="password" id="master-password" placeholder="Ex: 6463" class="w-full bg-slate-50 dark:bg-slate-900 p-4 rounded-2xl text-sm border border-slate-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-indigo-500/20 mb-6">
-
-            <div class="flex flex-col gap-3">
-                <button onclick="saveAndSync()" class="w-full py-4 bg-indigo-600 text-white rounded-2xl font-bold hover:bg-indigo-700 transition-all flex items-center justify-center gap-2">
-                    <i class="fas fa-sync"></i> Synchroniser ma session
-                </button>
-                <button onclick="toggleSessionModal()" class="w-full py-4 text-slate-400 text-xs font-bold hover:text-slate-600 transition-all">
-                    Annuler / Fermer
+    <!-- Modal Contenu Dossier (Favoris) -->
+    <div id="links-modal" class="hidden fixed top-0 left-0 w-full h-full bg-black/60 backdrop-blur-md z-[2000] items-center justify-center flex transition-all">
+        <div class="bg-white dark:bg-slate-800 rounded-3xl max-w-4xl w-full mx-4 shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
+            <div class="p-6 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50/50 dark:bg-slate-900/50">
+                <div class="flex items-center gap-4">
+                    <div id="links-modal-icon" class="w-12 h-12 rounded-xl bg-indigo-100 text-indigo-600 flex items-center justify-center text-xl">
+                        <i class="fas fa-folder-open"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold" id="links-modal-title">Contenu du dossier</h3>
+                        <p class="text-[10px] uppercase font-bold text-slate-400 tracking-widest" id="links-modal-count">0 SITES ENREGISTRÉS</p>
+                    </div>
+                </div>
+                <button onclick="closeLinksModal()" class="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-500 hover:bg-rose-50 hover:text-rose-600 transition-all flex items-center justify-center">
+                    <i class="fas fa-times"></i>
                 </button>
             </div>
             
-            <div id="session-info" class="mt-6 pt-6 border-t border-slate-100 dark:border-slate-700 text-center">
-                <p class="text-[10px] text-slate-400 uppercase tracking-widest font-bold mb-1">Status de connexion</p>
-                <code id="current-session-id" class="text-[11px] text-indigo-500 font-mono italic">Déconnecté</code>
+            <div class="p-8 overflow-y-auto" id="links-modal-container">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="links-modal-grid">
+                    <!-- Liens injectés ici -->
+                </div>
+            </div>
+            
+            <div class="p-4 bg-slate-50 dark:bg-slate-900/50 border-t border-slate-100 dark:border-slate-700 text-center">
+                <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Glissez-déposez pour réorganiser (Beta)</p>
             </div>
         </div>
     </div>
@@ -387,18 +390,12 @@
         if (isCloudEnabled) {
             onAuthStateChanged(auth, async (user) => {
                 if (user) {
-                    const storedPassword = sessionStorage.getItem('veille_master_password');
-                    if (storedPassword) {
-                        const effectiveUid = await hashPassword(storedPassword);
-                        currentUser = { uid: effectiveUid };
-                        document.getElementById('current-session-id').textContent = "Connecté : " + effectiveUid.substring(0,8);
-                        listenToData(effectiveUid);
-                    } else {
-                        // Forcer la demande de mot de passe car il n'est pas en mémoire
-                        currentUser = { uid: user.uid }; 
-                        document.getElementById('current-session-id').textContent = "Authentification requise";
-                        toggleSessionModal();
-                    }
+                    // Utiliser le mot de passe du portail par défaut pour la synchronisation
+                    const portalPwd = "Brigitte*1963";
+                    const effectiveUid = await hashPassword(portalPwd);
+                    currentUser = { uid: effectiveUid };
+                    document.getElementById('current-session-id').textContent = "Cloud Synchronisé (Portail)";
+                    listenToData(effectiveUid);
                 }
             });
         } else {
@@ -407,19 +404,10 @@
         }
 
         window.toggleSessionModal = () => {
-            document.getElementById('session-modal').classList.toggle('active');
-            document.getElementById('master-password').value = "";
-        };
-        
-        window.saveAndSync = async () => {
-            const pwd = document.getElementById('master-password').value.trim();
-            if (pwd.length < 4) { showToast("Code trop court", true); return; }
-            sessionStorage.setItem('veille_master_password', pwd);
-            showToast("Code enregistré. Synchronisation...");
-            setTimeout(() => window.location.reload(), 1000);
+            // Désactivé car le portail gère déjà la sécurité
+            showToast("Accès déjà sécurisé par le portail.");
         };
 
-        document.getElementById('btn-session-ui').addEventListener('click', toggleSessionModal);
 
         // --- DATA MANAGEMENT ---
         function listenToData(uid) {
@@ -453,12 +441,13 @@
 
         function updateFolderUI() {
             const select = document.getElementById('folder-select');
-            select.innerHTML = '<option value="none">Dossier : Aucun</option>';
+            select.innerHTML = '<option value="none">Favoris non classés</option>';
             folders.sort((a,b) => a.name.localeCompare(b.name)).forEach(f => {
                 select.innerHTML += `<option value="${f.id}">${f.name}</option>`;
             });
             renderFolders();
         }
+
 
         async function fetchRSS(source) {
             const api_url = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(source.rss_url || source.url)}`;
@@ -495,54 +484,98 @@
         }
 
         function renderFolders() {
-            const container = document.getElementById('folders-container');
-            container.innerHTML = '';
-            const displayFolders = [...folders.sort((a,b) => a.name.localeCompare(b.name)), { id: null, name: 'Favoris non classés', color: 'slate' }];
+            const grid = document.getElementById('folders-grid');
+            grid.innerHTML = '';
             
-            displayFolders.forEach(f => {
-                const folderLinks = sources.filter(s => s.folderId === f.id);
-                if (folderLinks.length === 0 && f.id === null) return;
-                
-                const fColor = f.color || 'indigo';
-                const section = document.createElement('div');
-                section.className = "folder-section group transition-all duration-300";
-                
-                // Drag & Drop events
-                section.setAttribute("ondrop", `dropLink(event, '${f.id}')`);
-                section.setAttribute("ondragover", "allowDrop(event)");
-                section.setAttribute("ondragleave", "dragLeave(event)");
+            // On inclut le dossier virtuel "Non classés"
+            const allDisplays = [...folders.sort((a,b) => a.name.localeCompare(b.name))];
+            
+            // Toujours ajouter "Non classés" à la fin s'il contient des liens
+            const uncategorizedLinks = sources.filter(s => !s.folderId || s.folderId === 'none');
+            if (uncategorizedLinks.length > 0) {
+                allDisplays.push({ id: 'none', name: 'Favoris non classés', color: 'slate' });
+            }
 
-                section.innerHTML = `
-                    <div class="flex justify-between items-center mb-6">
-                        <h3 class="text-lg font-bold flex items-center gap-2">
-                            <i class="fas ${f.id ? 'fa-folder-open text-' + fColor + '-400' : 'fa-inbox text-slate-400'}"></i>
-                            ${f.name}
-                            <span class="text-[10px] bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded-full text-slate-500">${folderLinks.length}</span>
-                        </h3>
-                        ${f.id ? `
-                        <div class="flex gap-2 lg:opacity-0 group-hover:opacity-100 transition-opacity">
-                            <button onclick="openFolderModal('${f.id}')" class="p-2 text-slate-400 hover:text-${fColor}-500" title="Modifier le dossier"><i class="fas fa-edit"></i></button>
-                            <button onclick="deleteFolder('${f.id}')" class="p-2 text-slate-400 hover:text-red-500" title="Supprimer le dossier"><i class="fas fa-trash-alt"></i></button>
-                        </div>
-                        ` : ''}
-                    </div>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                        ${folderLinks.map(l => `
-                            <div draggable="true" ondragstart="dragStart(event, '${l.id}')" class="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-100 dark:border-slate-700 flex items-center justify-between group cursor-move hover:border-${fColor}-400 hover:shadow-md transition-all">
-                                <div class="overflow-hidden pr-2">
-                                    <h4 class="text-[11px] font-bold truncate">${l.name}</h4>
-                                    <a href="${l.origin_url || l.url}" target="_blank" class="text-[9px] text-slate-400 hover:text-${fColor}-500 hover:underline block truncate">Ouvrir le lien</a>
-                                </div>
-                                <div class="flex gap-1 items-center">
-                                    <button onclick="moveLink('${l.id}')" class="action-btn text-slate-300 p-2 hover:text-indigo-600" title="Déplacer vers..."><i class="fas fa-exchange-alt"></i></button>
-                                    <button onclick="deleteLink('${l.id}')" class="action-btn text-red-300 p-2 hover:text-red-500" title="Supprimer"><i class="fas fa-trash-alt"></i></button>
-                                </div>
-                            </div>`).join('')}
-                    </div>`;
+            allDisplays.forEach(f => {
+                const folderLinks = sources.filter(s => f.id === 'none' ? (!s.folderId || s.folderId === 'none') : s.folderId === f.id);
+                const fColor = f.color || 'indigo';
                 
-                container.appendChild(section);
+                const card = document.createElement('div');
+                card.className = `group relative bg-white dark:bg-slate-800 rounded-3xl p-6 border border-slate-100 dark:border-slate-700 hover:border-${fColor}-400 hover:shadow-xl transition-all cursor-pointer animate-fade-up`;
+                
+                card.innerHTML = `
+                    <div class="flex items-center gap-4 mb-4">
+                        <div class="w-12 h-12 rounded-2xl bg-${fColor}-100 dark:bg-${fColor}-900/30 text-${fColor}-600 flex items-center justify-center text-xl">
+                            <i class="fas ${f.id === 'none' ? 'fa-inbox' : 'fa-folder'}"></i>
+                        </div>
+                        <div class="overflow-hidden">
+                            <h3 class="font-bold text-slate-900 dark:text-white truncate group-hover:text-${fColor}-600 transition-colors">${f.name}</h3>
+                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">${folderLinks.length} élément(s)</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex justify-between items-center mt-6 pt-4 border-t border-slate-50 dark:border-slate-700/50">
+                        <button onclick="event.stopPropagation(); openLinksModal('${f.id}')" class="text-[10px] font-bold text-indigo-500 hover:underline uppercase tracking-wide">Ouvrir le dossier</button>
+                        ${f.id !== 'none' ? `
+                        <div class="flex gap-2">
+                            <i onclick="event.stopPropagation(); openFolderModal('${f.id}')" class="fas fa-edit text-slate-300 hover:text-indigo-500 text-xs p-1" title="Modifier"></i>
+                            <i onclick="event.stopPropagation(); deleteFolder('${f.id}')" class="fas fa-trash-alt text-slate-300 hover:text-red-500 text-xs p-1" title="Supprimer"></i>
+                        </div>` : ''}
+                    </div>
+                `;
+                card.onclick = () => openLinksModal(f.id);
+                grid.appendChild(card);
             });
         }
+
+        window.openLinksModal = (folderId) => {
+            const modal = document.getElementById('links-modal');
+            const grid = document.getElementById('links-modal-grid');
+            const title = document.getElementById('links-modal-title');
+            const count = document.getElementById('links-modal-count');
+            const icon = document.getElementById('links-modal-icon');
+            
+            const folder = folderId === 'none' ? { name: 'Favoris non classés', color: 'slate', id: 'none' } : folders.find(f => f.id === folderId);
+            if (!folder) return;
+
+            const folderLinks = sources.filter(s => folderId === 'none' ? (!s.folderId || s.folderId === 'none') : s.folderId === folderId);
+            
+            title.textContent = folder.name;
+            count.textContent = `${folderLinks.length} SITE(S) ENREGISTRÉ(S)`;
+            icon.className = `w-12 h-12 rounded-xl bg-${folder.color || 'indigo'}-100 text-${folder.color || 'indigo'}-600 flex items-center justify-center text-xl`;
+            
+            grid.innerHTML = '';
+            if (folderLinks.length === 0) {
+                grid.innerHTML = '<p class="col-span-full text-center text-slate-400 py-10">Ce dossier est vide.</p>';
+            }
+
+            folderLinks.forEach(l => {
+                const item = document.createElement('div');
+                item.className = "bg-slate-50 dark:bg-slate-900/50 p-5 rounded-2xl border border-slate-100 dark:border-slate-700 flex items-center justify-between group hover:border-indigo-400 hover:bg-white dark:hover:bg-slate-800 transition-all";
+                item.innerHTML = `
+                    <div class="overflow-hidden pr-4 flex-grow">
+                        <h4 class="text-base font-bold text-slate-800 dark:text-white truncate mb-1">${l.name}</h4>
+                        <div class="flex items-center gap-3">
+                            <a href="${l.url}" target="_blank" class="text-[10px] font-bold text-indigo-500 hover:underline uppercase tracking-tight">Consulter le site</a>
+                            <span class="text-[9px] text-slate-400 italic truncate">${new URL(l.url).hostname}</span>
+                        </div>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="moveLink('${l.id}')" class="w-8 h-8 rounded-lg bg-white dark:bg-slate-700 text-slate-400 hover:text-indigo-600 shadow-sm flex items-center justify-center transition-all" title="Changer de dossier"><i class="fas fa-exchange-alt text-xs"></i></button>
+                        <button onclick="deleteLink('${l.id}')" class="w-8 h-8 rounded-lg bg-white dark:bg-slate-700 text-slate-300 hover:text-rose-600 shadow-sm flex items-center justify-center transition-all" title="Supprimer de la corbeille"><i class="fas fa-trash-alt text-xs"></i></button>
+                    </div>
+                `;
+                grid.appendChild(item);
+            });
+
+            modal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        };
+
+        window.closeLinksModal = () => {
+            document.getElementById('links-modal').classList.add('hidden');
+            document.body.style.overflow = '';
+        };
 
         // --- DRAG AND DROP ---
         window.dragStart = (e, linkId) => {
@@ -760,33 +793,56 @@
         document.getElementById('btn-add-source').addEventListener('click', async () => {
             const urlInput = document.getElementById('new-url');
             const folderId = document.getElementById('folder-select').value;
-            const url = urlInput.value.trim();
+            let url = urlInput.value.trim();
             if (!url) return;
 
-            if (sources.some(s => s.url === url || s.rss_url === url)) {
-                showToast("❌ Ce lien est déjà dans vos favoris !", true);
+            if (!url.startsWith('http')) url = 'https://' + url;
+
+            if (sources.some(s => s.url === url)) {
+                showToast("❌ Ce lien est déjà enregistré !", true);
                 return;
             }
 
-            const domain = new URL(url).hostname.replace('www.', '');
-            const newSource = {
-                id: isCloudEnabled ? null : Date.now().toString(),
-                name: domain, 
-                url, 
-                rss_url: url.includes('feed') ? url : (url.endsWith('/') ? url + 'feed' : url + '/feed'),
-                folderId: folderId === 'none' ? null : folderId, 
-                addedAt: new Date().toISOString()
-            };
+            try {
+                showToast("Vérification du site...");
+                const domain = new URL(url).hostname.replace('www.', '');
+                
+                // Détection intelligente du flux RSS
+                let rssUrlDetected = null;
+                const possiblePaths = [url, url + '/feed', url + '/rss', url + '/index.xml', url + '/feed/'];
+                
+                for(let path of possiblePaths) {
+                    try {
+                        const check = await fetchRSS({ url: path });
+                        if (check.hasFeed) {
+                            rssUrlDetected = path;
+                            break;
+                        }
+                    } catch(e) {}
+                }
 
-            if (isCloudEnabled && currentUser) {
-                await addDoc(collection(db, 'artifacts', appId, 'users', currentUser.uid, 'sources'), newSource);
-            } else {
-                sources.push(newSource);
-                localStorage.setItem('local_sources', JSON.stringify(sources));
-                fetchAllFeeds();
+                const newSource = {
+                    id: isCloudEnabled ? null : Date.now().toString(),
+                    name: domain, 
+                    url, 
+                    rss_url: rssUrlDetected, 
+                    folderId: folderId === 'none' ? null : folderId, 
+                    addedAt: new Date().toISOString()
+                };
+
+                if (isCloudEnabled && currentUser) {
+                    await addDoc(collection(db, 'artifacts', appId, 'users', currentUser.uid, 'sources'), newSource);
+                } else {
+                    sources.push(newSource);
+                    localStorage.setItem('local_sources', JSON.stringify(sources));
+                    fetchAllFeeds();
+                }
+                
+                urlInput.value = "";
+                showToast(rssUrlDetected ? "Site ajouté avec flux RSS !" : "Site ajouté aux favoris.");
+            } catch(e) {
+                showToast("URL invalide.", true);
             }
-            urlInput.value = "";
-            showToast("Lien ajouté et sécurisé");
         });
 
         window.moveLink = async (id) => {
@@ -803,21 +859,40 @@
                 if (sIdx > -1) {
                     sources[sIdx].folderId = newFolderId;
                     localStorage.setItem('local_sources', JSON.stringify(sources));
-                    renderFolders();
                 }
+            }
+            // Mettre à jour la modale
+            if (document.getElementById('links-modal').classList.contains('hidden') === false) {
+                 const currentSource = sources.find(s => s.id === id);
+                 if (!isCloudEnabled) renderFolders(); 
+            } else {
+                fetchAllFeeds();
             }
         };
 
         window.deleteLink = async (id) => {
-            if(!confirm("Supprimer ce lien ?")) return;
-            if (isCloudEnabled && currentUser) {
-                await deleteDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'sources', id));
-            } else {
-                sources = sources.filter(s => s.id !== id);
-                localStorage.setItem('local_sources', JSON.stringify(sources));
-                fetchAllFeeds();
+            if(!confirm("Supprimer ce favori de votre collection ?")) return;
+            try {
+                if (isCloudEnabled && currentUser) {
+                    await deleteDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'sources', id));
+                } else {
+                    sources = sources.filter(s => s.id !== id);
+                    localStorage.setItem('local_sources', JSON.stringify(sources));
+                }
+                
+                // Mettre à jour la modale si elle est ouverte
+                const openModalLink = sources.find(s => s.id === id);
+                if (openModalLink && document.getElementById('links-modal').classList.contains('hidden') === false) {
+                     openLinksModal(openModalLink.folderId || 'none');
+                } else {
+                    fetchAllFeeds();
+                }
+                showToast("Favori supprimé.");
+            } catch(e) {
+                showToast("Erreur lors de la suppression.", true);
             }
         };
+
 
         document.getElementById('btn-new-folder').addEventListener('click', () => {
             openFolderModal();
