@@ -13,6 +13,10 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@400;500;600&family=OpenDyslexic:wght@400;700&display=swap" rel="stylesheet">
 
+    <!-- Firebase SDK (pour liens personnalisés + post-its) -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+
     <style>
         :root {
             --primary: #4f46e5;
@@ -1253,7 +1257,7 @@
         <!-- Stats Section -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-20 fade-in-up">
             <div class="stat-card rounded-2xl p-8 text-center">
-                <div class="text-3xl font-extrabold text-indigo-600 mb-2"><span class="counter">17</span></div>
+                <div class="text-3xl font-extrabold text-indigo-600 mb-2"><span class="counter">18</span></div>
                 <div class="text-sm font-bold text-slate-600 uppercase tracking-wide">Outils Disponibles</div>
             </div>
             <div class="stat-card rounded-2xl p-8 text-center">
@@ -1392,8 +1396,64 @@
                     </a>
                 </article>
 
-                <!-- 4. Éditeur HTML Visuel -->
+                <!-- 4. Post-its (Nouveau) -->
                 <article class="card-soft rounded-2xl p-8 flex flex-col h-full fade-in-up stagger-4 card-wrapper"
+                         data-category="orga"
+                         data-name="Post-its Brainstorming Organisation Notes"
+                         aria-label="Post-its Interactifs">
+                    <span class="badge-new bg-amber-500">Live Sync</span>
+                    <div class="flex items-start justify-between mb-5">
+                        <div class="w-11 h-11 rounded-xl bg-amber-100 flex items-center justify-center text-amber-600 text-lg">
+                            <i class="fas fa-sticky-note" aria-hidden="true"></i>
+                        </div>
+                        <span class="category-pill bg-amber-50 text-amber-600 border border-amber-100/60">
+                            <i class="fas fa-layer-group text-[9px]" aria-hidden="true"></i> Organisation
+                        </span>
+                    </div>
+                    <h3 class="text-base font-bold text-slate-900 mb-3">Tableau de Post-its</h3>
+                    <p class="text-sm text-slate-500 mb-5 leading-relaxed flex-grow">Brainstorming & Organisation - Collez, déplacez et organisez vos idées sur un tableau infini synchronisé en temps réel sur tous vos appareils.</p>
+                    <div class="flex flex-wrap gap-1.5 mb-5">
+                        <span class="keyword-tag">Temps réel</span>
+                        <span class="keyword-tag">Brainstorm</span>
+                        <span class="keyword-tag">Organisation</span>
+                    </div>
+                    <a href="postits.html"
+                       class="card-cta-small bg-amber-50 text-amber-700 border-amber-100 hover:bg-amber-500 hover:text-white hover:border-amber-500">
+                        <span>Ouvrir le tableau</span>
+                        <i class="fas fa-arrow-right text-xs" aria-hidden="true"></i>
+                    </a>
+                </article>
+
+                <!-- 5. Bloc-note (Nouveau) -->
+                <article class="card-soft rounded-2xl p-8 flex flex-col h-full fade-in-up stagger-5 card-wrapper"
+                         data-category="orga,creation"
+                         data-name="Bloc-note Notes Onglets Captures"
+                         aria-label="Bloc-note Enrichi">
+                    <span class="badge-new bg-indigo-500">Nouveau</span>
+                    <div class="flex items-start justify-between mb-5">
+                        <div class="w-11 h-11 rounded-xl bg-indigo-100 flex items-center justify-center text-indigo-600 text-lg">
+                            <i class="fas fa-book-open" aria-hidden="true"></i>
+                        </div>
+                        <span class="category-pill bg-indigo-50 text-indigo-600 border border-indigo-100/60">
+                            <i class="fas fa-edit text-[9px]" aria-hidden="true"></i> Prise de notes
+                        </span>
+                    </div>
+                    <h3 class="text-base font-bold text-slate-900 mb-3">Bloc-note Enrichi</h3>
+                    <p class="text-sm text-slate-500 mb-5 leading-relaxed flex-grow">Prise de notes & Documentation - Un carnet numérique avec onglets, texte mis en forme et insertion rapide de captures d'écran via Ctrl+V.</p>
+                    <div class="flex flex-wrap gap-1.5 mb-5">
+                        <span class="keyword-tag">Onglets</span>
+                        <span class="keyword-tag">Captures TV</span>
+                        <span class="keyword-tag">Sync Cloud</span>
+                    </div>
+                    <a href="blocnote.html"
+                       class="card-cta-small bg-indigo-50 text-indigo-700 border-indigo-100 hover:bg-indigo-500 hover:text-white hover:border-indigo-500">
+                        <span>Lancer le carnet</span>
+                        <i class="fas fa-arrow-right text-xs" aria-hidden="true"></i>
+                    </a>
+                </article>
+
+                <!-- 6. Éditeur HTML Visuel -->
+                <article class="card-soft rounded-2xl p-8 flex flex-col h-full fade-in-up stagger-6 card-wrapper"
                          data-category="creation"
                          data-name="Éditeur HTML Visuel WYSIWYG Mise en Page Design"
                          aria-label="Éditeur HTML Visuel">
@@ -2375,7 +2435,7 @@
             }
         });
 
-        // ====== SIDEBAR HUB SCRIPT & CUSTOM LINKS ======
+        // ====== SIDEBAR HUB SCRIPT & CUSTOM LINKS (Firebase) ======
         const defaultHubLinks = [
             { titre: "Léia by Néo", url: "https://ent.leia.corsica/", icone: "fas fa-graduation-cap", couleurIco: "text-amber-500", fondIco: "bg-amber-50 dark:bg-amber-900/30", badge: "Académie" },
             { titre: "Nuage (Apps.edu)", url: "https://nuage.apps.education.fr/", icone: "fas fa-cloud", couleurIco: "text-sky-500", fondIco: "bg-sky-50 dark:bg-sky-900/30" },
@@ -2385,49 +2445,88 @@
             { titre: "Google Agenda", url: "https://calendar.google.com/", icone: "fas fa-calendar-alt", couleurIco: "text-blue-500", fondIco: "bg-blue-50 dark:bg-blue-900/30" },
             { titre: "Gemini AI", url: "https://gemini.google.com/", icone: "fas fa-wand-magic-sparkles", couleurIco: "text-indigo-500", fondIco: "bg-indigo-50 dark:bg-indigo-900/30" },
             { titre: "NotebookLM", url: "https://notebooklm.google.com/", icone: "fas fa-book-open-reader", couleurIco: "text-blue-600", fondIco: "bg-blue-50 dark:bg-blue-900/30" },
-            { titre: "Post-its", url: "postits.html", icone: "fas fa-sticky-note", couleurIco: "text-yellow-500", fondIco: "bg-yellow-50 dark:bg-yellow-900/30", badge: "Live" }
+            { titre: "Post-its", url: "postits.html", icone: "fas fa-sticky-note", couleurIco: "text-yellow-500", fondIco: "bg-yellow-50 dark:bg-yellow-900/30", badge: "Live" },
+            { titre: "Bloc-note", url: "blocnote.html", icone: "fas fa-book-open", couleurIco: "text-indigo-500", fondIco: "bg-indigo-50 dark:bg-indigo-900/30", badge: "Live" }
         ];
 
-        function renderSidebarLinks() {
+        // Init Firebase (même base que les post-its)
+        let hubDb;
+        try {
+            // Check if already initialized
+            hubDb = firebase.app().firestore();
+        } catch(e) {
+            firebase.initializeApp({
+                apiKey: "AIzaSyBGxXTvy8thfYJZTP-QbWrV-2euTmj4NPY",
+                authDomain: "portail-postits.firebaseapp.com",
+                projectId: "portail-postits",
+                storageBucket: "portail-postits.firebasestorage.app",
+                messagingSenderId: "494625342197",
+                appId: "1:494625342197:web:9cc573fda25019e57ebbbc"
+            });
+            hubDb = firebase.firestore();
+        }
+        const customLinksRef = hubDb.collection('customHubLinks');
+
+        // Render sidebar (appelé à chaque mise à jour Firebase en temps réel)
+        function renderSidebarLinks(customLinks) {
             const container = document.getElementById('sidebar-hub-links');
             if(!container) return;
             container.innerHTML = '';
-            
-            // Fetch custom links
-            let customLinks = [];
-            try { customLinks = JSON.parse(localStorage.getItem('customHubLinks')) || []; } catch(e) {}
-            
-            const allLinks = [...defaultHubLinks, ...customLinks];
-            
-            allLinks.forEach((link, idx) => {
-                const isCustom = idx >= defaultHubLinks.length;
-                const deleteIndex = isCustom ? idx - defaultHubLinks.length : -1;
-                
+
+            const allLinks = [
+                ...defaultHubLinks.map(l => ({ ...l, isDefault: true })),
+                ...customLinks.map(l => ({ ...l, isDefault: false }))
+            ];
+
+            allLinks.forEach(link => {
                 const item = document.createElement('a');
                 item.href = link.url;
                 item.target = "_blank";
+                item.rel = "noopener";
                 item.className = "group relative flex items-center justify-between p-2 rounded-xl hover:bg-slate-50 transition-colors dark:hover:bg-slate-800/50";
-                
-                let badgeHtml = link.badge ? `<span class="px-1.5 py-0.5 rounded text-[8px] font-bold uppercase tracking-wider bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-400 border border-slate-200 dark:border-slate-600 hidden 2xl:block">${link.badge}</span>` : '';
-                
-                let deleteHtml = isCustom ? 
-                    `<button class="opacity-0 group-hover:opacity-100 transition-opacity w-7 h-7 rounded flex items-center justify-center text-red-500 hover:bg-red-100 hover:text-red-700 dark:hover:bg-red-900/50" title="Supprimer ce lien" onclick="event.preventDefault(); window.deleteCustomLink(${deleteIndex})"><i class="fas fa-trash text-xs"></i></button>` 
-                    : '<i class="fas fa-external-link-alt text-[9px] text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity pr-2"></i>';
-                
+
+                const badgeHtml = link.badge
+                    ? `<span class="px-1.5 py-0.5 rounded text-[8px] font-bold uppercase tracking-wider bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-400 border border-slate-200 dark:border-slate-600 hidden 2xl:block">${link.badge}</span>`
+                    : '';
+
+                const rightHtml = !link.isDefault
+                    ? `<button class="opacity-0 group-hover:opacity-100 transition-opacity w-7 h-7 rounded flex items-center justify-center text-red-400 hover:bg-red-50 hover:text-red-600 flex-shrink-0" title="Supprimer ce lien" onclick="event.preventDefault(); event.stopPropagation(); deleteCustomHubLink('${link.id}')"><i class="fas fa-trash text-xs"></i></button>`
+                    : `<i class="fas fa-external-link-alt text-[9px] text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity pr-1 flex-shrink-0"></i>`;
+
                 item.innerHTML = `
-                    <div class="flex items-center gap-3 overflow-hidden min-w-0 pr-2">
-                        <div class="w-8 h-8 rounded-lg flex items-center justify-center text-sm flex-shrink-0 transition-transform group-hover:scale-110 ${link.fondIco || 'bg-slate-100 dark:bg-slate-700'} ${link.couleurIco || 'text-slate-600 dark:text-slate-300'}">
+                    <div class="flex items-center gap-3 overflow-hidden min-w-0 pr-1">
+                        <div class="w-8 h-8 rounded-lg flex items-center justify-center text-sm flex-shrink-0 transition-transform group-hover:scale-110 ${link.fondIco || 'bg-slate-100 dark:bg-slate-700'} ${link.couleurIco || 'text-slate-600'}">
                             <i class="${link.icone || 'fas fa-link'}"></i>
                         </div>
                         <span class="text-sm font-semibold text-slate-700 dark:text-slate-200 truncate group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">${link.titre}</span>
                         ${badgeHtml}
                     </div>
-                    ${deleteHtml}
+                    ${rightHtml}
                 `;
                 container.appendChild(item);
             });
         }
-        
+
+        // Listener temps réel Firebase sur customHubLinks
+        customLinksRef.orderBy('createdAt', 'asc').onSnapshot(snapshot => {
+            const customLinks = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+            renderSidebarLinks(customLinks);
+        }, err => {
+            console.warn('Firebase sidebar error:', err);
+            renderSidebarLinks([]); // Fallback: show defaults only
+        });
+
+        // Suppression d'un lien personnalisé
+        window.deleteCustomHubLink = async function(id) {
+            if(!confirm('Supprimer ce lien de votre Hub ?')) return;
+            try {
+                await customLinksRef.doc(id).delete();
+                showToast('Lien supprimé.');
+            } catch(e) {
+                showToast('Erreur lors de la suppression.');
+            }
+        };
+
         // Modal Handlers
         const customLinkModal = document.getElementById('custom-link-modal');
         function openCustomLinkModal() {
@@ -2441,54 +2540,40 @@
             customLinkModal.classList.remove('active');
             document.body.style.overflow = '';
         }
-        
+
         document.getElementById('add-custom-link-btn')?.addEventListener('click', openCustomLinkModal);
         document.getElementById('modal-close-custom')?.addEventListener('click', closeCustomLinkModal);
         document.getElementById('cancel-custom-link')?.addEventListener('click', closeCustomLinkModal);
-        
-        document.getElementById('save-custom-link')?.addEventListener('click', () => {
+
+        document.getElementById('save-custom-link')?.addEventListener('click', async () => {
             const name = document.getElementById('custom-link-name').value.trim();
-            const url = document.getElementById('custom-link-url').value.trim();
-            
-            if(!name || !url) { 
-                showToast('Veuillez remplir le nom et le lien.'); 
-                return; 
+            const url  = document.getElementById('custom-link-url').value.trim();
+
+            if(!name || !url) {
+                showToast('Veuillez remplir le nom et le lien.');
+                return;
             }
-            
+
             let finalUrl = url;
             if(!url.startsWith('http://') && !url.startsWith('https://')) {
                 finalUrl = 'https://' + url;
             }
-            
-            let customLinks = [];
-            try { customLinks = JSON.parse(localStorage.getItem('customHubLinks')) || []; } catch(e) {}
-            
-            customLinks.push({
-                titre: name,
-                url: finalUrl,
-                icone: "fas fa-link",
-                couleurIco: "text-slate-600",
-                fondIco: "bg-slate-100"
-            });
-            
-            localStorage.setItem('customHubLinks', JSON.stringify(customLinks));
-            closeCustomLinkModal();
-            renderSidebarLinks();
-            showToast('Lien ajouté avec succès !');
-        });
-        
-        window.deleteCustomLink = function(customIdx) {
-            if(confirm("Êtes-vous sûr de vouloir supprimer ce lien de votre Hub personnel ?")) {
-                let customLinks = [];
-                try { customLinks = JSON.parse(localStorage.getItem('customHubLinks')) || []; } catch(e) {}
-                customLinks.splice(customIdx, 1);
-                localStorage.setItem('customHubLinks', JSON.stringify(customLinks));
-                renderSidebarLinks();
+
+            try {
+                await customLinksRef.add({
+                    titre: name,
+                    url: finalUrl,
+                    icone: 'fas fa-link',
+                    couleurIco: 'text-indigo-500',
+                    fondIco: 'bg-indigo-50 dark:bg-indigo-900/30',
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                closeCustomLinkModal();
+                showToast('Lien ajouté et synchronisé !');
+            } catch(e) {
+                showToast('Erreur Firebase : ' + e.message);
             }
-        };
-        
-        // Initial render
-        renderSidebarLinks();
+        });
     </script>
 
 </body>
