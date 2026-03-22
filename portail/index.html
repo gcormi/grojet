@@ -1053,10 +1053,245 @@
                 right: 16px;
             }
         }
+
+        /* ===================== LOCK SCREEN ===================== */
+        #lock-screen {
+            position: fixed;
+            inset: 0;
+            z-index: 999999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.4);
+            backdrop-filter: blur(40px);
+            -webkit-backdrop-filter: blur(40px);
+            transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        html.dark-mode #lock-screen {
+            background: rgba(15, 23, 42, 0.4);
+        }
+
+        #lock-screen.hidden {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+            transform: scale(1.05);
+        }
+
+        .lock-card {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 48px;
+            border-radius: 32px;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1);
+            max-width: 440px;
+            width: 90%;
+            text-align: center;
+            animation: lock-card-pop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        html.dark-mode .lock-card {
+            background: rgba(30, 41, 59, 0.8);
+            border-color: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        @keyframes lock-card-pop {
+            from { opacity: 0; transform: translateY(30px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .lock-icon {
+            width: 64px;
+            height: 64px;
+            background: linear-gradient(135deg, #4f46e5, #0ea5e9);
+            color: white;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin: 0 auto 24px;
+            box-shadow: 0 10px 20px rgba(79, 70, 229, 0.3);
+        }
+
+        .lock-title {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 800;
+            margin-bottom: 8px;
+            color: var(--text-primary);
+        }
+
+        .lock-subtitle {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-bottom: 32px;
+        }
+
+        .lock-input-group {
+            position: relative;
+            margin-bottom: 24px;
+        }
+
+        #portal-password-input {
+            width: 100%;
+            padding: 14px 20px;
+            border-radius: 16px;
+            border: 1.5px solid var(--border-color);
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-weight: 600;
+            text-align: center;
+            letter-spacing: 0.2em;
+            transition: all 0.3s ease;
+            outline: none;
+        }
+
+        #portal-password-input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
+        }
+
+        .lock-btn {
+            width: 100%;
+            padding: 14px;
+            border-radius: 16px;
+            background: linear-gradient(135deg, #4f46e5, #6366f1);
+            color: white;
+            font-weight: 700;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 10px 20px rgba(79, 70, 229, 0.2);
+        }
+
+        .lock-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 30px rgba(79, 70, 229, 0.3);
+            filter: brightness(1.1);
+        }
+
+        .lock-btn i { font-size: 0.8rem; }
+
+        .shake {
+            animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+        }
+
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-1px, 0, 0); }
+            20%, 80% { transform: translate3d(2px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+            40%, 60% { transform: translate3d(4px, 0, 0); }
+        }
+    </style>
+    <script>
+        // Check unlock status immediately to prevent flash
+        (function() {
+            const unlocked = localStorage.getItem('portal_unlocked') === 'true';
+            if (unlocked) {
+                document.documentElement.classList.add('portal-unlocked');
+            }
+        })();
+    </script>
     </style>
 </head>
 
 <body class="text-slate-700 antialiased flex flex-col min-h-screen">
+
+    <!-- Screen Lock Overlay -->
+    <div id="lock-screen" aria-modal="true" role="dialog">
+        <div class="lock-card">
+            <div class="lock-icon">
+                <i class="fas fa-lock"></i>
+            </div>
+            <h1 class="lock-title">Accès Protégé</h1>
+            <p class="lock-subtitle">Veuillez entrer le mot de passe pour accéder au Portail de l'Ingénierie Pédagogique.</p>
+            
+            <form id="lock-form" onsubmit="return false;">
+                <div class="lock-input-group">
+                    <input type="password" id="portal-password-input" placeholder="••••••••" autocomplete="current-password" required>
+                </div>
+                <button type="submit" id="unlock-button" class="lock-btn">
+                    Accéder au portail
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+            </form>
+            
+            <p id="lock-error" class="text-xs text-rose-500 font-bold mt-4 opacity-0 transition-opacity">Mot de passe incorrect. Réessayez.</p>
+        </div>
+    </div>
+
+    <script>
+        // Logic for unlocking the portal
+        const VALID_PASSWORD = "Brigitte*1963";
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            const lockScreen = document.getElementById('lock-screen');
+            const passwordInput = document.getElementById('portal-password-input');
+            const lockForm = document.getElementById('lock-form');
+            const lockError = document.getElementById('lock-error');
+
+            // If already unlocked via localStorage, hide lock screen immediately
+            if (localStorage.getItem('portal_unlocked') === 'true') {
+                lockScreen.classList.add('hidden');
+                document.body.style.overflow = '';
+            } else {
+                document.body.style.overflow = 'hidden';
+            }
+
+            function handleUnlock() {
+                const entered = passwordInput.value;
+                if (entered === VALID_PASSWORD) {
+                    localStorage.setItem('portal_unlocked', 'true');
+                    lockScreen.classList.add('hidden');
+                    document.body.style.overflow = '';
+                    
+                    // Small toast success
+                    if (typeof showToast === 'function') {
+                        showToast('Bonjour Brigitte ! Portail déverrouillé.');
+                    }
+                } else {
+                    // Password failed
+                    const card = document.querySelector('.lock-card');
+                    card.classList.add('shake');
+                    lockError.classList.remove('opacity-0');
+                    passwordInput.value = '';
+                    passwordInput.focus();
+                    
+                    setTimeout(() => {
+                        card.classList.remove('shake');
+                    }, 500);
+                }
+            }
+
+            lockForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                handleUnlock();
+            });
+
+            // Focus on input automatically
+            if (!lockScreen.classList.contains('hidden')) {
+                passwordInput.focus();
+            }
+
+            // Logout/Lock Logic
+            const logoutBtns = [document.getElementById('logout-portal-btn')];
+            logoutBtns.forEach(btn => {
+                btn?.addEventListener('click', () => {
+                    if (confirm('Voulez-vous verrouiller l\'accès au portail ?')) {
+                        localStorage.removeItem('portal_unlocked');
+                        location.reload();
+                    }
+                });
+            });
+        });
+    </script>
 
     <!-- Skip to content (Accessibilité) -->
     <a href="#main-content" class="skip-link">Aller au contenu principal</a>
@@ -1092,6 +1327,10 @@
                     <button id="philosophy-nav-btn" class="philosophy-btn text-xs">
                         <i class="fas fa-book-open" aria-hidden="true"></i>
                         Philosophie
+                    </button>
+                    <!-- Logout/Lock Button -->
+                    <button id="logout-portal-btn" title="Verrouiller le portail" class="w-10 h-10 rounded-xl flex items-center justify-center text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-all border border-transparent hover:border-rose-100">
+                        <i class="fas fa-power-off text-sm"></i>
                     </button>
                 </nav>
 
