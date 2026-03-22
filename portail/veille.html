@@ -383,6 +383,24 @@
             return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
         }
 
+        // --- SCRIPT DE RÉPARATION DES DONNÉES (HEALING) ---
+        (function repairData() {
+            try {
+                ['local_folders', 'local_sources'].forEach(key => {
+                    let data = JSON.parse(localStorage.getItem(key) || '[]');
+                    let modified = false;
+                    data = data.map(item => {
+                        if (!item.id || item.id === 'null' || item.id === '[object Object]') {
+                            item.id = 'repair_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now();
+                            modified = true;
+                        }
+                        return item;
+                    });
+                    if (modified) localStorage.setItem(key, JSON.stringify(data));
+                });
+            } catch(e) { console.error("Repair failed:", e); }
+        })();
+
         async function initAuth() {
             if (!isCloudEnabled) return;
             try {
@@ -412,17 +430,29 @@
             }
         }
 
-        if (isCloudEnabled) {
             onAuthStateChanged(auth, async (user) => {
-                // Chargement AUTOMATIQUE de la session "6463"
-                const effectiveUid = "f2659e26b5b7efa7d8099b64d60a7f68c7797c735cc2f2807923129f397a21a1";
-                currentUser = { uid: effectiveUid };
-                listenToData(effectiveUid);
+                // TENTATIVE DE RÉCUPÉRATION MULTI-CANAUX
+                // 1. On essaie d'abord l'ID de la session Gilles (6463) qui contenait "pix"
+                const gillesUid = "f2659e26b5b7efa7d8099b64d60a7f68c7797c735cc2f2807923129f397a21a1";
+                // 2. On garde l'ID de Brigitte en secours au cas où
+                const brigitteUid = "433fd96c388bd0afb30d982603f049c51b3148f21f27217cecadfcbc77b08827";
+                
+                // On active la session Gilles par défaut pour retrouver "pix" et ses 7 liens
+                currentUser = { uid: gillesUid };
+                listenToData(gillesUid);
+                
+                // Si rien ne vient après 2 secondes, on vérifie si Brigitte a des données
+                setTimeout(() => {
+                    if (folders.length <= 1 && sources.length === 0) {
+                        console.log("Essai secours session Brigitte...");
+                        listenToData(brigitteUid);
+                    }
+                }, 2000);
+
                 if (user) {
-                    document.getElementById('sync-indicator').innerHTML = '<i class="fas fa-cloud"></i> Synchro Active';
+                    document.getElementById('sync-indicator').innerHTML = '<i class="fas fa-cloud"></i> Synchro Gilles Active';
                 }
             });
-        } else {
             loadLocalData();
             fetchAllFeeds();
         }
