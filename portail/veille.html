@@ -742,32 +742,36 @@
 
         window.deleteFolder = async (id) => {
             if(!id || id === 'none') return;
-            if(!confirm("Voulez-vous supprimer ce dossier ? Les liens qu'il contient ne seront pas effacés.")) return;
+            if(!confirm("Voulez-vous supprimer ce dossier ? Les liens qu'il contient retourneront dans 'Non classés'.")) return;
             
             try {
+                const sourcesInFolder = sources.filter(s => s.folderId === id);
+                
                 if (isCloudEnabled && currentUser) {
-                    await deleteDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'folders', id));
-                    // Détacher les liens individuellement pour éviter un blocage total si un lien pose problème
-                    const sourcesInFolder = sources.filter(s => s.folderId === id);
+                    // Mode optimiste : on lance la suppression sans bloquer l'interface
+                    deleteDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'folders', id)).catch(e => console.warn(e));
                     for (const s of sourcesInFolder) {
-                        try {
-                            await updateDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'sources', s.id), { folderId: null });
-                        } catch(e) { console.warn("Erreur détachement lien:", s.id, e); }
+                        updateDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'sources', s.id), { folderId: null }).catch(e => console.warn(e));
                     }
-                } else {
-                    folders = folders.filter(f => f.id !== id);
-                    localStorage.setItem('local_folders', JSON.stringify(folders));
-                    sources.forEach(s => { if(s.folderId === id) s.folderId = null; });
-                    localStorage.setItem('local_sources', JSON.stringify(sources));
                 }
+                
+                // Application immédiate dans l'interface locale
+                folders = folders.filter(f => f.id !== id);
+                localStorage.setItem('local_folders', JSON.stringify(folders));
+                sources.forEach(s => { if(s.folderId === id) s.folderId = null; });
+                localStorage.setItem('local_sources', JSON.stringify(sources));
+                
                 showToast("Dossier supprimé");
                 updateFolderUI();
+                renderFolders(); // Force le re-render du tableau de bord
+                if (activeFolderInModal === id) window.closeLinksModal();
             } catch(err) {
-                showToast("Erreur lors de la suppression du dossier", true);
+                showToast("Erreur locale lors de la suppression", true);
                 console.error(err);
             }
         };
 
+        // ... code import ... (gardé intact via les lignes remplacées)
         document.getElementById('import-input').addEventListener('change', async (e) => {
             const file = e.target.files[0];
             if (!file) return;
@@ -903,37 +907,37 @@
             let newFolderId = (index > 0 && index <= folders.length) ? folders[index - 1].id : null;
 
             if (isCloudEnabled && currentUser) {
-                await updateDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'sources', id), { folderId: newFolderId });
-            } else {
-                const sIdx = sources.findIndex(s => s.id === id);
-                if (sIdx > -1) {
-                    sources[sIdx].folderId = newFolderId;
-                    localStorage.setItem('local_sources', JSON.stringify(sources));
-                }
+                updateDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'sources', id), { folderId: newFolderId }).catch(e => console.warn(e));
             }
-            // Mettre à jour la modale
-            if (document.getElementById('links-modal').classList.contains('hidden') === false) {
-                 const currentSource = sources.find(s => s.id === id);
-                 if (!isCloudEnabled) renderFolders(); 
-            } else {
-                fetchAllFeeds();
+            
+            const sIdx = sources.findIndex(s => s.id === id);
+            if (sIdx > -1) {
+                sources[sIdx].folderId = newFolderId;
+                localStorage.setItem('local_sources', JSON.stringify(sources));
             }
+            
+            renderFolders();
+            if (activeFolderInModal) window.openLinksModal(activeFolderInModal);
         };
 
         window.deleteLink = async (id) => {
             if(!confirm("Supprimer ce favori ?")) return;
             try {
                 if (isCloudEnabled && currentUser) {
-                    await deleteDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'sources', id));
-                } else {
-                    sources = sources.filter(s => s.id !== id);
-                    localStorage.setItem('local_sources', JSON.stringify(sources));
-                    renderFolders();
+                    deleteDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'sources', id)).catch(e => console.warn(e));
                 }
+                
+                // Mettre à jour en local immédiatement
+                sources = sources.filter(s => s.id !== id);
+                localStorage.setItem('local_sources', JSON.stringify(sources));
+                
                 showToast("Favori supprimé.");
+                renderFolders(); 
+                fetchAllFeeds();
+                if (activeFolderInModal) window.openLinksModal(activeFolderInModal);
             } catch(e) {
                 console.error("Delete error:", e);
-                showToast("Erreur lors de la suppression.", true);
+                showToast("Erreur locale lors de la suppression.", true);
             }
         };
 
