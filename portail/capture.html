@@ -104,7 +104,36 @@
             to { opacity: 1; transform: translateY(0); }
         }
         .f-up { animation: slideUp 0.6s ease-out forwards; }
+
+        /* Context Menu Styles */
+        .context-menu {
+            position: fixed;
+            z-index: 3000;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            padding: 8px 0;
+            min-width: 180px;
+            display: none;
+            border: 1px solid rgba(0,0,0,0.1);
+            animation: fadeIn 0.15s ease-out;
+        }
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        .menu-item {
+            padding: 10px 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #1e293b;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .menu-item:hover { background: #f1f5f9; color: #4f46e5; }
+        .menu-item i { width: 16px; font-size: 14px; opacity: 0.6; }
     </style>
+
 </head>
 <body class="p-4 md:p-8">
 
@@ -123,6 +152,8 @@
             </div>
 
             <div class="flex items-center gap-2 bg-slate-100 p-1.5 rounded-2xl border border-slate-200">
+                <button id="btn-select" class="tool-btn" title="Sélection de zone"><i class="fas fa-expand"></i></button>
+                <div class="h-6 w-px bg-slate-300 mx-1"></div>
                 <button id="btn-free" class="tool-btn active" title="Dessin libre"><i class="fas fa-pencil-alt"></i></button>
                 <button id="btn-rect" class="tool-btn" title="Rectangle"><i class="far fa-square"></i></button>
                 <button id="btn-arrow" class="tool-btn" title="Flèche"><i class="fas fa-long-arrow-alt-right"></i></button>
@@ -140,9 +171,6 @@
                 </button>
                 <button id="btn-copy" class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 border border-emerald-100 flex items-center justify-center hover:bg-emerald-600 hover:text-white transition-all shadow-md active:scale-90" title="Copier l'image (Ctrl+C)">
                     <i class="fas fa-copy"></i>
-                </button>
-                <button id="btn-download" class="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 border border-blue-100 flex items-center justify-center hover:bg-blue-600 hover:text-white transition-all shadow-md" title="Télécharger">
-                    <i class="fas fa-download"></i>
                 </button>
             </div>
         </header>
@@ -176,6 +204,20 @@
                     Annuler
                 </button>
             </div>
+        </div>
+    </div>
+
+    <!-- CONTEXT MENU -->
+    <div id="context-menu" class="context-menu">
+        <div onclick="copyImage()" class="menu-item">
+            <i class="fas fa-copy"></i> Copier l'image
+        </div>
+        <div onclick="downloadImage()" class="menu-item">
+            <i class="fas fa-download"></i> Enregistrer l'image
+        </div>
+        <div class="h-px bg-slate-100 my-1"></div>
+        <div onclick="hideMenu()" class="menu-item text-slate-400">
+            <i class="fas fa-times"></i> Annuler
         </div>
     </div>
 
@@ -241,8 +283,10 @@
             tool = newTool;
             document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
             btnEl.classList.add('active');
+            canvas.style.cursor = (newTool === 'select') ? 'crosshair' : 'default';
         }
 
+        document.getElementById('btn-select').onclick = (e) => setTool('select', e.currentTarget);
         document.getElementById('btn-free').onclick = (e) => setTool('free', e.currentTarget);
         document.getElementById('btn-rect').onclick = (e) => setTool('rect', e.currentTarget);
         document.getElementById('btn-arrow').onclick = (e) => setTool('arrow', e.currentTarget);
@@ -253,7 +297,7 @@
         }
 
         canvas.onmousedown = (e) => {
-            if (!snapshot) return;
+            if (!snapshot || e.button === 2) return;
             isDrawing = true;
             startX = e.offsetX;
             startY = e.offsetY;
@@ -262,38 +306,100 @@
             ctx.lineWidth = 4;
             ctx.lineCap = 'round';
             ctx.lineJoin = 'round';
-            saveSnapshot();
+            if (tool !== 'select') saveSnapshot();
         };
 
         canvas.onmousemove = (e) => {
             if (!isDrawing) return;
             
-            ctx.putImageData(snapshot, 0, 0); // Clear previous temp draw
             const currentX = e.offsetX;
             const currentY = e.offsetY;
 
             if (tool === 'free') {
                 ctx.lineTo(currentX, currentY);
                 ctx.stroke();
-                saveSnapshot(); // Cumulative for free drawing
-            } else if (tool === 'rect') {
-                ctx.strokeRect(startX, startY, currentX - startX, currentY - startY);
-            } else if (tool === 'arrow') {
-                drawArrow(startX, startY, currentX, currentY);
+                saveSnapshot(); 
+            } else {
+                ctx.putImageData(snapshot, 0, 0);
+                if (tool === 'rect') {
+                    ctx.strokeRect(startX, startY, currentX - startX, currentY - startY);
+                } else if (tool === 'arrow') {
+                    drawArrow(startX, startY, currentX, currentY);
+                } else if (tool === 'select') {
+                    ctx.fillStyle = 'rgba(79, 70, 229, 0.15)';
+                    ctx.fillRect(startX, startY, currentX - startX, currentY - startY);
+                    ctx.strokeStyle = '#4f46e5';
+                    ctx.setLineDash([5, 5]);
+                    ctx.strokeRect(startX, startY, currentX - startX, currentY - startY);
+                    ctx.setLineDash([]);
+                }
             }
         };
 
         canvas.onmouseup = (e) => {
-            if (tool === 'text' && isDrawing) {
+            if (!isDrawing) return;
+            
+            if (tool === 'select') {
+                const endX = e.offsetX;
+                const endY = e.offsetY;
+                const width = Math.abs(endX - startX);
+                const height = Math.abs(endY - startY);
+                
+                if (width > 5 && height > 5) {
+                    cropCanvas(Math.min(startX, endX), Math.min(startY, endY), width, height);
+                } else {
+                    ctx.putImageData(snapshot, 0, 0); 
+                }
+            } else if (tool === 'text') {
                 const text = prompt("Texte à insérer :");
                 if (text) {
                     ctx.font = 'bold 32px Outfit, sans-serif';
                     ctx.fillText(text, startX, startY);
                 }
             }
+            
             isDrawing = false;
             saveSnapshot();
         };
+
+        function cropCanvas(x, y, w, h) {
+            const imgData = ctx.getImageData(x, y, w, h);
+            canvas.width = w;
+            canvas.height = h;
+            ctx.putImageData(imgData, 0, 0);
+            saveSnapshot();
+            showToast("Zone recadrée ! Clic droit pour copier.");
+        }
+
+        // --- CONTEXT MENU ---
+        const menu = document.getElementById('context-menu');
+        canvas.oncontextmenu = (e) => {
+            e.preventDefault();
+            if (!snapshot) return;
+            menu.style.display = 'block';
+            menu.style.left = e.pageX + 'px';
+            menu.style.top = e.pageY + 'px';
+        };
+
+        window.onclick = hideMenu;
+        function hideMenu() { menu.style.display = 'none'; }
+
+        async function copyImage() {
+            try {
+                canvas.toBlob(async (blob) => {
+                    const item = new ClipboardItem({ "image/png": blob });
+                    await navigator.clipboard.write([item]);
+                    showToast("Copié dans le presse-papier !");
+                });
+            } catch (err) { console.error(err); }
+        }
+
+        function downloadImage() {
+            const link = document.createElement('a');
+            link.download = `capture-${Date.now()}.png`;
+            link.href = canvas.toDataURL();
+            link.click();
+        }
 
         function drawArrow(fromx, fromy, tox, toy) {
             const headlen = 15;
@@ -318,25 +424,7 @@
             }
         };
 
-        document.getElementById('btn-download').onclick = () => {
-            const link = document.createElement('a');
-            link.download = `capture-pedago-${Date.now()}.png`;
-            link.href = canvas.toDataURL();
-            link.click();
-        };
-
-        document.getElementById('btn-copy').onclick = async () => {
-            try {
-                canvas.toBlob(async (blob) => {
-                    const item = new ClipboardItem({ "image/png": blob });
-                    await navigator.clipboard.write([item]);
-                    showToast("Copié dans le presse-papier !");
-                });
-            } catch (err) {
-                console.error("Erreur copie:", err);
-                showToast("Erreur lors de la copie");
-            }
-        };
+        document.getElementById('btn-copy').onclick = copyImage;
 
         function showToast(msg) {
             const toast = document.getElementById('toast');
@@ -366,7 +454,7 @@
 
         // Shortcuts
         document.onkeydown = (e) => {
-            if (e.ctrlKey && e.key === 'c') document.getElementById('btn-copy').click();
+            if (e.ctrlKey && e.key === 'c') copyImage();
             if (e.key === 'Delete' || e.key === 'Backspace') document.getElementById('btn-clear').click();
         };
     </script>
