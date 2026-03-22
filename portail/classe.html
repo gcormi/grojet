@@ -544,7 +544,7 @@
             localStorage.setItem('classe_info_board_html', infoBoard.innerHTML);
         });
 
-        function execCmd(cmd, value = null) {
+        function execCmd(cmd, value = null) { infoBoard.focus(); document.execCommand('styleWithCSS', null, true); document.execCommand(cmd, false, value); localStorage.setItem('classe_info_board_html', infoBoard.innerHTML); } console.log(" EXEC CMD CALLED\, cmd, value); infoBoard.focus(); document.execCommand(\styleWithCSS\, null, true); document.execCommand(cmd, false, value); localStorage.setItem(\classe_info_board_html\, infoBoard.innerHTML); }
             infoBoard.focus();
             document.execCommand(cmd, false, value);
             localStorage.setItem('classe_info_board_html', infoBoard.innerHTML);
@@ -566,3 +566,4 @@
     </script>
 </body>
 </html>
+
