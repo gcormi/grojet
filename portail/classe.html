@@ -62,6 +62,29 @@
         }
         body.theme-cyber .glass-card { border-color: #6366f1; box-shadow: 0 0 30px rgba(99, 102, 241, 0.1); }
 
+        body.theme-sky {
+            background-color: #f0f9ff;
+            background-image: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%);
+            color: #0c4a6e;
+            --card-glass: rgba(255, 255, 255, 0.9);
+        }
+        body.theme-sky .glass-card { border-color: #7dd3fc; box-shadow: 0 10px 30px rgba(14, 165, 233, 0.1); }
+        body.theme-sky #current-date, body.theme-sky #digital-clock { color: #0369a1; }
+        body.theme-sky .info-area { color: #0c4a6e; }
+        body.theme-sky .clock-container { background: #fff; border-color: #bae6fd; }
+
+        body.theme-mint {
+            background-color: #f0fdf4;
+            background-image: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+            color: #064e3b;
+            --card-glass: rgba(255, 255, 255, 0.92);
+        }
+        body.theme-mint .glass-card { border-color: #86efac; box-shadow: 0 10px 30px rgba(34, 197, 94, 0.1); }
+        body.theme-mint #current-date, body.theme-mint #digital-clock { color: #047857; }
+        body.theme-mint .info-area { color: #064e3b; }
+        body.theme-mint .clock-container { background: #fff; border-color: #bbf7d0; }
+
+
 
         .font-display { font-family: 'Outfit', sans-serif; }
 
@@ -178,9 +201,11 @@
 
         <div class="flex items-center gap-4">
             <div class="flex bg-black/20 p-1 rounded-2xl border border-white/5 order-2 lg:order-1">
-                <button onclick="setTheme('day')" class="w-10 h-10 rounded-xl flex items-center justify-center hover:bg-white/10 transition-colors" title="Mode Jour"><i class="fas fa-sun text-amber-400"></i></button>
+                <button onclick="setTheme('day')" class="w-10 h-10 rounded-xl flex items-center justify-center hover:bg-white/10 transition-colors" title="Mode Jour (Gris)"><i class="fas fa-adjust text-slate-400"></i></button>
+                <button onclick="setTheme('sky')" class="w-10 h-10 rounded-xl flex items-center justify-center hover:bg-white/10 transition-colors" title="Mode Bleu Ciel"><i class="fas fa-cloud text-sky-400"></i></button>
+                <button onclick="setTheme('mint')" class="w-10 h-10 rounded-xl flex items-center justify-center hover:bg-white/10 transition-colors" title="Mode Menthe"><i class="fas fa-leaf text-emerald-400"></i></button>
                 <button onclick="setTheme('night')" class="w-10 h-10 rounded-xl flex items-center justify-center hover:bg-white/10 transition-colors" title="Mode Nuit"><i class="fas fa-moon text-indigo-400"></i></button>
-                <button onclick="setTheme('cyber')" class="w-10 h-10 rounded-xl flex items-center justify-center hover:bg-white/10 transition-colors" title="Mode Cyber/Tech"><i class="fas fa-microchip text-emerald-400"></i></button>
+                <button onclick="setTheme('cyber')" class="w-10 h-10 rounded-xl flex items-center justify-center hover:bg-white/10 transition-colors" title="Mode Cyber/Tech"><i class="fas fa-microchip text-rose-500"></i></button>
             </div>
             
             <div class="glass-card px-8 py-4 flex items-center gap-6 border-indigo-500/30 shadow-indigo-500/20 order-1 lg:order-2">
@@ -245,13 +270,17 @@
                     </div>
                     
                     <!-- TEXT EDITOR TOOLS -->
-                    <div class="flex items-center gap-1.5 bg-black/20 p-1 rounded-xl border border-white/5">
+                    <div class="flex items-center gap-1.5 bg-black/20 p-1 rounded-xl border border-white/5 shadow-inner">
                         <button onclick="execCmd('bold')" class="editor-btn" title="Gras"><i class="fas fa-bold"></i></button>
-                        <button onclick="execCmd('italic')" class="editor-btn" title="Italique"><i class="fas fa-italic"></i></button>
                         <button onclick="execCmd('underline')" class="editor-btn" title="Souligner"><i class="fas fa-underline"></i></button>
+                        <button onclick="execCmd('italic')" class="editor-btn" title="Italique"><i class="fas fa-italic"></i></button>
+                        <div class="w-px h-4 bg-white/10 mx-1"></div>
+                        <button onclick="changeFontSize('small')" class="editor-btn text-[8px]" title="Petit">A</button>
+                        <button onclick="changeFontSize('medium')" class="editor-btn text-[10px]" title="Moyen">A</button>
+                        <button onclick="changeFontSize('large')" class="editor-btn text-sm" title="Grand">A</button>
                         <div class="w-px h-4 bg-white/10 mx-1"></div>
                         <button onclick="execCmd('insertUnorderedList')" class="editor-btn" title="Liste"><i class="fas fa-list-ul"></i></button>
-                        <button onclick="execCmd('backColor', '#4f46e5')" class="editor-btn text-indigo-400" title="Surligner IDG"><i class="fas fa-highlighter"></i></button>
+                        <button onclick="execCmd('backColor', '#4f46e5')" class="editor-btn text-indigo-400" title="Surligner"><i class="fas fa-highlighter"></i></button>
                     </div>
                 </div>
                 <!-- CONTENT EDITABLE AREA -->
@@ -273,9 +302,9 @@
                     <div class="flex flex-col gap-2 flex-grow">
                         <div class="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2">Chronomètre Activité</div>
                         <div class="flex gap-2">
-                            <button onclick="startTimer(5)" class="w-full py-2 bg-white/5 rounded-lg text-[10px] font-bold hover:bg-rose-500/20 transition-all">5 MIN</button>
                             <button onclick="startTimer(10)" class="w-full py-2 bg-white/5 rounded-lg text-[10px] font-bold hover:bg-rose-500/20 transition-all">10 MIN</button>
                             <button onclick="startTimer(20)" class="w-full py-2 bg-white/5 rounded-lg text-[10px] font-bold hover:bg-rose-500/20 transition-all">20 MIN</button>
+                            <button onclick="setCustomTimer()" class="w-full py-2 bg-white/5 border border-white/10 rounded-lg text-[10px] font-bold hover:bg-indigo-500/20 hover:text-indigo-400 transition-all">LIBRE</button>
                         </div>
                         <button id="btn-timer-toggle" onclick="toggleTimer()" class="mt-2 w-full py-3 bg-rose-500 text-white rounded-xl font-bold shadow-lg shadow-rose-500/30 text-xs">COMMENCER</button>
                     </div>
@@ -374,6 +403,13 @@
             }
         }
 
+        function setCustomTimer() {
+            const min = prompt("Durée du chronomètre (en minutes) :", "15");
+            if (min && !isNaN(min)) {
+                startTimer(parseFloat(min));
+            }
+        }
+
         // --- NIVEAU SONORE ---
         function setNoise(mode) {
             const btnChut = document.getElementById('noise-chut');
@@ -405,6 +441,14 @@
             document.execCommand(cmd, false, value);
             infoBoard.focus();
         }
+
+        function changeFontSize(size) {
+            const sizes = { 'small': '1.1rem', 'medium': '1.6rem', 'large': '2.5rem' };
+            infoBoard.style.fontSize = sizes[size];
+            localStorage.setItem('classe_font_size', size);
+        }
+        // Load font size
+        changeFontSize(localStorage.getItem('classe_font_size') || 'medium');
 
         // --- QUOTES (SCIENCE & TECH SPECIAL) ---
         const quotes = [
