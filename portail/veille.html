@@ -199,6 +199,35 @@
 
     </main>
 
+    <!-- Variables CSS et Tailwind JIT Trick -->
+    <div class="hidden text-indigo-400 text-rose-400 text-emerald-400 text-amber-400 text-cyan-400 text-violet-400 border-indigo-400 border-rose-400 border-emerald-400 border-amber-400 border-cyan-400 border-violet-400 hover:text-indigo-500 hover:text-rose-500 hover:text-emerald-500 hover:text-amber-500 hover:text-cyan-500 hover:text-violet-500 bg-indigo-500 bg-rose-500 bg-emerald-500 bg-amber-500 bg-cyan-500 bg-violet-500 ring-indigo-500 ring-rose-500 ring-emerald-500 ring-amber-500 ring-cyan-500 ring-violet-500 text-slate-400 hover:border-indigo-400 hover:border-emerald-400 hover:border-rose-400 hover:border-amber-400 hover:border-cyan-400 hover:border-violet-400"></div>
+
+    <!-- Modal Edition Dossier -->
+    <div id="folder-modal" class="hidden fixed top-0 left-0 w-full h-full bg-black/50 backdrop-blur-sm z-[2000] items-center justify-center flex transition-all">
+        <div class="bg-white dark:bg-slate-800 p-8 rounded-3xl max-w-sm w-full mx-4 shadow-2xl">
+            <h3 class="text-xl font-bold mb-4" id="folder-modal-title">Nouveau dossier</h3>
+            <input type="hidden" id="folder-edit-id">
+            
+            <label class="block text-xs font-bold uppercase text-slate-400 mb-2">Nom du dossier</label>
+            <input type="text" id="folder-edit-name" class="w-full bg-slate-50 dark:bg-slate-900 p-4 rounded-xl text-sm border border-slate-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-indigo-500/20 mb-6 autoComplete=off">
+            
+            <label class="block text-xs font-bold uppercase text-slate-400 mb-2">Couleur thématique</label>
+            <div class="flex gap-3 mb-8" id="folder-color-picker">
+                <button type="button" class="w-8 h-8 rounded-full bg-indigo-500 ring-2 ring-offset-2 ring-indigo-500 opacity-100" data-color="indigo"></button>
+                <button type="button" class="w-8 h-8 rounded-full bg-emerald-500 opacity-30 hover:opacity-100" data-color="emerald"></button>
+                <button type="button" class="w-8 h-8 rounded-full bg-amber-500 opacity-30 hover:opacity-100" data-color="amber"></button>
+                <button type="button" class="w-8 h-8 rounded-full bg-rose-500 opacity-30 hover:opacity-100" data-color="rose"></button>
+                <button type="button" class="w-8 h-8 rounded-full bg-cyan-500 opacity-30 hover:opacity-100" data-color="cyan"></button>
+                <button type="button" class="w-8 h-8 rounded-full bg-violet-500 opacity-30 hover:opacity-100" data-color="violet"></button>
+            </div>
+
+            <div class="flex gap-3">
+                <button onclick="saveFolder()" class="flex-1 py-3 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition-all">Enregistrer</button>
+                <button onclick="closeFolderModal()" class="flex-1 py-3 bg-slate-100 text-slate-600 rounded-xl font-bold hover:bg-slate-200 transition-all dark:bg-slate-700 dark:text-slate-300 dark:hover:bg-slate-600">Annuler</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Modal de Session -->
     <div id="session-modal">
         <div class="bg-white dark:bg-slate-800 p-8 rounded-3xl max-w-md w-full mx-4 shadow-2xl">
@@ -353,12 +382,18 @@
         if (isCloudEnabled) {
             onAuthStateChanged(auth, async (user) => {
                 if (user) {
-                    const storedPassword = localStorage.getItem('veille_master_password');
-                    let effectiveUid = user.uid;
-                    if (storedPassword) effectiveUid = await hashPassword(storedPassword);
-                    currentUser = { uid: effectiveUid };
-                    document.getElementById('current-session-id').textContent = "Connecté : " + effectiveUid.substring(0,8);
-                    listenToData(effectiveUid);
+                    const storedPassword = sessionStorage.getItem('veille_master_password');
+                    if (storedPassword) {
+                        const effectiveUid = await hashPassword(storedPassword);
+                        currentUser = { uid: effectiveUid };
+                        document.getElementById('current-session-id').textContent = "Connecté : " + effectiveUid.substring(0,8);
+                        listenToData(effectiveUid);
+                    } else {
+                        // Forcer la demande de mot de passe car il n'est pas en mémoire
+                        currentUser = { uid: user.uid }; 
+                        document.getElementById('current-session-id').textContent = "Authentification requise";
+                        toggleSessionModal();
+                    }
                 }
             });
         } else {
@@ -374,7 +409,7 @@
         window.saveAndSync = async () => {
             const pwd = document.getElementById('master-password').value.trim();
             if (pwd.length < 4) { showToast("Code trop court", true); return; }
-            localStorage.setItem('veille_master_password', pwd);
+            sessionStorage.setItem('veille_master_password', pwd);
             showToast("Code enregistré. Synchronisation...");
             setTimeout(() => window.location.reload(), 1000);
         };
@@ -457,44 +492,276 @@
         function renderFolders() {
             const container = document.getElementById('folders-container');
             container.innerHTML = '';
-            const displayFolders = [...folders.sort((a,b) => a.name.localeCompare(b.name)), { id: null, name: 'Favoris non classés' }];
+            const displayFolders = [...folders.sort((a,b) => a.name.localeCompare(b.name)), { id: null, name: 'Favoris non classés', color: 'slate' }];
             
             displayFolders.forEach(f => {
                 const folderLinks = sources.filter(s => s.folderId === f.id);
                 if (folderLinks.length === 0 && f.id === null) return;
                 
+                const fColor = f.color || 'indigo';
                 const section = document.createElement('div');
-                section.className = "folder-section";
+                section.className = "folder-section group transition-all duration-300";
+                
+                // Drag & Drop events
+                section.setAttribute("ondrop", `dropLink(event, '${f.id}')`);
+                section.setAttribute("ondragover", "allowDrop(event)");
+                section.setAttribute("ondragleave", "dragLeave(event)");
+
                 section.innerHTML = `
                     <div class="flex justify-between items-center mb-6">
                         <h3 class="text-lg font-bold flex items-center gap-2">
-                            <i class="fas ${f.id ? 'fa-folder-open text-indigo-400' : 'fa-inbox text-slate-400'}"></i>
+                            <i class="fas ${f.id ? 'fa-folder-open text-' + fColor + '-400' : 'fa-inbox text-slate-400'}"></i>
                             ${f.name}
                             <span class="text-[10px] bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded-full text-slate-500">${folderLinks.length}</span>
                         </h3>
+                        ${f.id ? `
+                        <div class="flex gap-2 lg:opacity-0 group-hover:opacity-100 transition-opacity">
+                            <button onclick="openFolderModal('${f.id}')" class="p-2 text-slate-400 hover:text-${fColor}-500" title="Modifier le dossier"><i class="fas fa-edit"></i></button>
+                            <button onclick="deleteFolder('${f.id}')" class="p-2 text-slate-400 hover:text-red-500" title="Supprimer le dossier"><i class="fas fa-trash-alt"></i></button>
+                        </div>
+                        ` : ''}
                     </div>
                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                         ${folderLinks.map(l => `
-                            <div class="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-100 dark:border-slate-700 flex items-center justify-between group">
-                                <div class="overflow-hidden">
+                            <div draggable="true" ondragstart="dragStart(event, '${l.id}')" class="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-100 dark:border-slate-700 flex items-center justify-between group cursor-move hover:border-${fColor}-400 hover:shadow-md transition-all">
+                                <div class="overflow-hidden pr-2">
                                     <h4 class="text-[11px] font-bold truncate">${l.name}</h4>
-                                    <a href="${l.origin_url || l.url}" target="_blank" class="text-[9px] text-indigo-500 hover:underline block">Ouvrir</a>
+                                    <a href="${l.origin_url || l.url}" target="_blank" class="text-[9px] text-slate-400 hover:text-${fColor}-500 hover:underline block truncate">Ouvrir le lien</a>
                                 </div>
                                 <div class="flex gap-1 items-center">
-                                    <button onclick="moveLink('${l.id}')" class="action-btn text-indigo-400 p-2 hover:text-indigo-600" title="Changer de dossier"><i class="fas fa-folder"></i></button>
+                                    <button onclick="moveLink('${l.id}')" class="action-btn text-slate-300 p-2 hover:text-indigo-600" title="Déplacer vers..."><i class="fas fa-exchange-alt"></i></button>
                                     <button onclick="deleteLink('${l.id}')" class="action-btn text-red-300 p-2 hover:text-red-500" title="Supprimer"><i class="fas fa-trash-alt"></i></button>
                                 </div>
                             </div>`).join('')}
                     </div>`;
+                
                 container.appendChild(section);
             });
         }
+
+        // --- DRAG AND DROP ---
+        window.dragStart = (e, linkId) => {
+            e.dataTransfer.setData("linkId", linkId);
+            e.target.style.opacity = '0.5';
+        };
+
+        document.addEventListener('dragend', (e) => {
+            if (e.target && e.target.style) e.target.style.opacity = '1';
+            document.querySelectorAll('.folder-section').forEach(el => {
+                el.style.border = '1px solid rgba(255, 255, 255, 0.2)';
+                el.style.transform = 'scale(1)';
+            });
+        });
+
+        window.allowDrop = (e) => {
+            e.preventDefault();
+            const folder = e.currentTarget;
+            folder.style.border = '2px dashed var(--primary)';
+            folder.style.transform = 'scale(1.02)';
+        };
+
+        window.dragLeave = (e) => {
+            const folder = e.currentTarget;
+            folder.style.border = '1px solid rgba(255, 255, 255, 0.2)';
+            folder.style.transform = 'scale(1)';
+        };
+
+        window.dropLink = async (e, folderIdString) => {
+            e.preventDefault();
+            const linkId = e.dataTransfer.getData("linkId");
+            if (!linkId) return;
+            const targetFolderId = folderIdString === "null" ? null : folderIdString;
+            
+            const source = sources.find(s => s.id === linkId);
+            if (!source || source.folderId === targetFolderId) return;
+
+            if (isCloudEnabled && currentUser) {
+                await updateDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'sources', linkId), { folderId: targetFolderId });
+            } else {
+                const sIdx = sources.findIndex(s => s.id === linkId);
+                if (sIdx > -1) {
+                    sources[sIdx].folderId = targetFolderId;
+                    localStorage.setItem('local_sources', JSON.stringify(sources));
+                    renderFolders();
+                }
+            }
+            showToast("Favori déplacé avec succès !");
+        };
+
+        // --- MODAL DOSSIER ---
+        let activeColor = 'indigo';
+        
+        document.querySelectorAll('#folder-color-picker button').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('#folder-color-picker button').forEach(b => {
+                    b.className = `w-8 h-8 rounded-full bg-${b.dataset.color}-500 opacity-30 hover:opacity-100 transition-all`;
+                });
+                activeColor = btn.dataset.color;
+                btn.className = `w-8 h-8 rounded-full bg-${activeColor}-500 ring-2 ring-offset-2 ring-${activeColor}-500 ring-offset-white dark:ring-offset-slate-800 opacity-100`;
+            });
+        });
+
+        window.openFolderModal = (id = null) => {
+            const modal = document.getElementById('folder-modal');
+            const nameInput = document.getElementById('folder-edit-name');
+            const idInput = document.getElementById('folder-edit-id');
+            const title = document.getElementById('folder-modal-title');
+            
+            modal.classList.remove('hidden');
+            idInput.value = id || '';
+            
+            if (id) {
+                title.textContent = "Modifier le dossier";
+                const folder = folders.find(f => f.id === id);
+                nameInput.value = folder ? folder.name : '';
+                activeColor = folder && folder.color ? folder.color : 'indigo';
+            } else {
+                title.textContent = "Nouveau dossier";
+                nameInput.value = '';
+                activeColor = 'indigo';
+            }
+            const colorBtn = document.querySelector(`#folder-color-picker button[data-color="${activeColor}"]`);
+            if (colorBtn) colorBtn.click();
+            nameInput.focus();
+        };
+
+        window.closeFolderModal = () => {
+            document.getElementById('folder-modal').classList.add('hidden');
+        };
+
+        window.saveFolder = async () => {
+            const id = document.getElementById('folder-edit-id').value;
+            const name = document.getElementById('folder-edit-name').value.trim();
+            if (!name) return showToast("Le nom du dossier est requis", true);
+
+            if (id) {
+                if (isCloudEnabled && currentUser) {
+                    await updateDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'folders', id), { name, color: activeColor });
+                } else {
+                    const idx = folders.findIndex(f => f.id === id);
+                    if (idx > -1) {
+                        folders[idx].name = name;
+                        folders[idx].color = activeColor;
+                    }
+                    localStorage.setItem('local_folders', JSON.stringify(folders));
+                    updateFolderUI();
+                }
+                showToast("Dossier mis à jour");
+            } else {
+                const newFolder = { id: isCloudEnabled ? null : Date.now().toString(), name, color: activeColor, createdAt: new Date().toISOString() };
+                if (isCloudEnabled && currentUser) {
+                    await addDoc(collection(db, 'artifacts', appId, 'users', currentUser.uid, 'folders'), newFolder);
+                } else {
+                    folders.push(newFolder);
+                    localStorage.setItem('local_folders', JSON.stringify(folders));
+                    updateFolderUI();
+                }
+                showToast("Dossier créé avec succès");
+            }
+            closeFolderModal();
+        };
+
+        window.deleteFolder = async (id) => {
+            if(!confirm("Voulez-vous supprimer ce dossier ? Les liens qu'il contient ne seront pas effacés, ils seront simplement déplacés vers 'Non classés'.")) return;
+            
+            if (isCloudEnabled && currentUser) {
+                await deleteDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'folders', id));
+                const sourcesInFolder = sources.filter(s => s.folderId === id);
+                for(let s of sourcesInFolder) {
+                    try { await updateDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'sources', s.id), { folderId: null }); } catch(err) {} 
+                }
+            } else {
+                folders = folders.filter(f => f.id !== id);
+                localStorage.setItem('local_folders', JSON.stringify(folders));
+                sources.forEach(s => { if(s.folderId === id) s.folderId = null; });
+                localStorage.setItem('local_sources', JSON.stringify(sources));
+                updateFolderUI();
+            }
+            showToast("Dossier supprimé");
+        };
+
+        document.getElementById('import-input').addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            showToast("Analyse du fichier, patientez...");
+            const reader = new FileReader();
+
+            reader.onload = async (event) => {
+                const htmlStr = event.target.result;
+                const parser = new DOMParser();
+                const docParsed = parser.parseFromString(htmlStr, 'text/html');
+                const links = Array.from(docParsed.querySelectorAll('a'));
+                
+                if (links.length === 0) {
+                    showToast("Aucun favori trouvé.", true);
+                    return;
+                }
+
+                const maxLinks = Math.min(links.length, 20);
+                let count = 0;
+
+                const newFolder = { id: isCloudEnabled ? null : Date.now().toString(), name: "Import Chrome " + new Date().toLocaleDateString(), color: "emerald", createdAt: new Date().toISOString() };
+                let importedFolderId = null;
+
+                if (isCloudEnabled && currentUser) {
+                    const docRef = await addDoc(collection(db, 'artifacts', appId, 'users', currentUser.uid, 'folders'), newFolder);
+                    importedFolderId = docRef.id;
+                } else {
+                    folders.push(newFolder);
+                    localStorage.setItem('local_folders', JSON.stringify(folders));
+                    importedFolderId = newFolder.id;
+                    updateFolderUI();
+                }
+
+                showToast(`Importation de ${maxLinks} favoris en cours...`);
+
+                for(let i=0; i<maxLinks; i++) {
+                    const a = links[i];
+                    const url = a.href;
+                    if(!url || !url.startsWith('http')) continue;
+                    
+                    if (sources.some(s => s.url === url || s.rss_url === url)) continue;
+                    
+                    const name = (a.textContent || new URL(url).hostname).substring(0, 50);
+                    const newSource = {
+                        id: isCloudEnabled ? null : Date.now().toString() + "_" + i,
+                        name: name, 
+                        url: url, 
+                        rss_url: url.includes('feed') ? url : (url.endsWith('/') ? url + 'feed' : url + '/feed'),
+                        folderId: importedFolderId, 
+                        addedAt: new Date().toISOString()
+                    };
+
+                    if (isCloudEnabled && currentUser) {
+                        try { await addDoc(collection(db, 'artifacts', appId, 'users', currentUser.uid, 'sources'), newSource); } catch(err) {}
+                    } else {
+                        sources.push(newSource);
+                    }
+                    count++;
+                }
+
+                if (!isCloudEnabled) {
+                    localStorage.setItem('local_sources', JSON.stringify(sources));
+                    fetchAllFeeds();
+                }
+                
+                showToast(`✅ ${count} favoris importés avec succès !`);
+                e.target.value = ''; 
+            };
+            reader.readAsText(file);
+        });
 
         document.getElementById('btn-add-source').addEventListener('click', async () => {
             const urlInput = document.getElementById('new-url');
             const folderId = document.getElementById('folder-select').value;
             const url = urlInput.value.trim();
             if (!url) return;
+
+            if (sources.some(s => s.url === url || s.rss_url === url)) {
+                showToast("❌ Ce lien est déjà dans vos favoris !", true);
+                return;
+            }
 
             const domain = new URL(url).hostname.replace('www.', '');
             const newSource = {
@@ -514,7 +781,7 @@
                 fetchAllFeeds();
             }
             urlInput.value = "";
-            showToast("Ajouté");
+            showToast("Lien ajouté et sécurisé");
         });
 
         window.moveLink = async (id) => {
@@ -524,21 +791,21 @@
             const index = parseInt(choice);
             let newFolderId = (index > 0 && index <= folders.length) ? folders[index - 1].id : null;
 
-            if (isCloudEnabled) {
+            if (isCloudEnabled && currentUser) {
                 await updateDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'sources', id), { folderId: newFolderId });
             } else {
                 const sIdx = sources.findIndex(s => s.id === id);
                 if (sIdx > -1) {
                     sources[sIdx].folderId = newFolderId;
                     localStorage.setItem('local_sources', JSON.stringify(sources));
-                    fetchAllFeeds();
+                    renderFolders();
                 }
             }
         };
 
         window.deleteLink = async (id) => {
             if(!confirm("Supprimer ce lien ?")) return;
-            if (isCloudEnabled) {
+            if (isCloudEnabled && currentUser) {
                 await deleteDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'sources', id));
             } else {
                 sources = sources.filter(s => s.id !== id);
@@ -547,18 +814,8 @@
             }
         };
 
-        document.getElementById('btn-new-folder').addEventListener('click', async () => {
-            const name = prompt("Nom du dossier :");
-            if (!name) return;
-            const newFolder = { id: isCloudEnabled ? null : Date.now().toString(), name, createdAt: new Date().toISOString() };
-            
-            if (isCloudEnabled) {
-                await addDoc(collection(db, 'artifacts', appId, 'users', currentUser.uid, 'folders'), newFolder);
-            } else {
-                folders.push(newFolder);
-                localStorage.setItem('local_folders', JSON.stringify(folders));
-                updateFolderUI();
-            }
+        document.getElementById('btn-new-folder').addEventListener('click', () => {
+            openFolderModal();
         });
 
         function showToast(m, err = false) {
