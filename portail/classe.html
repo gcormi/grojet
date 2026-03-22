@@ -163,10 +163,26 @@
             height: 100%;
             resize: none;
             color: #cbd5e1;
-            font-size: 1.4rem;
-            line-height: 1.6;
+            font-size: 1.6rem;
+            line-height: 1.4;
             outline: none;
+            cursor: text;
         }
+
+        /* Essential for execCommand to work with colors/sizes */
+        .info-area * {
+            color: inherit;
+        }
+        .info-area font[color] {
+            color: attr(color);
+        }
+        .info-area span[style*="color"] {
+            color: initial;
+        }
+        .info-area font[size] {
+            line-height: 1.2;
+        }
+
 
         .glow-text {
             text-shadow: 0 0 20px rgba(99, 102, 241, 0.4);
@@ -291,7 +307,7 @@
                         <div class="w-px h-5 bg-white/10 mx-1"></div>
                         <!-- TEXT COLORS -->
                         <div class="flex gap-1 bg-black/40 p-1 rounded-lg">
-                            <button onmousedown="event.preventDefault(); execCmd('foreColor', '#000000')" class="w-4 h-4 rounded-full bg-black border border-white/20" title="Noir"></button>
+                            <button onmousedown="event.preventDefault(); execCmd('foreColor', '#ffffff')" class="w-4 h-4 rounded-full bg-white border border-white/20" title="Blanc/Défaut"></button>
                             <button onmousedown="event.preventDefault(); execCmd('foreColor', '#ef4444')" class="w-4 h-4 rounded-full bg-red-500" title="Rouge"></button>
                             <button onmousedown="event.preventDefault(); execCmd('foreColor', '#3b82f6')" class="w-4 h-4 rounded-full bg-blue-500" title="Bleu"></button>
                             <button onmousedown="event.preventDefault(); execCmd('foreColor', '#22c55e')" class="w-4 h-4 rounded-full bg-green-500" title="Vert"></button>
@@ -456,26 +472,25 @@
         });
 
         function execCmd(cmd, value = null) {
-            // Note: onmousedown preventing default ensures we don't lose the selection
+            // we MUST NOT focus here if we want to keep current selection
             document.execCommand(cmd, false, value);
-            // Sauvegarde direct
+            // After applying, if we lost focus, bring it back
+            infoBoard.focus();
             localStorage.setItem('classe_info_board_html', infoBoard.innerHTML);
         }
 
         function changeFontSize(size) {
-            // Pour changer la taille de TOUTE la note si rien n'est sélectionné, 
-            // ou de la sélection si elle existe.
             const selection = window.getSelection();
             if (selection.toString().length > 0) {
-                // Si sélection, on utilise un hack CSS via execCommand
-                const sizes = { 'small': '1', 'medium': '3', 'large': '5' };
+                // browser mapping for font size 1-7
+                const sizes = { 'small': '2', 'medium': '4', 'large': '6' };
                 document.execCommand('fontSize', false, sizes[size]);
             } else {
-                // Si pas de sélection, on change tout le bloc
                 const cssSizes = { 'small': '1.1rem', 'medium': '1.6rem', 'large': '2.5rem' };
                 infoBoard.style.fontSize = cssSizes[size];
                 localStorage.setItem('classe_font_size', size);
             }
+            infoBoard.focus();
         }
         // Load font size
         changeFontSize(localStorage.getItem('classe_font_size') || 'medium');
