@@ -63,19 +63,19 @@
 
         /* CLOCK */
         .clock-container {
-            width: 200px; height: 200px;
+            width: 160px; height: 160px;
             border-radius: 50%;
             background: rgba(15,23,42,0.8);
             border: 3px solid rgba(255,255,255,0.08);
             position: relative;
             box-shadow: inset 0 0 30px rgba(0,0,0,0.4), 0 0 40px rgba(99,102,241,0.15);
         }
-        .clock-face::after { content:''; position:absolute; width:10px; height:10px; background:#fff; border-radius:50%; top:50%; left:50%; transform:translate(-50%,-50%); z-index:10; }
+        .clock-face::after { content:''; position:absolute; width:8px; height:8px; background:#fff; border-radius:50%; top:50%; left:50%; transform:translate(-50%,-50%); z-index:10; }
         .hand { position:absolute; bottom:50%; left:50%; transform-origin:bottom; border-radius:10px; transform:translateX(-50%); }
-        .hour-hand   { width:5px; height:60px; background:var(--clock-hands); z-index:3; }
-        .min-hand    { width:3px; height:85px; background:var(--clock-hands); opacity:.8; z-index:2; }
-        .second-hand { width:2px; height:95px; background:var(--accent-rose); z-index:1; }
-        .clock-num   { position:absolute; width:100%; height:100%; text-align:center; font-family:'Outfit'; font-weight:800; font-size:1rem; color:rgba(255,255,255,0.25); padding:8px; }
+        .hour-hand   { width:4px; height:45px; background:var(--clock-hands); z-index:3; }
+        .min-hand    { width:3px; height:65px; background:var(--clock-hands); opacity:.8; z-index:2; }
+        .second-hand { width:1px; height:72px; background:var(--accent-rose); z-index:1; }
+        .clock-num   { position:absolute; width:100%; height:100%; text-align:center; font-family:'Outfit'; font-weight:800; font-size:0.75rem; color:rgba(255,255,255,0.25); padding:5px; }
 
         /* EDITOR AREA */
         .info-area {
@@ -160,7 +160,17 @@
         <!-- GAUCHE: horloge + bruit -->
         <div class="col-span-3 flex flex-col gap-6 min-h-0">
 
-            <div class="glass-card p-6 flex flex-col items-center justify-center gap-4 flex-1">
+        <!-- CARTE CITATION pHARe / Media -->
+            <div class="glass-card p-4 shrink-0" style="border-left: 3px solid #6366f1;">
+                <div class="flex items-center gap-2 mb-2">
+                    <i class="fas fa-shield-heart text-indigo-400 text-xs"></i>
+                    <span class="text-[9px] font-black uppercase tracking-widest text-indigo-400">pHARe &amp; Médias</span>
+                </div>
+                <p id="phare-texte" class="text-xs font-semibold leading-snug text-slate-200 italic transition-opacity duration-500">Chargement...</p>
+                <p id="phare-auteur" class="text-[9px] font-bold text-indigo-400 mt-1 transition-opacity duration-500"></p>
+            </div>
+
+            <div class="glass-card p-4 flex flex-col items-center justify-center gap-3 flex-1">
                 <div class="clock-container">
                     <div class="clock-face h-full w-full">
                         <div id="hour" class="hand hour-hand"></div>
@@ -567,6 +577,64 @@
             lastCitIndex = idx;
             showCitation(idx);
         }
+    }, 60000);
+
+    // =====================
+    // CITATIONS pHARe & MEDIAS (25) — rotation toutes les 25 minutes
+    // =====================
+    const PHARE_CITATIONS = [
+        { texte: "Les mots peuvent faire du mal. Un seul 'non' peut tout changer.", auteur: "Programme pHARe" },
+        { texte: "Le harcelement n'est pas une blague. C'est une blessure que l'on ne voit pas.", auteur: "Anonyme" },
+        { texte: "Etre different, c'est une force, pas une faiblesse.", auteur: "Programme pHARe" },
+        { texte: "Parler d'un harcelement que l'on voit, c'est agir. Ignorer, c'est choisir.", auteur: "Anonyme" },
+        { texte: "Sur les reseaux sociaux, chaque publication reste. Reflechis avant d'appuyer sur 'envoyer'.", auteur: "Education aux medias" },
+        { texte: "Internet n'oublie jamais. Protege ta reputation numerique.", auteur: "Education aux medias" },
+        { texte: "Etre temoin d'une injustice sans reagir, c'est y participer.", auteur: "Martin Luther King" },
+        { texte: "Le harcelement en ligne est aussi reel que le harcelement en face a face.", auteur: "UNICEF" },
+        { texte: "Une information n'est pas vraie parce qu'elle est partagee 1000 fois.", auteur: "Education aux medias" },
+        { texte: "Verifier avant de partager : c'est le premier geste d'un citoyen numerique responsable.", auteur: "CLEMI" },
+        { texte: "Respecter l'autre en ligne, c'est respecter une personne reelle.", auteur: "Programme pHARe" },
+        { texte: "Le courage, c'est de dire 'stop' quand tout le monde se tait.", auteur: "Anonyme" },
+        { texte: "Les fake news profitent du silence. L'esprit critique est ta meilleure arme.", auteur: "Education aux medias" },
+        { texte: "Chaque ecran cache un etre humain. Traite-le comme tel.", auteur: "Anonyme" },
+        { texte: "Se moquer de quelqu'un en groupe, meme en ligne, c'est du harcelement.", auteur: "Programme pHARe" },
+        { texte: "Partager une photo sans permission, c'est une atteinte a la vie privee.", auteur: "CNIL" },
+        { texte: "L'empathie numerique : imagine comment l'autre se sent en lisant ton message.", auteur: "Education aux medias" },
+        { texte: "Signaler, c'est proteger, pas trahir.", auteur: "Programme pHARe" },
+        { texte: "Tes donnees personnelles ont de la valeur. Ne les offre pas n'importe ou.", auteur: "CNIL" },
+        { texte: "Un commentaire blessant peut detruire la journee entiere d'un camarade.", auteur: "Anonyme" },
+        { texte: "La liberte d'expression s'arrete ou commence le respect de l'autre.", auteur: "Declaration des droits de l'homme" },
+        { texte: "Liker une moquerie, c'est aussi participer au harcelement.", auteur: "Programme pHARe" },
+        { texte: "Ce que tu postes aujourd'hui peut influencer ce que tu seras demain.", auteur: "Education aux medias" },
+        { texte: "Aucune photo ne vaut la souffrance d'un etre humain.", auteur: "Anonyme" },
+        { texte: "Etre un citoyen numerique, c'est avoir des droits... et des responsabilites.", auteur: "Conseil de l'Europe" },
+    ];
+
+    function showPhareCitation(index) {
+        const cit = PHARE_CITATIONS[index % PHARE_CITATIONS.length];
+        const el  = document.getElementById('phare-texte');
+        const ea  = document.getElementById('phare-auteur');
+        if (!el || !ea) return;
+        el.style.opacity = '0'; ea.style.opacity = '0';
+        setTimeout(() => {
+            el.textContent = '\u201c' + cit.texte + '\u201d';
+            ea.textContent = '\u2014 ' + cit.auteur;
+            el.style.opacity = '1'; ea.style.opacity = '1';
+        }, 500);
+    }
+
+    function currentPhareIndex() {
+        const now = new Date();
+        const minuteOfDay = now.getHours() * 60 + now.getMinutes();
+        return Math.floor(minuteOfDay / 25);
+    }
+
+    showPhareCitation(currentPhareIndex());
+
+    let lastPhareIdx = currentPhareIndex();
+    setInterval(() => {
+        const idx = currentPhareIndex();
+        if (idx !== lastPhareIdx) { lastPhareIdx = idx; showPhareCitation(idx); }
     }, 60000);
 
     </script>
