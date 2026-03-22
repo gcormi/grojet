@@ -475,6 +475,100 @@
     const fsSizes = { normal: '2rem', grand: '3.5rem', xxl: '5.5rem', giga: '8.5rem' };
     board.style.fontSize = fsSizes[savedFs] || '2rem';
 
+    // =====================
+    // CITATIONS (50) — rotation toutes les 20 minutes
+    // =====================
+    const CITATIONS = [
+        { texte: "L'imagination est plus importante que le savoir.", auteur: "Albert Einstein" },
+        { texte: "La science n'a pas de patrie, car le savoir est le patrimoine de l'humanite.", auteur: "Louis Pasteur" },
+        { texte: "Toute technologie suffisamment avancee est indiscernable de la magie.", auteur: "Arthur C. Clarke" },
+        { texte: "Le genie, c'est 1% d'inspiration et 99% de transpiration.", auteur: "Thomas Edison" },
+        { texte: "La meilleure facon de predire l'avenir, c'est de l'inventer.", auteur: "Alan Kay" },
+        { texte: "La simplicite est la sophistication supreme.", auteur: "Leonard de Vinci" },
+        { texte: "Mesurer, c'est savoir.", auteur: "Lord Kelvin" },
+        { texte: "Les scientifiques etudient ce qui existe. Les ingenieurs creent ce qui n'a jamais existe.", auteur: "Theodore von Karman" },
+        { texte: "Rien dans la vie n'est a craindre, tout doit etre compris.", auteur: "Marie Curie" },
+        { texte: "L'innovation distingue un leader d'un suiveur.", auteur: "Steve Jobs" },
+        { texte: "L'ordinateur est une bicyclette pour notre esprit.", auteur: "Steve Jobs" },
+        { texte: "Si vous ne pouvez pas l'expliquer simplement, vous ne le comprenez pas assez bien.", auteur: "Albert Einstein" },
+        { texte: "Tester conduit a l'echec. L'echec conduit a la comprehension.", auteur: "Burt Rutan" },
+        { texte: "La curiosite est le debut de toute invention.", auteur: "Leonard de Vinci" },
+        { texte: "Les machines doivent travailler. Les personnes doivent penser.", auteur: "IBM" },
+        { texte: "Un probleme bien pose est a moitie resolu.", auteur: "John Dewey" },
+        { texte: "Je n'ai pas echoue. J'ai trouve 10 000 facons qui ne fonctionnent pas.", auteur: "Thomas Edison" },
+        { texte: "La technologie est une facon d'organiser l'univers pour ne pas se fier au hasard.", auteur: "Max Frisch" },
+        { texte: "Prototyper, c'est deja resoudre.", auteur: "IDEO Design" },
+        { texte: "Le developpement durable repond aux besoins du present sans compromettre l'avenir.", auteur: "ONU Brundtland" },
+        { texte: "La plus grande science est de savoir poser les bonnes questions.", auteur: "Claude Bernard" },
+        { texte: "Chaque probleme a une solution. Il suffit d'avoir le courage de chercher.", auteur: "Thomas Edison" },
+        { texte: "Internet est l'infrastructure de la democratie moderne.", auteur: "Tim Berners-Lee" },
+        { texte: "L'energie ne se cree pas, elle se transforme.", auteur: "Lavoisier" },
+        { texte: "Tout objet technique est une reponse a un besoin humain.", auteur: "Education Nationale" },
+        { texte: "La creativite, c'est l'intelligence qui s'amuse.", auteur: "Albert Einstein" },
+        { texte: "Il n'y a pas de technologie neutre. Chaque outil faconne sa societe.", auteur: "Neil Postman" },
+        { texte: "Concevoir, c'est anticiper les usages.", auteur: "Anonyme" },
+        { texte: "Un systeme bien concu est un systeme que l'on peut faire evoluer.", auteur: "Anonyme" },
+        { texte: "La matiere, l'energie et l'information : les trois piliers de la technologie.", auteur: "Anonyme" },
+        { texte: "Comprendre une machine, c'est comprendre le monde qui l'a produite.", auteur: "Anonyme" },
+        { texte: "Le vrai probleme n'est pas de savoir si les machines pensent, mais si les humains le font.", auteur: "B.F. Skinner" },
+        { texte: "L'electronique a reduit les distances a zero.", auteur: "Marshall McLuhan" },
+        { texte: "Penser numeriquement, c'est penser differemment.", auteur: "Nicholas Negroponte" },
+        { texte: "Un robot bien programme reflete la logique de son createur.", auteur: "Anonyme" },
+        { texte: "La technologie ameliore nos capacites, mais c'est l'imagination qui fixe nos objectifs.", auteur: "Anonyme" },
+        { texte: "En science, il n'y a pas de grandes decouvertes sans audace de pensee.", auteur: "Albert Einstein" },
+        { texte: "Le logiciel libre : liberte de comprendre, modifier et partager.", auteur: "Richard Stallman" },
+        { texte: "L'ingenieur qui ne fait pas d'erreurs n'essaie pas assez.", auteur: "Wernher von Braun" },
+        { texte: "Coder, c'est comme ecrire de la poesie, mais la machine doit comprendre.", auteur: "Anonyme" },
+        { texte: "La connaissance s'acquiert par l'experience. Tout le reste, c'est de l'information.", auteur: "Albert Einstein" },
+        { texte: "L'automatisation n'est pas l'ennemi de l'humain. C'est l'outil de sa liberte.", auteur: "Anonyme" },
+        { texte: "La robotique et l'IA sont des outils, pas des dieux.", auteur: "Kevin Kelly" },
+        { texte: "L'innovation n'est pas l'idee : c'est la capacite de la mettre en oeuvre.", auteur: "Theodore Levitt" },
+        { texte: "Regle 1 d'un projet tech : simplifier. Regle 2 : simplifier encore.", auteur: "Anonyme" },
+        { texte: "Les ordinateurs sont rapides et precis ; les humains sont lents et brillants.", auteur: "Albert Einstein" },
+        { texte: "Ce n'est pas le savoir, mais l'acte d'apprendre qui procure la plus grande jouissance.", auteur: "Carl Gauss" },
+        { texte: "Chaque expert a ete un jour un debutant.", auteur: "Anonyme" },
+        { texte: "L'architecture d'un systeme reflete la structure de l'equipe qui l'a construit.", auteur: "Loi de Conway" },
+        { texte: "Le numerique est le petrole du XXIe siecle.", auteur: "Joris Toonder" },
+    ];
+
+    function showCitation(index) {
+        const cit = CITATIONS[index % CITATIONS.length];
+        const bq  = document.querySelector('blockquote');
+        const cite= document.querySelector('cite');
+        if (!bq || !cite) return;
+        // Fade out
+        bq.style.transition = 'opacity 0.6s';
+        cite.style.transition = 'opacity 0.6s';
+        bq.style.opacity = '0';
+        cite.style.opacity = '0';
+        setTimeout(() => {
+            bq.textContent = '\u201c' + cit.texte + '\u201d';
+            cite.textContent = '\u2014 ' + cit.auteur;
+            bq.style.opacity = '1';
+            cite.style.opacity = '1';
+        }, 650);
+    }
+
+    // Determine which citation to show based on 20-minute slots of the day
+    function currentCitationIndex() {
+        const now = new Date();
+        const minuteOfDay = now.getHours() * 60 + now.getMinutes();
+        return Math.floor(minuteOfDay / 20); // changes every 20 min
+    }
+
+    // Show on load
+    showCitation(currentCitationIndex());
+
+    // Check every minute if the slot has changed
+    let lastCitIndex = currentCitationIndex();
+    setInterval(() => {
+        const idx = currentCitationIndex();
+        if (idx !== lastCitIndex) {
+            lastCitIndex = idx;
+            showCitation(idx);
+        }
+    }, 60000);
+
     </script>
 </body>
 </html>
