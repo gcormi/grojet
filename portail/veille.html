@@ -139,7 +139,7 @@
                 </div>
             </div>
             <div class="flex gap-2 items-center relative" style="z-index: 1001 !important;">
-                <span class="text-[8px] bg-indigo-600 text-white px-2 py-0.5 rounded-full font-bold shadow-sm">V4.0 AUTO</span>
+                <span class="text-[8px] bg-indigo-600 text-white px-2 py-0.5 rounded-full font-bold shadow-sm">V4.1 SHADOW</span>
                 <button id="btn-refresh" title="Actualiser les flux" class="text-xs font-bold bg-indigo-50 text-indigo-600 px-4 py-2 rounded-lg hover:bg-indigo-600 hover:text-white transition-all cursor-pointer">
                     <i class="fas fa-sync-alt"></i> Actualiser
                 </button>
@@ -469,16 +469,21 @@
             renderFolders();
         }
 
+        const forceDeletedFolders = new Set();
+        const forceDeletedSources = new Set();
+
         function updateFolderUI() {
             const select = document.getElementById('folder-select');
             if (!select) return;
             select.innerHTML = '<option value="none">Favoris non classés</option>';
-            [...folders].sort((a,b) => (a.name || "").localeCompare(b.name || "")).forEach(f => {
-                select.innerHTML += `<option value="${f.id}">${f.name}</option>`;
-            });
+            [...folders]
+                .filter(f => !forceDeletedFolders.has(f.id))
+                .sort((a,b) => (a.name || "").localeCompare(b.name || ""))
+                .forEach(f => {
+                    select.innerHTML += `<option value="${f.id}">${f.name}</option>`;
+                });
             renderFolders();
         }
-
 
 
         async function fetchRSS(source) {
@@ -519,17 +524,19 @@
             if (!grid) return;
             grid.innerHTML = '';
             
-            const allDisplays = [...folders].sort((a,b) => (a.name || "").localeCompare(b.name || ""));
+            const allDisplays = [...folders]
+                .filter(f => !forceDeletedFolders.has(f.id))
+                .sort((a,b) => (a.name || "").localeCompare(b.name || ""));
             
             // On affiche TOUJOURS "Favoris non classés"
             allDisplays.push({ id: 'none', name: 'Favoris non classés', color: 'slate' });
 
-
             allDisplays.forEach(f => {
-                const folderLinks = sources.filter(s => f.id === 'none' ? (!s.folderId || s.folderId === 'none') : s.folderId === f.id);
+                const folderLinks = sources.filter(s => !forceDeletedSources.has(s.id) && (f.id === 'none' ? (!s.folderId || s.folderId === 'none' || forceDeletedFolders.has(s.folderId)) : s.folderId === f.id));
                 const fColor = f.color || 'indigo';
                 
                 const card = document.createElement('div');
+                card.id = `folder-card-${f.id}`;
                 card.className = `group relative bg-white dark:bg-slate-800 rounded-3xl p-6 border border-slate-100 dark:border-slate-700 hover:border-${fColor}-400 hover:shadow-xl transition-all cursor-pointer animate-fade-up`;
                 
                 card.innerHTML = `
@@ -571,7 +578,7 @@
                 return;
             }
 
-            const folderLinks = sources.filter(s => folderId === 'none' ? (!s.folderId || s.folderId === 'none') : s.folderId === folderId);
+            const folderLinks = sources.filter(s => !forceDeletedSources.has(s.id) && (folderId === 'none' ? (!s.folderId || s.folderId === 'none' || forceDeletedFolders.has(s.folderId)) : s.folderId === folderId));
             
             const title = document.getElementById('links-modal-title');
             const count = document.getElementById('links-modal-count');
@@ -589,6 +596,7 @@
 
             folderLinks.forEach(l => {
                 const item = document.createElement('div');
+                item.id = `link-item-${l.id}`;
                 item.className = "bg-slate-50 dark:bg-slate-900/50 p-5 rounded-2xl border border-slate-100 dark:border-slate-700 flex items-center justify-between group hover:border-indigo-400 hover:bg-white dark:hover:bg-slate-800 transition-all";
                 item.innerHTML = `
                     <div class="overflow-hidden pr-4 flex-grow">
@@ -744,18 +752,22 @@
             if(!id || id === 'none') return;
             if(!confirm("Voulez-vous supprimer ce dossier ? Les liens qu'il contient retourneront dans 'Non classés'.")) return;
             
+            forceDeletedFolders.add(id); // Force hide instantly
+            
+            const cardEl = document.getElementById(`folder-card-${id}`);
+            if (cardEl) cardEl.style.display = 'none';
+
             try {
                 const sourcesInFolder = sources.filter(s => s.folderId === id);
                 
                 if (isCloudEnabled && currentUser) {
-                    // Mode optimiste : on lance la suppression sans bloquer l'interface
                     deleteDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'folders', id)).catch(e => console.warn(e));
                     for (const s of sourcesInFolder) {
                         updateDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'sources', s.id), { folderId: null }).catch(e => console.warn(e));
                     }
                 }
                 
-                // Application immédiate dans l'interface locale
+                // Exécution locale forcée
                 folders = folders.filter(f => f.id !== id);
                 localStorage.setItem('local_folders', JSON.stringify(folders));
                 sources.forEach(s => { if(s.folderId === id) s.folderId = null; });
@@ -763,11 +775,10 @@
                 
                 showToast("Dossier supprimé");
                 updateFolderUI();
-                renderFolders(); // Force le re-render du tableau de bord
+                renderFolders();
                 if (activeFolderInModal === id) window.closeLinksModal();
             } catch(err) {
                 showToast("Erreur locale lors de la suppression", true);
-                console.error(err);
             }
         };
 
@@ -922,12 +933,17 @@
 
         window.deleteLink = async (id) => {
             if(!confirm("Supprimer ce favori ?")) return;
+            
+            forceDeletedSources.add(id); // Force hide instantly
+            
+            const linkEl = document.getElementById(`link-item-${id}`);
+            if (linkEl) linkEl.style.display = 'none';
+
             try {
                 if (isCloudEnabled && currentUser) {
                     deleteDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'sources', id)).catch(e => console.warn(e));
                 }
                 
-                // Mettre à jour en local immédiatement
                 sources = sources.filter(s => s.id !== id);
                 localStorage.setItem('local_sources', JSON.stringify(sources));
                 
@@ -936,7 +952,6 @@
                 fetchAllFeeds();
                 if (activeFolderInModal) window.openLinksModal(activeFolderInModal);
             } catch(e) {
-                console.error("Delete error:", e);
                 showToast("Erreur locale lors de la suppression.", true);
             }
         };
