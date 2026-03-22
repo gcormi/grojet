@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="fr" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hub Personnel & IA | Portail Éducatif</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'], display: ['Outfit', 'sans-serif'] },
+                    colors: { brand: { 50: '#f5f3ff', 100: '#ede9fe', 500: '#8b5cf6', 600: '#7c3aed', 900: '#4c1d95' } }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; color: #0f172a; }
+        .dark-mode { background-color: #0f172a; color: #f1f5f9; }
+        
+        .glass-header { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(0,0,0,0.05); }
+        .dark-mode .glass-header { background: rgba(15, 23, 42, 0.85); border-bottom: 1px solid rgba(255,255,255,0.05); }
+        
+        .hub-card { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .hub-card:hover { transform: translateY(-5px); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        .dark-mode ::-webkit-scrollbar-thumb { background: #475569; }
+
+        /* Animation d'entrée */
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-up { animation: fadeUp 0.6s ease-out forwards; opacity: 0; }
+        .delay-100 { animation-delay: 100ms; }
+        .delay-200 { animation-delay: 200ms; }
+        .delay-300 { animation-delay: 300ms; }
+    </style>
+</head>
+<body class="antialiased min-h-screen flex flex-col relative selection:bg-brand-500 selection:text-white">
+
+    <!-- Navbar -->
+    <header class="glass-header sticky top-0 z-50 py-4 px-6 md:px-10 flex justify-between items-center">
+        <div class="flex items-center gap-4">
+            <div class="w-12 h-12 bg-gradient-to-br from-brand-500 to-indigo-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-brand-500/30">
+                <i class="fas fa-layer-group text-xl"></i>
+            </div>
+            <div>
+                <h1 class="font-display text-xl font-bold text-slate-900 dark:text-white leading-tight">Hub Personnel & IA</h1>
+                <p class="text-[11px] uppercase tracking-widest text-slate-400 font-bold">Raccourcis vers vos espaces de travail</p>
+            </div>
+        </div>
+        
+        <button id="theme-toggle" class="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-brand-500 transition-colors flex items-center justify-center">
+            <i class="fas fa-moon"></i>
+        </button>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-grow p-6 md:p-10 max-w-7xl mx-auto w-full">
+        
+        <!-- En-tête de section -->
+        <div class="mb-10 text-center animate-fade-up">
+            <h2 class="font-display text-3xl md:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-brand-600 to-indigo-600 mb-4">
+                Tous vos outils au même endroit
+            </h2>
+            <p class="text-slate-500 max-w-2xl mx-auto">
+                Accédez instantanément à vos disques de stockage académiques et à vos assistants d'Intelligence Artificielle de pointe, centralisés pour une productivité sans friction.
+            </p>
+        </div>
+
+        <!-- Grille des raccourcis -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="hub-grid">
+            <!-- Les cartes seront injectées ici par JavaScript -->
+        </div>
+
+    </main>
+
+    <!-- Script de gestion des données -->
+    <script>
+        // --- DONNÉES DES RACCOURCIS ---
+        // Vous pouvez facilement en ajouter ici !
+        const hubLinks = [
+            // ================== CLOUD & STOCKAGE ==================
+            {
+                titre: "Nuage (Apps.edu)",
+                description: "Votre espace cloud institutionnel sécurisé pour le partage et le stockage de données.",
+                url: "https://nuage.apps.education.fr/",
+                icone: "fas fa-cloud",
+                couleurIco: "text-sky-500",
+                fondIco: "bg-sky-50 dark:bg-sky-900/30",
+                categorie: "Stockage Institutionnel",
+                badge: null
+            },
+            {
+                titre: "Google Drive",
+                description: "Le stockage cloud universel de Google avec ses outils bureautiques collaboratifs.",
+                url: "https://drive.google.com/",
+                icone: "fab fa-google-drive",
+                couleurIco: "text-emerald-500",
+                fondIco: "bg-emerald-50 dark:bg-emerald-900/30",
+                categorie: "Stockage Personnel",
+                badge: null
+            },
+            // ================== INTELLIGENCE ARTIFICIELLE ==================
+            {
+                titre: "Google Gemini",
+                description: "Votre assistant IA multi-modal de Google. Idéal pour rédiger, analyser et coder.",
+                url: "https://gemini.google.com/",
+                icone: "fas fa-wand-magic-sparkles",
+                couleurIco: "text-indigo-500",
+                fondIco: "bg-indigo-50 dark:bg-indigo-900/30",
+                categorie: "IA Conversationnelle",
+                badge: "Assistant"
+            },
+            {
+                titre: "NotebookLM",
+                description: "Prenez des notes augmentées par l'IA de Google. Téléversez vos documents et posez vos questions.",
+                url: "https://notebooklm.google.com/",
+                icone: "fas fa-book-open-reader",
+                couleurIco: "text-blue-600",
+                fondIco: "bg-blue-50 dark:bg-blue-900/30",
+                categorie: "IA Analytique",
+                badge: "Recherche"
+            },
+            {
+                titre: "Perplexity AI",
+                description: "Le moteur de recherche dopé à l'IA qui donne des réponses sourcées en temps réel.",
+                url: "https://www.perplexity.ai/",
+                icone: "fas fa-cube",
+                couleurIco: "text-teal-500",
+                fondIco: "bg-teal-50 dark:bg-teal-900/30",
+                categorie: "IA Recherche web",
+                badge: "Sources Pédago"
+            },
+            {
+                titre: "Google AI Studio",
+                description: "L'interface expérimentale pour interagir directement avec les derniers modèles Gemini Pro.",
+                url: "https://aistudio.google.com/",
+                icone: "fas fa-microchip",
+                couleurIco: "text-slate-600 dark:text-slate-300",
+                fondIco: "bg-slate-100 dark:bg-slate-700",
+                categorie: "IA Développement",
+                badge: "Expert IA"
+            }
+        ];
+
+        // --- GÉNÉRATION DE L'INTERFACE ---
+        const grid = document.getElementById('hub-grid');
+
+        hubLinks.forEach((link, index) => {
+            // Effet d'animation en cascade
+            const delayClass = `delay-${(index % 3 + 1) * 100}`;
+            
+            const badgeHtml = link.badge 
+                ? `<span class="absolute top-4 right-4 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-md border border-slate-200 dark:border-slate-600">${link.badge}</span>` 
+                : '';
+
+            const card = document.createElement('a');
+            card.href = link.url;
+            card.target = "_blank"; // S'ouvre dans un nouvel onglet !
+            card.className = `hub-card relative block bg-white dark:bg-slate-800 rounded-2xl p-6 border border-slate-200 dark:border-slate-700 hover:border-brand-500 dark:hover:border-brand-500 group animate-fade-up ${delayClass}`;
+            
+            card.innerHTML = `
+                ${badgeHtml}
+                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">${link.categorie}</p>
+                <div class="flex items-start gap-4">
+                    <div class="w-14 h-14 rounded-xl flex items-center justify-center text-2xl flex-shrink-0 transition-transform group-hover:scale-110 ${link.fondIco} ${link.couleurIco}">
+                        <i class="${link.icone}"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-display text-xl font-bold text-slate-900 dark:text-white mb-2 group-hover:text-brand-500 transition-colors">${link.titre}</h3>
+                        <p class="text-sm text-slate-500 leading-relaxed mb-4">${link.description}</p>
+                    </div>
+                </div>
+                <div class="mt-4 pt-4 border-t border-slate-100 dark:border-slate-700 flex justify-between items-center text-sm font-bold text-brand-600 dark:text-brand-400 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <span>Ouvrir l'espace</span>
+                    <i class="fas fa-external-link-alt"></i>
+                </div>
+            `;
+            
+            grid.appendChild(card);
+        });
+
+        // --- MODE SOMBRE ---
+        document.getElementById('theme-toggle').addEventListener('click', () => {
+            document.documentElement.classList.toggle('dark-mode');
+        });
+    </script>
+</body>
+</html>
