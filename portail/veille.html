@@ -514,6 +514,8 @@
 
         const forceDeletedFolders = new Set();
         const forceDeletedSources = new Set();
+        // Pour les sources de base qu'on ne peut pas supprimer de la DB mais qu'on veut masquer
+        const excludedBaseSources = new Set(JSON.parse(localStorage.getItem('excluded_base_sources') || '[]'));
 
         function updateFolderUI() {
             const select = document.getElementById('folder-select');
@@ -542,7 +544,9 @@
         }
 
         async function fetchAllFeeds() {
-            const results = await Promise.all([...BASE_SOURCES, ...sources].map(s => fetchRSS(s)));
+            const results = await Promise.all([...BASE_SOURCES, ...sources]
+                .filter(s => !forceDeletedSources.has(s.id) && !excludedBaseSources.has(s.id))
+                .map(s => fetchRSS(s)));
             const rssContainer = document.getElementById('rss-container');
             const allItems = results.flatMap(r => r.items).sort((a,b) => new Date(b.pubDate) - new Date(a.pubDate));
             rssContainer.innerHTML = '';
@@ -550,8 +554,14 @@
             if (allItems.length === 0) rssContainer.innerHTML = '<p class="col-span-full text-center opacity-40 py-10">Aucune actualité. Ajoutez un blog pour voir ses articles.</p>';
             
             allItems.forEach(item => {
+                const sId = item.source.id;
                 rssContainer.innerHTML += `
-                    <div class="card-rss rounded-3xl p-6 flex flex-col h-full group">
+                    <div class="card-rss rounded-3xl p-6 flex flex-col h-full group relative overflow-hidden">
+                        <button onclick="event.preventDefault(); window.deleteAnySource('${sId}')" 
+                                class="absolute -top-1 -right-1 w-8 h-8 bg-rose-500/10 text-rose-500 rounded-bl-xl opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center hover:bg-rose-500 hover:text-white z-10 cursor-pointer" 
+                                title="Supprimer ce site du flux">
+                            <i class="fas fa-trash-alt text-[10px]"></i>
+                        </button>
                         <div class="flex justify-between items-start mb-3">
                             <span class="text-[10px] font-bold text-indigo-500 uppercase">${item.source.name}</span>
                             <span class="text-[9px] text-slate-400">${new Date(item.pubDate).toLocaleDateString()}</span>
@@ -561,6 +571,22 @@
                     </div>`;
             });
         }
+
+        window.deleteAnySource = async (id) => {
+            if(!confirm("Voulez-vous supprimer ce site de votre veille ?")) return;
+            
+            // Si c'est une source de base (Ludomag, etc.)
+            if (BASE_SOURCES.some(b => b.id === id)) {
+                excludedBaseSources.add(id);
+                localStorage.setItem('excluded_base_sources', JSON.stringify([...excludedBaseSources]));
+                showToast("Source masquée");
+            } else {
+                // Si c'est une source utilisateur
+                await window.deleteLink(id);
+            }
+            fetchAllFeeds();
+            renderFolders();
+        };
 
         function renderFolders() {
             const grid = document.getElementById('folders-grid');
