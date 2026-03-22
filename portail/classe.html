@@ -15,7 +15,10 @@
             --accent-emerald: #10b981;
             --accent-amber: #f59e0b;
             --accent-rose: #f43f5e;
+            --clock-hands: #ffffff;
+            --weather-text: #ffffff;
         }
+
 
         body {
             font-family: 'Inter', sans-serif;
@@ -67,9 +70,11 @@
             background-image: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%);
             color: #000;
             --card-glass: rgba(255, 255, 255, 0.9);
+            --clock-hands: #000000;
+            --weather-text: #000000;
         }
         body.theme-sky .glass-card { border-color: #7dd3fc; box-shadow: 0 10px 30px rgba(14, 165, 233, 0.1); }
-        body.theme-sky #current-date, body.theme-sky #digital-clock { color: #000; }
+        body.theme-sky #current-date, body.theme-sky #digital-clock, body.theme-sky #meteo-temp { color: #000; }
         body.theme-sky .info-area { color: #000; font-weight: 500; }
         body.theme-sky .clock-container { background: #fff; border-color: #bae6fd; }
         body.theme-sky blockquote, body.theme-sky cite, body.theme-sky [contenteditable]:empty:before { color: #1e293b; }
@@ -80,13 +85,16 @@
             background-image: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
             color: #000;
             --card-glass: rgba(255, 255, 255, 0.92);
+            --clock-hands: #000000;
+            --weather-text: #000000;
         }
         body.theme-mint .glass-card { border-color: #86efac; box-shadow: 0 10px 30px rgba(34, 197, 94, 0.1); }
-        body.theme-mint #current-date, body.theme-mint #digital-clock { color: #000; }
+        body.theme-mint #current-date, body.theme-mint #digital-clock, body.theme-mint #meteo-temp { color: #000; }
         body.theme-mint .info-area { color: #000; font-weight: 500; }
         body.theme-mint .clock-container { background: #fff; border-color: #bbf7d0; }
         body.theme-mint blockquote, body.theme-mint cite, body.theme-mint [contenteditable]:empty:before { color: #064e3b; }
         body.theme-mint .editor-btn { border-color: #86efac; color: #064e3b; }
+
 
 
 
@@ -133,9 +141,10 @@
             transform: translateX(-50%);
         }
 
-        .hour-hand { width: 6px; height: 70px; background: #fff; z-index: 3; }
-        .min-hand { width: 4px; height: 100px; background: rgba(255,255,255,0.7); z-index: 2; }
+        .hour-hand { width: 6px; height: 70px; background: var(--clock-hands); z-index: 3; }
+        .min-hand { width: 4px; height: 100px; background: var(--clock-hands); opacity: 0.8; z-index: 2; }
         .second-hand { width: 2px; height: 110px; background: var(--accent-rose); z-index: 1; }
+
 
         .number {
             position: absolute;
@@ -169,19 +178,15 @@
             cursor: text;
         }
 
-        /* Essential for execCommand to work with colors/sizes */
-        .info-area * {
-            color: inherit;
+        /* Crucial fixes for user-applied styles */
+        .info-area font[color], .info-area span[style*="color"] {
+            color: revert !important;
         }
-        .info-area font[color] {
-            color: attr(color);
-        }
-        .info-area span[style*="color"] {
-            color: initial;
-        }
-        .info-area font[size] {
+        .info-area font[size], .info-area span[style*="font-size"] {
+            font-size: revert !important;
             line-height: 1.2;
         }
+
 
 
         .glow-text {
@@ -234,7 +239,7 @@
                 <div class="flex flex-col">
                     <span class="text-[9px] font-black text-indigo-400 uppercase tracking-[0.2em] mb-1">Station Météo</span>
                     <div class="flex items-baseline gap-2">
-                        <span id="meteo-temp" class="text-4xl font-display font-black text-white glow-text">16°</span>
+                        <span id="meteo-temp" class="text-4xl font-display font-black text-white glow-text" style="color: var(--weather-text)">16°</span>
                         <span class="text-xs font-bold text-slate-400">ENSOLEILLÉ</span>
                     </div>
                 </div>
@@ -304,6 +309,7 @@
                         <button onmousedown="event.preventDefault(); changeFontSize('small')" class="editor-btn text-[10px]" title="Petit">A</button>
                         <button onmousedown="event.preventDefault(); changeFontSize('medium')" class="editor-btn text-xs" title="Moyen">A</button>
                         <button onmousedown="event.preventDefault(); changeFontSize('large')" class="editor-btn text-base font-bold" title="Grand">A</button>
+                        <button onmousedown="event.preventDefault(); changeFontSize('extra')" class="editor-btn text-xl font-black" title="TITRE">A</button>
                         <div class="w-px h-5 bg-white/10 mx-1"></div>
                         <!-- TEXT COLORS -->
                         <div class="flex gap-1 bg-black/40 p-1 rounded-lg">
@@ -483,10 +489,10 @@
             const selection = window.getSelection();
             if (selection.toString().length > 0) {
                 // browser mapping for font size 1-7
-                const sizes = { 'small': '2', 'medium': '4', 'large': '6' };
+                const sizes = { 'small': '2', 'medium': '4', 'large': '6', 'extra': '7' };
                 document.execCommand('fontSize', false, sizes[size]);
             } else {
-                const cssSizes = { 'small': '1.1rem', 'medium': '1.6rem', 'large': '2.5rem' };
+                const cssSizes = { 'small': '1.1rem', 'medium': '1.6rem', 'large': '2.5rem', 'extra': '4rem' };
                 infoBoard.style.fontSize = cssSizes[size];
                 localStorage.setItem('classe_font_size', size);
             }
