@@ -3,171 +3,352 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Albert Express - Assistant Pédagogique</title>
+    <title>Assistant Multi-IA - Forge</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap');
-        body { font-family: 'Outfit', sans-serif; background: #f8fafc; }
-        .glass { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); }
-        .albert-blue { background-color: #000091; }
-        .step-badge { @apply w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm; }
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+        .ai-card { cursor: pointer; transition: all 0.3s; border: 2px solid transparent; background-color: #f1f5f9; }
+        .ai-card.active { border-color: #2563eb; background-color: #eff6ff; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.1); }
+        .loader { border-top-color: #2563eb; animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        #preview-output { min-height: 200px; }
     </style>
 </head>
-<body class="p-4 md:p-12 min-h-screen flex items-center justify-center">
+<body class="flex items-center justify-center min-h-screen p-4 sm:p-8">
 
-    <div class="max-w-3xl w-full glass rounded-[2.5rem] shadow-2xl overflow-hidden border border-slate-200">
-        <!-- Header Institutionnel -->
-        <div class="albert-blue p-8 text-white text-center relative">
-            <div class="absolute top-4 right-6 opacity-20 text-4xl"><i class="fas fa-republican"></i></div>
-            <h1 class="text-3xl font-extrabold tracking-tighter italic">ALBERT<span class="text-blue-300">DOC</span></h1>
-            <p class="text-blue-200 text-[10px] uppercase font-bold tracking-[0.2em] mt-2">Assistant de Rédaction Pédagogique Souverain</p>
-        </div>
-
-        <div class="p-8 md:p-12 space-y-10">
-            
-            <!-- SECTION EXPLICATION -->
-            <div class="bg-blue-50 p-6 rounded-3xl border border-blue-100 flex gap-4 items-start">
-                <div class="text-blue-600 mt-1"><i class="fas fa-info-circle text-xl"></i></div>
-                <div>
-                    <h3 class="font-bold text-blue-900 text-sm mb-1">Note sur la sécurité d'État</h3>
-                    <p class="text-[11px] text-blue-800 leading-relaxed">
-                        L'API Albert (OpenGateLLM) protège vos jetons en interdisant les appels automatiques directs depuis un navigateur. 
-                        Cette application prépare donc votre commande pédagogique pour une utilisation manuelle sur le portail sécurisé.
-                    </p>
-                </div>
-            </div>
-
-            <!-- ETAPE 1 : LE SUJET -->
-            <div class="space-y-4">
-                <div class="flex items-center gap-3">
-                    <div class="step-badge albert-blue text-white shadow-lg">1</div>
-                    <h2 class="text-sm font-black text-slate-700 uppercase tracking-wider">Définir le sujet du cours</h2>
-                </div>
-                <div class="relative group">
-                    <input type="text" id="subject" 
-                           class="w-full p-5 bg-slate-50 border-2 border-slate-100 rounded-[1.5rem] outline-none focus:border-blue-600 focus:bg-white transition-all text-sm font-medium" 
-                           placeholder="Ex: L'impact environnemental du numérique en 3ème">
-                </div>
-            </div>
-
-            <!-- ETAPE 2 : ACTION -->
-            <div class="space-y-4">
-                <div class="flex items-center gap-3">
-                    <div class="step-badge bg-slate-200 text-slate-500">2</div>
-                    <h2 class="text-sm font-black text-slate-700 uppercase tracking-wider">Lancer la création</h2>
-                </div>
-                
-                <div class="grid grid-cols-1 gap-4">
-                    <button onclick="copyAndProcess()" class="w-full bg-slate-900 text-white font-black py-6 rounded-[1.5rem] hover:bg-black shadow-xl transition-all flex flex-col items-center justify-center gap-1 group overflow-hidden relative">
-                        <div class="flex items-center gap-3 text-sm uppercase tracking-widest">
-                            <i class="fas fa-copy group-hover:scale-110 transition-transform"></i> 
-                            Préparer via Albert
-                        </div>
-                        <span class="text-[9px] text-slate-400 font-normal italic uppercase">Copie la demande et ouvre le portail sécurisé</span>
-                    </button>
-                </div>
-            </div>
-
-            <!-- ZONE DE TÉLÉCHARGEMENT (APPARAIT APRÈS) -->
-            <div id="result-area" class="hidden space-y-6 pt-6 border-t-2 border-slate-100 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                <div class="p-6 bg-emerald-50 border-2 border-emerald-100 rounded-[1.5rem] flex items-center justify-between">
-                    <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 bg-emerald-500 text-white rounded-full flex items-center justify-center shadow-md">
-                            <i class="fas fa-check"></i>
-                        </div>
-                        <div>
-                            <h4 class="text-xs font-black text-emerald-800 uppercase">Demande copiée !</h4>
-                            <p class="text-[10px] text-emerald-700">Il vous suffit de faire <b>Coller (Ctrl+V)</b> sur Albert.</p>
-                        </div>
-                    </div>
-                    <button onclick="window.open('https://albert.api.gouv.fr/', '_blank')" class="bg-emerald-600 text-white text-[10px] font-bold px-4 py-2 rounded-xl hover:bg-emerald-700">
-                        ACCÉDER AU PORTAIL
-                    </button>
-                </div>
-                
-                <div class="p-6 border-2 border-dashed border-slate-200 rounded-[1.5rem] bg-slate-50/50">
-                    <h4 class="text-[10px] font-black text-slate-400 uppercase mb-4 text-center">Une fois le texte obtenu, vous pouvez le formater ici :</h4>
-                    <textarea id="manual-input" rows="4" class="w-full p-4 bg-white border border-slate-200 rounded-xl text-xs outline-none focus:border-blue-300" placeholder="Collez ici le résultat HTML d'Albert pour le transformer en document téléchargeable..."></textarea>
-                    <button onclick="downloadFromInput()" class="mt-4 w-full py-3 bg-blue-600 text-white text-[10px] font-bold rounded-xl uppercase tracking-widest hover:bg-blue-700 transition-all">
-                        <i class="fas fa-file-export mr-2"></i> Transformer en Fiche HTML Pro
-                    </button>
-                </div>
-            </div>
-
-        </div>
+    <div class="bg-white w-full max-w-4xl p-6 sm:p-10 rounded-3xl shadow-2xl relative border border-slate-200">
         
-        <!-- Footer -->
-        <footer class="p-6 bg-slate-50 border-t border-slate-100 text-center">
-            <p class="text-[9px] text-slate-400 font-bold uppercase tracking-widest">&copy; 2026 Assistant Pédagogique - Conforme RGPD & Souveraineté</p>
-        </footer>
+        <header class="text-center mb-10">
+            <h1 class="text-3xl font-black text-slate-900 italic flex items-center justify-center gap-3">
+                <i class="fas fa-microchip text-blue-600"></i> Assistant Multi-IA
+            </h1>
+            <p class="text-slate-500 text-sm mt-2 font-medium uppercase tracking-widest text-blue-800">Prêt pour l'hébergement (Forge + Worker)</p>
+        </header>
+
+        <!-- 1. SÉLECTION DE L'IA -->
+        <div class="mb-8">
+            <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3 text-center">Étape 1 : Choisir le moteur d'IA</p>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4" id="ai-selector-container">
+                <div data-value="albert" class="ai-card p-5 rounded-2xl flex flex-col items-center gap-2 active">
+                    <span class="text-3xl">🇫🇷</span>
+                    <span class="font-bold text-slate-800">IA Albert</span>
+                    <span class="text-[10px] bg-blue-600 text-white px-2 py-0.5 rounded-full font-bold">WORKER ACTIF</span>
+                </div>
+                <div data-value="gemini" class="ai-card p-5 rounded-2xl flex flex-col items-center gap-2">
+                    <span class="text-3xl">🌐</span>
+                    <span class="font-bold text-slate-800">Gemini</span>
+                    <span class="text-[10px] bg-green-600 text-white px-2 py-0.5 rounded-full font-bold">GRATUIT</span>
+                </div>
+                <div data-value="openrouter" class="ai-card p-5 rounded-2xl flex flex-col items-center gap-2">
+                    <span class="text-3xl">🚀</span>
+                    <span class="font-bold text-slate-800">OpenRouter</span>
+                    <span class="text-[10px] bg-purple-600 text-white px-2 py-0.5 rounded-full font-bold">PREMIUM</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. CONFIGURATION DYNAMIQUE -->
+        <div id="config-section" class="bg-slate-50 p-6 rounded-2xl border border-slate-200 mb-8 transition-all">
+            <div class="flex justify-between items-end mb-2">
+                <label id="config-label" class="block text-xs font-black text-slate-500 uppercase tracking-widest">URL du Worker Cloudflare</label>
+            </div>
+            
+            <div class="flex flex-col sm:flex-row gap-3">
+                <input type="text" id="api-key-input" placeholder="https://gillecormi.gilles-cormi.workers.dev" class="flex-grow p-4 border border-slate-200 rounded-xl text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none font-mono">
+                <button id="save-key-button" class="bg-blue-600 text-white font-black py-4 px-8 rounded-xl hover:bg-blue-700 shadow-lg whitespace-nowrap">CONNECTER</button>
+            </div>
+            <p id="config-help" class="text-[10px] text-blue-600 mt-3 italic"><i class="fas fa-shield-alt"></i> La clé secrète est protégée côté serveur. Renseignez uniquement le lien du Worker.</p>
+        </div>
+
+        <!-- INDICATEUR DE STATUT -->
+        <div class="flex justify-between items-center px-2 mb-4">
+            <span id="config-status-text" class="text-xs font-bold text-slate-400 uppercase flex items-center gap-2">
+                <i class="fas fa-circle text-red-400" id="status-dot"></i> <span id="status-msg">Non connecté</span>
+            </span>
+            <button id="clear-key-button" class="text-[10px] text-red-400 font-bold hover:text-red-600 uppercase underline hidden">Effacer la configuration</button>
+        </div>
+
+        <!-- 3. PARAMÈTRES ET PROMPT -->
+        <div id="prompt-section" class="space-y-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                <div class="p-4 border border-slate-200 rounded-xl bg-slate-50">
+                    <p class="text-[10px] font-bold text-slate-400 uppercase mb-2">Niveau de rédaction</p>
+                    <div class="flex gap-4">
+                        <label class="flex items-center gap-2 text-sm font-medium cursor-pointer"><input type="radio" name="niveau" value="complet" checked class="text-blue-600"> Complet</label>
+                        <label class="flex items-center gap-2 text-sm font-medium cursor-pointer"><input type="radio" name="niveau" value="moyen" class="text-blue-600"> Moyen</label>
+                    </div>
+                </div>
+                
+                <div class="p-4 border border-slate-200 rounded-xl bg-slate-50">
+                    <p class="text-[10px] font-bold text-slate-400 uppercase mb-2">Modèle (Si applicable)</p>
+                    <select id="model-selector" class="w-full p-2 border border-slate-200 rounded-lg text-xs bg-white outline-none">
+                        <option value="openai/gpt-oss-120b">Albert 120B (Défaut)</option>
+                        <option value="mistralai/Mistral-Small-3.2-24B-Instruct-2506">Mistral Small</option>
+                    </select>
+                </div>
+            </div>
+
+            <textarea id="prompt-input" rows="5" class="w-full p-5 border-2 border-slate-100 rounded-2xl shadow-inner text-sm bg-slate-50 focus:bg-white focus:border-blue-400 outline-none transition-colors" placeholder="Collez votre prompt ici..."></textarea>
+            
+            <button id="generate-button" class="w-full bg-blue-600 text-white font-black py-5 rounded-2xl hover:bg-blue-700 shadow-xl disabled:bg-slate-300 transition-all flex items-center justify-center gap-3 uppercase tracking-widest">
+                <i class="fas fa-wand-magic-sparkles"></i> GÉNÉRER LE DOCUMENT
+            </button>
+        </div>
+
+        <!-- 4. RÉSULTATS -->
+        <div id="results-section" class="mt-10 hidden border-t-2 border-slate-100 pt-8">
+            <div id="loading-spinner" class="flex flex-col items-center justify-center py-8 hidden">
+                <div class="w-10 h-10 border-4 border-slate-200 border-t-blue-600 rounded-full loader mb-4"></div>
+                <p class="text-xs font-bold text-slate-500 uppercase tracking-widest animate-pulse">L'IA rédige votre contenu...</p>
+            </div>
+            
+            <div id="result-content" class="hidden">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest">Résultat généré</h3>
+                    <button onclick="copyResult()" class="text-[10px] font-bold text-blue-600 uppercase hover:underline"><i class="fas fa-copy"></i> Copier HTML</button>
+                </div>
+                <div id="preview-output" class="p-6 bg-white border-2 border-slate-100 rounded-2xl shadow-inner prose max-w-none text-sm overflow-y-auto max-h-[500px]"></div>
+                
+                <div class="mt-6 flex gap-4">
+                    <button onclick="downloadHtml()" class="flex-1 bg-slate-800 text-white font-bold py-3 rounded-xl text-xs uppercase tracking-widest hover:bg-slate-900 transition-colors">
+                        <i class="fas fa-file-export mr-2"></i> Télécharger HTML
+                    </button>
+                </div>
+            </div>
+            
+            <div id="error-content" class="hidden mt-4 p-4 bg-red-50 border border-red-200 rounded-xl text-red-600 text-sm font-medium"></div>
+        </div>
     </div>
 
     <script>
-        function copyAndProcess() {
-            const subject = document.getElementById('subject').value.trim();
-            if(!subject) return alert("Veuillez d'abord saisir un sujet !");
+        // Configuration des IAs
+        const AI_CONFIGS = {
+            'albert': {
+                name: "IA Albert",
+                storageKey: 'albertWorkerUrl',
+                label: "URL du Worker Cloudflare",
+                placeholder: "https://gillecormi.gilles-cormi.workers.dev",
+                help: "<i class='fas fa-shield-alt'></i> La clé secrète est protégée côté serveur. Renseignez uniquement le lien de votre Worker.",
+                type: 'password' // On peut le laisser en text pour l'URL
+            },
+            'gemini': {
+                name: "Gemini",
+                storageKey: 'geminiApiKey',
+                label: "Clé API Gemini",
+                placeholder: "AIzaSy...",
+                help: "Entrez votre clé API Google Gemini standard.",
+                type: 'password'
+            },
+            'openrouter': {
+                name: "OpenRouter",
+                storageKey: 'openrouterApiKey',
+                label: "Clé API OpenRouter",
+                placeholder: "sk-or-v1-...",
+                help: "Entrez votre clé API OpenRouter.",
+                type: 'password'
+            }
+        };
 
-            const prompt = `Agis en tant qu'expert pédagogique de l'Éducation Nationale. Rédige une fiche de synthèse de cours extrêmement structurée pour mes élèves sur le sujet suivant : ${subject}. 
-            CONSIGNES DE MISE EN FORME :
-            1. Utilise exclusivement du code HTML propre.
-            2. Utilise des balises <h2> pour les grands titres, <h3> pour les sous-parties.
-            3. Utilise des listes <ul> et <li> pour les points clés.
-            4. Encadre les définitions importantes dans une balise <div style="border-left:4px solid #000091; padding-left:15px; margin:20px 0; background:#f0f7ff;">.
-            5. Ne mets AUCUN texte explicatif avant ou après le code.`;
+        let currentAI = 'albert';
 
-            // Copie
-            const el = document.createElement('textarea');
-            el.value = prompt;
-            document.body.appendChild(el);
-            el.select();
-            document.execCommand('copy');
-            document.body.removeChild(el);
+        // Éléments du DOM
+        const el = {
+            cards: document.querySelectorAll('.ai-card'),
+            configLabel: document.getElementById('config-label'),
+            configInput: document.getElementById('api-key-input'),
+            configHelp: document.getElementById('config-help'),
+            saveBtn: document.getElementById('save-key-button'),
+            clearBtn: document.getElementById('clear-key-button'),
+            statusDot: document.getElementById('status-dot'),
+            statusMsg: document.getElementById('status-msg'),
+            prompt: document.getElementById('prompt-input'),
+            genBtn: document.getElementById('generate-button'),
+            resSec: document.getElementById('results-section'),
+            spinner: document.getElementById('loading-spinner'),
+            resContent: document.getElementById('result-content'),
+            preview: document.getElementById('preview-output'),
+            errContent: document.getElementById('error-content'),
+            modelSel: document.getElementById('model-selector')
+        };
 
-            // Interface
-            document.getElementById('result-area').classList.remove('hidden');
+        // Mise à jour de l'interface selon l'IA choisie
+        function updateUI() {
+            const config = AI_CONFIGS[currentAI];
             
-            // Notification et Ouverture
-            alert("✅ La commande pédagogique a été copiée dans votre presse-papier.\n\nJe vais maintenant ouvrir le portail sécurisé Albert.\nUne fois connecté, faites simplement 'COLLER' (ou Ctrl+V) pour lancer la génération.");
+            // Mise à jour des cartes
+            el.cards.forEach(c => c.classList.toggle('active', c.getAttribute('data-value') === currentAI));
             
-            window.open("https://albert.api.gouv.fr/", "_blank");
+            // Mise à jour de la zone de configuration
+            el.configLabel.innerText = config.label;
+            el.configInput.placeholder = config.placeholder;
+            el.configInput.type = currentAI === 'albert' ? 'text' : 'password';
+            el.configHelp.innerHTML = config.help;
+
+            // Modèles spécifiques à OpenRouter si besoin
+            if(currentAI === 'openrouter') {
+                el.modelSel.innerHTML = '<option value="anthropic/claude-3.5-sonnet">Claude 3.5 Sonnet</option><option value="openai/gpt-4o">GPT-4o</option>';
+            } else if(currentAI === 'albert') {
+                el.modelSel.innerHTML = '<option value="openai/gpt-oss-120b">Albert 120B (Défaut)</option><option value="mistralai/Mistral-Small-3.2-24B-Instruct-2506">Mistral Small</option>';
+            } else {
+                el.modelSel.innerHTML = '<option value="gemini-2.5-flash">Gemini Flash</option>';
+            }
+
+            checkConnection();
         }
 
-        function downloadFromInput() {
-            const content = document.getElementById('manual-input').value.trim();
-            if(!content) return alert("Collez d'abord le texte d'Albert !");
+        // Vérifie si une configuration est enregistrée
+        function checkConnection() {
+            const config = AI_CONFIGS[currentAI];
+            const savedValue = localStorage.getItem(config.storageKey);
 
-            const fullHtml = `
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
-        body { font-family: 'Inter', sans-serif; line-height: 1.7; color: #1e293b; max-width: 850px; margin: 50px auto; padding: 40px; background: #fff; border: 1px solid #e2e8f0; border-radius: 20px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
-        h2 { color: #000091; border-bottom: 3px solid #000091; padding-bottom: 8px; margin-top: 40px; font-size: 1.5rem; text-transform: uppercase; }
-        h3 { color: #2563eb; margin-top: 25px; border-left: 4px solid #2563eb; padding-left: 12px; }
-        ul { padding-left: 20px; }
-        li { margin-bottom: 10px; }
-        .footer { margin-top: 50px; padding-top: 20px; border-top: 1px solid #e2e8f0; font-size: 10px; color: #94a3b8; text-align: center; font-style: italic; }
-    </style>
-</head>
-<body>
-    <div style="text-align:center; margin-bottom:40px;">
-        <p style="text-transform:uppercase; font-weight:bold; font-size:12px; color:#64748b; letter-spacing:2px; margin-bottom:5px;">Ressource Pédagogique</p>
-        <h1 style="font-size:2rem; color:#0f172a; margin-top:0;">Fiche de Synthèse : Document de Travail</h1>
-    </div>
-    ${content}
-    <div class="footer">Document généré via l'IA Souveraine Albert - Ministère de la Fonction Publique</div>
-</body>
-</html>`;
+            if (savedValue) {
+                el.configInput.value = savedValue;
+                el.statusDot.classList.replace('text-red-400', 'text-green-500');
+                el.statusMsg.innerText = `${config.name} : Connecté`;
+                el.statusMsg.classList.add('text-green-600');
+                el.clearBtn.classList.remove('hidden');
+            } else {
+                el.configInput.value = '';
+                el.statusDot.classList.replace('text-green-500', 'text-red-400');
+                el.statusMsg.innerText = `${config.name} : Non configuré`;
+                el.statusMsg.classList.remove('text-green-600');
+                el.clearBtn.classList.add('hidden');
+            }
+        }
 
+        // Événements de sélection d'IA
+        el.cards.forEach(card => {
+            card.addEventListener('click', () => {
+                currentAI = card.getAttribute('data-value');
+                updateUI();
+            });
+        });
+
+        // Sauvegarder la configuration
+        el.saveBtn.addEventListener('click', () => {
+            const val = el.configInput.value.trim();
+            if (!val) return alert("Veuillez remplir le champ.");
+            
+            // Petite vérification pour Albert (doit être une URL)
+            if (currentAI === 'albert' && !val.startsWith('http')) {
+                return alert("L'URL du Worker doit commencer par https://");
+            }
+
+            localStorage.setItem(AI_CONFIGS[currentAI].storageKey, val);
+            checkConnection();
+        });
+
+        // Effacer la configuration
+        el.clearBtn.addEventListener('click', () => {
+            localStorage.removeItem(AI_CONFIGS[currentAI].storageKey);
+            checkConnection();
+        });
+
+        // Fonction d'appel API universelle
+        async function callUniversalAPI(promptText) {
+            const configValue = localStorage.getItem(AI_CONFIGS[currentAI].storageKey);
+            if (!configValue) throw new Error("Veuillez d'abord configurer la connexion (URL ou Clé).");
+
+            const model = el.modelSel.value;
+            let targetUrl, headers, body;
+
+            // 1. ALBERT VIA WORKER CLOUDFLARE
+            if (currentAI === 'albert') {
+                targetUrl = configValue; // L'URL du Worker
+                headers = { 'Content-Type': 'application/json' };
+                body = JSON.stringify({ 
+                    message: promptText, 
+                    model: model, 
+                    temperature: 0.7 
+                });
+            } 
+            // 2. GEMINI DIRECT
+            else if (currentAI === 'gemini') {
+                targetUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${configValue}`;
+                headers = { 'Content-Type': 'application/json' };
+                body = JSON.stringify({ contents: [{ parts: [{ text: promptText }] }] });
+            } 
+            // 3. OPENROUTER DIRECT (Peut nécessiter un proxy sur la Forge, on utilise corsproxy par défaut)
+            else if (currentAI === 'openrouter') {
+                targetUrl = `https://corsproxy.io/?https://openrouter.ai/api/v1/chat/completions`;
+                headers = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${configValue}` };
+                body = JSON.stringify({ model: model, messages: [{ role: 'user', content: promptText }] });
+            }
+
+            const response = await fetch(targetUrl, { method: 'POST', headers, body });
+            
+            if (!response.ok) {
+                const err = await response.text();
+                throw new Error(`Erreur réseau (${response.status}) : ${err}`);
+            }
+
+            const data = await response.json();
+
+            // Extraction selon l'API
+            if (currentAI === 'albert') {
+                if(data.error) throw new Error(data.error);
+                return data.choices[0].message.content;
+            } else if (currentAI === 'openrouter') {
+                return data.choices[0].message.content;
+            } else if (currentAI === 'gemini') {
+                return data.candidates[0].content.parts[0].text;
+            }
+        }
+
+        // Lancer la génération
+        el.genBtn.addEventListener('click', async () => {
+            let promptText = el.prompt.value.trim();
+            if (!promptText) return alert("Veuillez entrer un prompt.");
+
+            // Ajout du niveau de rédaction
+            const niveau = document.querySelector('input[name="niveau"]:checked').value;
+            if (niveau === 'moyen') promptText += "\n\n(Consigne stricte : Fais une réponse de taille moyenne, va à l'essentiel tout en restant clair. Formate ta réponse en HTML propre avec <h2>, <ul> et <p>.)";
+            if (niveau === 'complet') promptText += "\n\n(Consigne stricte : Fais une réponse très détaillée, complète, structurée et exhaustive. Formate ta réponse en HTML propre avec <h2>, <h3>, <ul> et <p>.)";
+
+            // UI
+            el.resSec.classList.remove('hidden');
+            el.resContent.classList.add('hidden');
+            el.errContent.classList.add('hidden');
+            el.spinner.classList.remove('hidden');
+            el.genBtn.disabled = true;
+
+            try {
+                let result = await callUniversalAPI(promptText);
+                
+                // Nettoyage des balises markdown HTML si présentes
+                result = result.replace(/```html/g, '').replace(/```/g, '');
+                
+                el.preview.innerHTML = result;
+                el.resContent.classList.remove('hidden');
+            } catch (error) {
+                el.errContent.innerHTML = `<i class="fas fa-exclamation-triangle mr-2"></i> ${error.message}`;
+                el.errContent.classList.remove('hidden');
+            } finally {
+                el.spinner.classList.add('hidden');
+                el.genBtn.disabled = false;
+            }
+        });
+
+        // Fonctions utilitaires
+        function copyResult() {
+            navigator.clipboard.writeText(el.preview.innerHTML);
+            alert("Code HTML copié !");
+        }
+
+        function downloadHtml() {
+            const content = el.preview.innerHTML;
+            const fullHtml = `<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><style>body{font-family:sans-serif;line-height:1.6;color:#333;max-width:800px;margin:40px auto;padding:20px;}h2{color:#000091;border-bottom:2px solid #000091;}h3{color:#2563eb;}</style></head><body>${content}</body></html>`;
             const blob = new Blob([fullHtml], {type: 'text/html'});
             const a = document.createElement('a');
             a.href = URL.createObjectURL(blob);
-            a.download = 'Fiche_Albert_Pro.html';
+            a.download = 'document_genere.html';
             a.click();
         }
+
+        // Init
+        updateUI();
     </script>
 </body>
 </html>
