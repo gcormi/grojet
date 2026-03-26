@@ -3,189 +3,120 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Albert Express - Générateur de Documents</title>
+    <title>Albert Express - Assistant Pédagogique</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap');
-        body { font-family: 'Outfit', sans-serif; background: #f0f2f5; }
+        body { font-family: 'Outfit', sans-serif; background: #f8fafc; }
         .glass { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); }
-        .loader { border-top-color: #000091; animation: spin 1s linear infinite; }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        .custom-scrollbar::-webkit-scrollbar { width: 5px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-        .btn-primary { @apply bg-[#000091] text-white font-bold py-4 rounded-2xl hover:bg-blue-800 transition-all shadow-lg active:scale-95 flex items-center justify-center gap-2; }
+        .albert-blue { background-color: #000091; }
+        .step-badge { @apply w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm; }
     </style>
 </head>
-<body class="p-4 md:p-8 min-h-screen flex items-center justify-center">
+<body class="p-4 md:p-12 min-h-screen flex items-center justify-center">
 
-    <div class="max-w-2xl w-full glass rounded-3xl shadow-2xl overflow-hidden border border-white">
-        <!-- Header -->
-        <div class="bg-[#000091] p-6 text-white text-center">
-            <h1 class="text-2xl font-extrabold tracking-tight italic">ALBERTDOC <span class="font-light text-blue-300">ULTRA</span></h1>
-            <p class="text-blue-200 text-[10px] uppercase font-bold tracking-widest mt-1">Souveraineté & Pédagogie</p>
+    <div class="max-w-3xl w-full glass rounded-[2.5rem] shadow-2xl overflow-hidden border border-slate-200">
+        <!-- Header Institutionnel -->
+        <div class="albert-blue p-8 text-white text-center relative">
+            <div class="absolute top-4 right-6 opacity-20 text-4xl"><i class="fas fa-republican"></i></div>
+            <h1 class="text-3xl font-extrabold tracking-tighter italic">ALBERT<span class="text-blue-300">DOC</span></h1>
+            <p class="text-blue-200 text-[10px] uppercase font-bold tracking-[0.2em] mt-2">Assistant de Rédaction Pédagogique Souverain</p>
         </div>
 
-        <div class="p-8 space-y-6">
-            <!-- Etape 1 : Clé -->
-            <div id="step-key" class="space-y-4">
-                <div class="flex flex-col gap-1">
-                    <label class="block text-[10px] font-black text-slate-400 uppercase tracking-wider">Votre Clé API Albert</label>
-                    <input type="password" id="apiKey" class="w-full p-4 bg-slate-100 border-2 border-transparent focus:border-blue-600 rounded-2xl outline-none transition-all font-mono text-sm" placeholder="sk-...">
+        <div class="p-8 md:p-12 space-y-10">
+            
+            <!-- SECTION EXPLICATION -->
+            <div class="bg-blue-50 p-6 rounded-3xl border border-blue-100 flex gap-4 items-start">
+                <div class="text-blue-600 mt-1"><i class="fas fa-info-circle text-xl"></i></div>
+                <div>
+                    <h3 class="font-bold text-blue-900 text-sm mb-1">Note sur la sécurité d'État</h3>
+                    <p class="text-[11px] text-blue-800 leading-relaxed">
+                        L'API Albert (OpenGateLLM) protège vos jetons en interdisant les appels automatiques directs. 
+                        Cette application prépare donc votre document pour que vous puissiez le générer en un clic sur le portail sécurisé.
+                    </p>
                 </div>
-                <button onclick="saveKey()" class="w-full btn-primary">
-                    <i class="fas fa-lock-open"></i> CONFIGURER L'ACCÈS
-                </button>
             </div>
 
-            <!-- Etape 2 : Création -->
-            <div id="step-create" class="hidden space-y-6">
-                <div class="flex justify-between items-center bg-slate-50 p-3 rounded-xl border border-slate-200">
-                    <div class="flex items-center gap-2">
-                        <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                        <span class="text-[10px] font-bold text-slate-600 uppercase">Connexion Prête</span>
+            <!-- ETAPE 1 : LE SUJET -->
+            <div class="space-y-4">
+                <div class="flex items-center gap-3">
+                    <div class="step-badge albert-blue text-white shadow-lg">1</div>
+                    <h2 class="text-sm font-black text-slate-700 uppercase tracking-wider">Définir le sujet du cours</h2>
+                </div>
+                <div class="relative group">
+                    <input type="text" id="subject" 
+                           class="w-full p-5 bg-slate-50 border-2 border-slate-100 rounded-[1.5rem] outline-none focus:border-blue-600 focus:bg-white transition-all text-sm font-medium" 
+                           placeholder="Ex: L'impact environnemental du numérique en 3ème">
+                </div>
+            </div>
+
+            <!-- ETAPE 2 : ACTION -->
+            <div class="space-y-4">
+                <div class="flex items-center gap-3">
+                    <div class="step-badge bg-slate-200 text-slate-500">2</div>
+                    <h2 class="text-sm font-black text-slate-700 uppercase tracking-wider">Lancer la création</h2>
+                </div>
+                
+                <div class="grid grid-cols-1 gap-4">
+                    <button onclick="copyAndProcess()" class="w-full bg-slate-900 text-white font-black py-6 rounded-[1.5rem] hover:bg-black shadow-xl transition-all flex flex-col items-center justify-center gap-1 group overflow-hidden relative">
+                        <div class="flex items-center gap-3 text-sm uppercase tracking-widest">
+                            <i class="fas fa-copy group-hover:scale-110 transition-transform"></i> 
+                            Générer via Albert Chat
+                        </div>
+                        <span class="text-[9px] text-slate-400 font-normal italic uppercase">Copie la demande et ouvre le portail sécurisé</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- ZONE DE TÉLÉCHARGEMENT (APPARAIT APRÈS) -->
+            <div id="result-area" class="hidden space-y-6 pt-6 border-t-2 border-slate-100 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <div class="p-6 bg-emerald-50 border-2 border-emerald-100 rounded-[1.5rem] flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-emerald-500 text-white rounded-full flex items-center justify-center shadow-md">
+                            <i class="fas fa-check"></i>
+                        </div>
+                        <div>
+                            <h4 class="text-xs font-black text-emerald-800 uppercase">Demande copiée !</h4>
+                            <p class="text-[10px] text-emerald-700">Il vous suffit de faire <b>Coller (Ctrl+V)</b> sur Albert.</p>
+                        </div>
                     </div>
-                    <button onclick="resetKey()" class="text-[9px] font-bold text-red-400 uppercase hover:text-red-600">Effacer la clé</button>
+                    <button onclick="window.open('https://albert.api.gouv.fr/chat/', '_blank')" class="bg-emerald-600 text-white text-[10px] font-bold px-4 py-2 rounded-xl hover:bg-emerald-700">
+                        OUVRIR ALBERT
+                    </button>
                 </div>
-
-                <div class="space-y-3">
-                    <label class="block text-[10px] font-black text-slate-400 uppercase tracking-wider">Sujet de la fiche pédagogique</label>
-                    <input type="text" id="subject" class="w-full p-4 bg-slate-100 border-2 border-transparent focus:border-blue-600 rounded-2xl outline-none text-sm" placeholder="Ex: Les composants d'un ordinateur en 4ème">
-                </div>
-
-                <div class="grid grid-cols-1 gap-3">
-                    <button id="genBtn" onclick="generate()" class="w-full bg-slate-900 text-white font-black py-5 rounded-2xl hover:bg-black shadow-xl transition-all flex items-center justify-center gap-3 uppercase tracking-widest text-xs">
-                        <i class="fas fa-magic"></i> Tenter la génération directe
+                
+                <div class="p-6 border-2 border-dashed border-slate-200 rounded-[1.5rem] bg-slate-50/50">
+                    <h4 class="text-[10px] font-black text-slate-400 uppercase mb-4 text-center">Une fois le texte obtenu, vous pouvez le formater ici :</h4>
+                    <textarea id="manual-input" rows="4" class="w-full p-4 bg-white border border-slate-200 rounded-xl text-xs outline-none focus:border-blue-300" placeholder="Collez ici le résultat HTML d'Albert pour le transformer en document téléchargeable..."></textarea>
+                    <button onclick="downloadFromInput()" class="mt-4 w-full py-3 bg-blue-600 text-white text-[10px] font-bold rounded-xl uppercase tracking-widest hover:bg-blue-700 transition-all">
+                        <i class="fas fa-file-export mr-2"></i> Transformer en Fiche HTML Pro
                     </button>
                 </div>
             </div>
 
-            <!-- Zone de chargement -->
-            <div id="loading" class="hidden flex flex-col items-center py-10 space-y-4">
-                <div class="w-12 h-12 border-4 border-slate-200 border-t-blue-600 rounded-full animate-spin"></div>
-                <p class="text-xs font-bold text-slate-500 animate-pulse uppercase tracking-widest">Albert rédige votre document...</p>
-            </div>
-
-            <!-- Résultat -->
-            <div id="result" class="hidden space-y-4">
-                <div class="flex justify-between items-center">
-                    <h3 class="text-[10px] font-black text-slate-400 uppercase">Document généré par l'IA</h3>
-                    <button onclick="downloadDoc()" class="text-blue-600 font-bold text-[10px] hover:underline uppercase flex items-center gap-1">
-                        <i class="fas fa-download"></i> Télécharger HTML
-                    </button>
-                </div>
-                <div id="output" class="p-6 border-2 border-slate-100 rounded-3xl bg-white text-sm prose max-w-none shadow-inner custom-scrollbar overflow-y-auto max-h-[500px]"></div>
-                <button onclick="location.reload()" class="w-full py-3 text-slate-400 text-[10px] font-bold uppercase tracking-widest hover:text-slate-600">
-                    <i class="fas fa-redo"></i> Recommencer
-                </button>
-            </div>
-
-            <!-- ROUE DE SECOURS : MODE MANUEL SI ECHEC -->
-            <div id="fallback-area" class="hidden mt-6 p-6 bg-amber-50 border-2 border-amber-200 rounded-3xl">
-                <p class="text-xs font-black text-amber-800 uppercase mb-3 flex items-center gap-2">
-                    <i class="fas fa-life-ring"></i> La connexion directe a échoué
-                </p>
-                <p class="text-[11px] text-amber-700 leading-relaxed mb-4">
-                    Votre réseau ou votre navigateur bloque l'appel automatique. Pas de panique ! Utilisez le <b>Mode Manuel</b> :
-                </p>
-                <div class="space-y-3">
-                    <button onclick="copyAndOpen()" class="w-full bg-amber-600 text-white font-bold py-3 rounded-xl hover:bg-amber-700 transition-all text-xs flex items-center justify-center gap-2 shadow-sm">
-                        <i class="fas fa-copy"></i> 1. COPIER & OUVRIR ALBERT CHAT
-                    </button>
-                    <p class="text-[9px] text-amber-600 italic text-center">Une fois sur Albert Chat, faites "Coller" (Ctrl+V) pour obtenir votre document.</p>
-                </div>
-            </div>
-
-            <!-- Rapport d'erreur (masqué par défaut) -->
-            <div id="diag-area" class="hidden mt-4 p-3 bg-red-50 rounded-xl text-[9px] text-red-400 font-mono"></div>
         </div>
+        
+        <!-- Footer -->
+        <footer class="p-6 bg-slate-50 border-t border-slate-100 text-center">
+            <p class="text-[9px] text-slate-400 font-bold uppercase tracking-widest">&copy; 2026 Assistant Pédagogique - Conforme RGPD & Souveraineté</p>
+        </footer>
     </div>
 
     <script>
-        const STORAGE_KEY = 'albert_mini_key_ultra';
-        
-        window.onload = () => {
-            const saved = localStorage.getItem(STORAGE_KEY);
-            if (saved) {
-                document.getElementById('step-key').classList.add('hidden');
-                document.getElementById('step-create').classList.remove('hidden');
-                document.getElementById('apiKey').value = saved;
-            }
-        };
-
-        function saveKey() {
-            const key = document.getElementById('apiKey').value.trim();
-            if(!key) return alert("Veuillez entrer une clé !");
-            localStorage.setItem(STORAGE_KEY, key);
-            document.getElementById('step-key').classList.add('hidden');
-            document.getElementById('step-create').classList.remove('hidden');
-        }
-
-        function resetKey() {
-            localStorage.removeItem(STORAGE_KEY);
-            location.reload();
-        }
-
-        async function generate() {
+        function copyAndProcess() {
             const subject = document.getElementById('subject').value.trim();
-            const key = localStorage.getItem(STORAGE_KEY);
-            if(!subject) return alert("Entrez un sujet !");
+            if(!subject) return alert("Veuillez d'abord saisir un sujet !");
 
-            const btn = document.getElementById('genBtn');
-            const loader = document.getElementById('loading');
-            const resArea = document.getElementById('result');
-            const fallback = document.getElementById('fallback-area');
-            const diag = document.getElementById('diag-area');
+            const prompt = `Agis en tant qu'expert pédagogique de l'Éducation Nationale. Rédige une fiche de synthèse de cours extrêmement structurée pour mes élèves sur le sujet suivant : ${subject}. 
+            CONSIGNES DE MISE EN FORME :
+            1. Utilise exclusivement du code HTML propre.
+            2. Utilise des balises <h2> pour les grands titres, <h3> pour les sous-parties.
+            3. Utilise des listes <ul> et <li> pour les points clés.
+            4. Encadre les définitions importantes dans une balise <div style="border-left:4px solid #000091; padding-left:15px; margin:20px 0; background:#f0f7ff;">.
+            5. Ne mets AUCUN texte explicatif avant ou après le code.`;
 
-            btn.classList.add('hidden');
-            loader.classList.remove('hidden');
-            fallback.classList.add('hidden');
-            diag.classList.add('hidden');
-
-            // On tente d'abord l'URL éducation en direct (souvent plus tolérante sur la Forge)
-            const url = "https://api.albert.education.fr/v1/chat/completions";
-
-            try {
-                // Tentative via Proxy 1 en premier (le plus efficace hors Forge)
-                const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(url)}`;
-                
-                const response = await fetch(proxyUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${key}` },
-                    body: JSON.stringify({
-                        model: "openai/gpt-oss-120b",
-                        messages: [
-                            { role: "system", content: "Tu es un expert pédagogique. Rédige une fiche de synthèse en HTML (h2, p, ul)." },
-                            { role: "user", content: `Rédige une fiche de cours sur : ${subject}` }
-                        ]
-                    })
-                });
-
-                if (response.ok) {
-                    const data = await response.json();
-                    document.getElementById('output').innerHTML = data.choices[0].message.content;
-                    resArea.classList.remove('hidden');
-                } else {
-                    throw new Error("Erreur serveur " + response.status);
-                }
-            } catch (e) {
-                console.error(e);
-                fallback.classList.remove('hidden'); // On affiche la roue de secours
-                diag.classList.remove('hidden');
-                diag.innerText = "Détail technique : " + e.message;
-                btn.classList.remove('hidden');
-            } finally {
-                loader.classList.add('hidden');
-            }
-        }
-
-        // FONCTION DE SECOURS : COPIER LE PROMPT ET OUVRIR LE PORTAIL
-        function copyAndOpen() {
-            const subject = document.getElementById('subject').value.trim();
-            const prompt = `Agis en tant qu'expert pédagogique. Rédige une fiche de synthèse structurée en HTML (utilisant h2, h3, p, ul, li) pour mes élèves sur le sujet suivant : ${subject}. Ne mets pas de texte avant ou après le code HTML.`;
-            
-            // Copie dans le presse-papier
+            // Copie invisible
             const el = document.createElement('textarea');
             el.value = prompt;
             document.body.appendChild(el);
@@ -193,19 +124,48 @@
             document.execCommand('copy');
             document.body.removeChild(el);
 
-            alert("✅ La demande est copiée !\n\nJe vais maintenant ouvrir Albert Chat. Il vous suffira de faire 'Coller' dans la barre de discussion.");
+            // Interface
+            document.getElementById('result-area').classList.remove('hidden');
             
-            // Ouvre le portail officiel
+            // Notification et Ouverture
+            alert("✅ La commande pédagogique a été copiée dans votre presse-papier.\n\nJe vais maintenant ouvrir le portail sécurisé Albert Chat.\nFaites simplement 'COLLER' (ou Ctrl+V) dans la barre de discussion.");
+            
             window.open("https://albert.api.gouv.fr/chat/", "_blank");
         }
 
-        function downloadDoc() {
-            const content = document.getElementById('output').innerHTML;
-            const fullHtml = `<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><style>body{font-family:sans-serif;line-height:1.6;color:#333;max-width:800px;margin:40px auto;padding:20px;}h2{color:#000091;border-bottom:2px solid #000091;}</style></head><body>${content}</body></html>`;
+        function downloadFromInput() {
+            const content = document.getElementById('manual-input').value.trim();
+            if(!content) return alert("Collez d'abord le texte d'Albert !");
+
+            const fullHtml = `
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
+        body { font-family: 'Inter', sans-serif; line-height: 1.7; color: #1e293b; max-width: 850px; margin: 50px auto; padding: 40px; background: #fff; border: 1px solid #e2e8f0; border-radius: 20px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
+        h2 { color: #000091; border-bottom: 3px solid #000091; padding-bottom: 8px; margin-top: 40px; font-size: 1.5rem; text-transform: uppercase; }
+        h3 { color: #2563eb; margin-top: 25px; border-left: 4px solid #2563eb; padding-left: 12px; }
+        ul { padding-left: 20px; }
+        li { margin-bottom: 10px; }
+        .footer { margin-top: 50px; padding-top: 20px; border-top: 1px solid #e2e8f0; font-size: 10px; color: #94a3b8; text-align: center; font-style: italic; }
+    </style>
+</head>
+<body>
+    <div style="text-align:center; margin-bottom:40px;">
+        <p style="text-transform:uppercase; font-weight:bold; font-size:12px; color:#64748b; letter-spacing:2px; margin-bottom:5px;">Ressource Pédagogique</p>
+        <h1 style="font-size:2rem; color:#0f172a; margin-top:0;">Fiche de Synthèse : Document de Travail</h1>
+    </div>
+    ${content}
+    <div class="footer">Document généré via l'IA Souveraine Albert - Ministère de la Fonction Publique</div>
+</body>
+</html>`;
+
             const blob = new Blob([fullHtml], {type: 'text/html'});
             const a = document.createElement('a');
             a.href = URL.createObjectURL(blob);
-            a.download = 'cours_albert.html';
+            a.download = 'Fiche_Albert_Pro.html';
             a.click();
         }
     </script>
