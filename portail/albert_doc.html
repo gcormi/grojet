@@ -32,8 +32,8 @@
                 <div>
                     <h3 class="font-bold text-blue-900 text-sm mb-1">Note sur la sécurité d'État</h3>
                     <p class="text-[11px] text-blue-800 leading-relaxed">
-                        L'API Albert (OpenGateLLM) protège vos jetons en interdisant les appels automatiques directs. 
-                        Cette application prépare donc votre document pour que vous puissiez le générer en un clic sur le portail sécurisé.
+                        L'API Albert (OpenGateLLM) protège vos jetons en interdisant les appels automatiques directs depuis un navigateur. 
+                        Cette application prépare donc votre commande pédagogique pour une utilisation manuelle sur le portail sécurisé.
                     </p>
                 </div>
             </div>
@@ -62,7 +62,7 @@
                     <button onclick="copyAndProcess()" class="w-full bg-slate-900 text-white font-black py-6 rounded-[1.5rem] hover:bg-black shadow-xl transition-all flex flex-col items-center justify-center gap-1 group overflow-hidden relative">
                         <div class="flex items-center gap-3 text-sm uppercase tracking-widest">
                             <i class="fas fa-copy group-hover:scale-110 transition-transform"></i> 
-                            Générer via Albert Chat
+                            Préparer via Albert
                         </div>
                         <span class="text-[9px] text-slate-400 font-normal italic uppercase">Copie la demande et ouvre le portail sécurisé</span>
                     </button>
@@ -81,8 +81,8 @@
                             <p class="text-[10px] text-emerald-700">Il vous suffit de faire <b>Coller (Ctrl+V)</b> sur Albert.</p>
                         </div>
                     </div>
-                    <button onclick="window.open('https://albert.api.gouv.fr/chat/', '_blank')" class="bg-emerald-600 text-white text-[10px] font-bold px-4 py-2 rounded-xl hover:bg-emerald-700">
-                        OUVRIR ALBERT
+                    <button onclick="window.open('https://albert.api.gouv.fr/', '_blank')" class="bg-emerald-600 text-white text-[10px] font-bold px-4 py-2 rounded-xl hover:bg-emerald-700">
+                        ACCÉDER AU PORTAIL
                     </button>
                 </div>
                 
@@ -116,7 +116,7 @@
             4. Encadre les définitions importantes dans une balise <div style="border-left:4px solid #000091; padding-left:15px; margin:20px 0; background:#f0f7ff;">.
             5. Ne mets AUCUN texte explicatif avant ou après le code.`;
 
-            // Copie invisible
+            // Copie
             const el = document.createElement('textarea');
             el.value = prompt;
             document.body.appendChild(el);
@@ -128,9 +128,9 @@
             document.getElementById('result-area').classList.remove('hidden');
             
             // Notification et Ouverture
-            alert("✅ La commande pédagogique a été copiée dans votre presse-papier.\n\nJe vais maintenant ouvrir le portail sécurisé Albert Chat.\nFaites simplement 'COLLER' (ou Ctrl+V) dans la barre de discussion.");
+            alert("✅ La commande pédagogique a été copiée dans votre presse-papier.\n\nJe vais maintenant ouvrir le portail sécurisé Albert.\nUne fois connecté, faites simplement 'COLLER' (ou Ctrl+V) pour lancer la génération.");
             
-            window.open("https://albert.api.gouv.fr/chat/", "_blank");
+            window.open("https://albert.api.gouv.fr/", "_blank");
         }
 
         function downloadFromInput() {
