@@ -27,7 +27,7 @@
             <h1 class="text-3xl font-black text-slate-900 italic flex items-center justify-center gap-3">
                 <i class="fas fa-microchip text-blue-600"></i> Assistant Multi-IA
             </h1>
-            <p class="text-slate-500 text-sm mt-2 font-medium uppercase tracking-widest text-blue-800">Mode Hébergé (Forge Apps Education)</p>
+            <p class="text-slate-500 text-sm mt-2 font-medium uppercase tracking-widest text-blue-800">Interface Optimisée Worker & Forge</p>
         </header>
 
         <!-- 1. SÉLECTION DE L'IA -->
@@ -35,8 +35,8 @@
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-4" id="ai-selector-container">
                 <div data-value="albert" class="ai-card p-5 rounded-2xl flex flex-col items-center gap-2">
                     <span class="text-3xl">🇫🇷</span>
-                    <span class="font-bold text-slate-800">Albert</span>
-                    <span class="text-[10px] bg-blue-600 text-white px-2 py-0.5 rounded-full font-bold">SOUVERAIN</span>
+                    <span class="font-bold text-slate-800">IA Albert</span>
+                    <span class="text-[10px] bg-blue-600 text-white px-2 py-0.5 rounded-full font-bold">RELAIS ACTIF</span>
                 </div>
                 <div data-value="gemini" class="ai-card p-5 rounded-2xl flex flex-col items-center gap-2">
                     <span class="text-3xl">🌐</span>
@@ -46,7 +46,7 @@
                 <div data-value="openrouter" class="ai-card p-5 rounded-2xl flex flex-col items-center gap-2">
                     <span class="text-3xl">🚀</span>
                     <span class="font-bold text-slate-800">OpenRouter</span>
-                    <span class="text-[10px] bg-purple-600 text-white px-2 py-0.5 rounded-full font-bold">MULTI</span>
+                    <span class="text-[10px] bg-purple-600 text-white px-2 py-0.5 rounded-full font-bold">PREMIUM</span>
                 </div>
             </div>
             <select id="ai-selector" class="hidden"><option value="albert">albert</option><option value="gemini">gemini</option><option value="openrouter">openrouter</option></select>
@@ -58,8 +58,8 @@
                 <div id="albert-model-config">
                     <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Modèle Albert :</label>
                     <select id="albert-model-selector" class="w-full p-3 border border-slate-200 rounded-xl text-sm bg-white outline-none">
-                        <option value="openai/gpt-oss-120b">Albert 120B (Le plus précis)</option>
-                        <option value="mistralai/Mistral-Small-3.2-24B-Instruct-2506">Mistral Small (Rapide)</option>
+                        <option value="openai/gpt-oss-120b">Albert 120B (Souverain)</option>
+                        <option value="mistralai/Mistral-Small-3.2-24B-Instruct-2506">Mistral Small</option>
                     </select>
                 </div>
                 <div id="openrouter-model-config" class="hidden">
@@ -72,64 +72,62 @@
             </div>
 
             <div class="flex flex-col sm:flex-row gap-3">
-                <input type="text" id="api-key-input" placeholder="https://gillecormi.gilles-cormi.workers.dev" class="flex-grow p-4 border border-slate-200 rounded-xl text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none font-mono">
+                <input type="text" id="api-key-input" placeholder="https://votre-worker.workers.dev" class="flex-grow p-4 border border-slate-200 rounded-xl text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none font-mono">
                 <button id="save-key-button" class="bg-blue-600 text-white font-black py-4 px-8 rounded-xl hover:bg-blue-700 shadow-lg">CONNECTER</button>
                 <button id="test-connection-button" class="bg-white border border-slate-200 text-slate-600 font-bold py-4 px-4 rounded-xl hover:bg-slate-50 transition-colors text-xs flex items-center gap-2">
                     <i class="fas fa-plug"></i> Tester
                 </button>
             </div>
-            <p id="config-help" class="text-[10px] text-blue-600 mt-2 italic font-medium"><i class="fas fa-info-circle"></i> Pour Albert, entrez l'URL de votre Worker Cloudflare. Pour les autres, entrez votre clé API.</p>
+            <p id="config-help" class="text-[10px] text-blue-600 mt-2 italic font-medium"><i class="fas fa-info-circle"></i> Entrez l'URL de votre Worker Cloudflare pour Albert, ou votre clé API pour les autres.</p>
         </div>
 
-        <!-- 3. RÉGLAGES RÉSEAU -->
+        <!-- 3. RÉGLAGES RÉSEAU & CONSOLE -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
             <div class="p-4 border border-slate-200 rounded-2xl bg-white shadow-sm">
-                <p class="text-[10px] font-bold text-slate-400 uppercase mb-2">Logs de connexion (Console)</p>
-                <div id="console-output" class="console-log">Attente d'action...</div>
+                <p class="text-[10px] font-bold text-slate-400 uppercase mb-2">Logs de connexion</p>
+                <div id="console-output" class="console-log">Prêt pour les tests...</div>
             </div>
 
             <div class="p-4 border border-amber-200 rounded-2xl bg-amber-50/50">
-                <p class="text-[10px] font-bold text-amber-600 uppercase mb-2">Contournement CORS (OpenRouter Uniquement)</p>
+                <p class="text-[10px] font-bold text-amber-600 uppercase mb-2">Proxy CORS (OpenRouter uniquement)</p>
                 <select id="proxy-selector" class="w-full text-[10px] p-2 border border-amber-200 rounded-lg bg-white font-bold outline-none">
                     <option value="direct">1. Sans Proxy (Direct)</option>
-                    <option value="corsproxy">2. Proxy Principal (corsproxy.io)</option>
-                    <option value="codetabs">3. Proxy Secondaire (codetabs)</option>
+                    <option value="corsproxy">2. Proxy (corsproxy.io)</option>
                 </select>
-                <p class="text-[9px] text-amber-700 mt-2 italic">Note: Ce réglage est ignoré par Albert (qui utilise votre Worker 100% fiable) et Gemini.</p>
+                <p class="text-[9px] text-amber-700 mt-2 italic">Automatiquement géré par votre Worker pour Albert.</p>
             </div>
         </div>
 
         <!-- 4. SECTION PROMPT -->
         <div id="prompt-section" class="space-y-4">
             <div class="flex justify-between items-center px-2">
-                <span id="config-status-text" class="text-[11px] font-bold text-green-600 uppercase italic">Prêt</span>
+                <span id="config-status-text" class="text-[11px] font-bold text-green-600 uppercase italic">Connecté</span>
                 <button id="clear-key-button" class="text-[10px] text-red-400 font-bold hover:text-red-600 uppercase underline">Réinitialiser</button>
             </div>
-            <textarea id="prompt-input" rows="5" class="w-full p-4 border-2 border-slate-100 rounded-2xl shadow-inner text-sm bg-slate-50/30" placeholder="Collez votre prompt ici..."></textarea>
+            <textarea id="prompt-input" rows="5" class="w-full p-4 border-2 border-slate-100 rounded-2xl shadow-inner text-sm bg-slate-50/30" placeholder="Saisissez votre demande ici..."></textarea>
             <button id="generate-button" class="w-full bg-blue-600 text-white font-black py-4 px-6 rounded-2xl hover:bg-blue-700 shadow-xl disabled:bg-slate-300">
-                <i class="fas fa-wand-magic-sparkles mr-2"></i> GÉNÉRER LE MANUEL
+                <i class="fas fa-wand-magic-sparkles mr-2"></i> GÉNÉRER LE DOCUMENT
             </button>
         </div>
 
         <!-- 5. RÉSULTATS -->
         <div id="results-section" class="mt-10 hidden border-t-2 border-slate-50 pt-10">
             <div id="loading-spinner" class="mx-auto my-4 hidden"></div>
-            <div id="status-bar" class="hidden mb-6">
-                <div class="flex justify-between text-[10px] font-bold text-blue-600 mb-1 uppercase"><p id="status-text">Génération...</p><span id="progress-percent">0%</span></div>
-                <div class="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden"><div id="status-progress" class="bg-blue-600 h-full transition-all duration-500" style="width: 0%"></div></div>
-            </div>
+            
             <div class="flex border-b border-slate-100 mb-4 text-xs font-bold uppercase">
                 <button id="tab-preview" class="tab-button active">Aperçu</button>
                 <button id="tab-raw" class="tab-button">Code HTML</button>
             </div>
+            
             <div id="preview-output" class="mt-4 overflow-y-auto max-h-[600px] border prose max-w-none shadow-inner"></div>
+            
             <div id="raw-output-container" class="mt-4 hidden relative">
                 <pre><code id="raw-output" class="text-[10px] block p-4 bg-slate-900 rounded-xl text-slate-300 overflow-x-auto"></code></pre>
                 <button id="copy-text-button" class="absolute top-4 right-4 bg-white/10 text-white text-[9px] px-2 py-1 rounded border border-white/20">COPIER</button>
             </div>
+            
             <div class="mt-8 flex gap-4">
-                <button id="export-html-button" class="flex-1 bg-slate-800 text-white font-bold py-3 rounded-xl text-xs uppercase tracking-widest">Télécharger HTML</button>
-                <button id="export-text-button" class="flex-1 bg-white border-2 border-slate-200 text-slate-600 font-bold py-3 rounded-xl text-xs uppercase tracking-widest">Télécharger TXT</button>
+                <button id="export-html-button" class="flex-1 bg-slate-800 text-white font-bold py-3 rounded-xl text-xs uppercase tracking-widest">Exporter HTML</button>
             </div>
         </div>
     </div>
@@ -137,20 +135,14 @@
     <script>
         const STO = { AI: 'selectedAI', GEM: 'geminiApiKey', ORO: 'openrouterApiKey', ALB: 'albertWorkerUrl' };
         
-        const PROXIES = {
-            direct: (u) => u,
-            corsproxy: (u) => `https://corsproxy.io/?${encodeURIComponent(u)}`,
-            codetabs: (u) => `https://api.codetabs.com/v1/proxy?url=${encodeURIComponent(u)}`
-        };
-
         const EL = {
             config: () => document.getElementById('config-section'),
             promptSec: () => document.getElementById('prompt-section'),
-            aiSel: () => document.getElementById('ai-selector'),
             aiCards: () => document.querySelectorAll('.ai-card'),
+            aiSel: () => document.getElementById('ai-selector'),
             keyInp: () => document.getElementById('api-key-input'),
             saveBtn: () => document.getElementById('save-key-button'),
-            testBtn: () => document.getElementById('test-connection-button'), // Ajouté pour corriger l'erreur
+            testBtn: () => document.getElementById('test-connection-button'),
             clearBtn: () => document.getElementById('clear-key-button'),
             albMod: () => document.getElementById('albert-model-selector'),
             orMod: () => document.getElementById('openrouter-model-selector'),
@@ -159,10 +151,6 @@
             genBtn: () => document.getElementById('generate-button'),
             resSec: () => document.getElementById('results-section'),
             spinner: () => document.getElementById('loading-spinner'),
-            bar: () => document.getElementById('status-bar'),
-            statTxt: () => document.getElementById('status-text'),
-            prog: () => document.getElementById('status-progress'),
-            perc: () => document.getElementById('progress-percent'),
             prev: () => document.getElementById('preview-output'),
             raw: () => document.getElementById('raw-output'),
             rawCont: () => document.getElementById('raw-output-container'),
@@ -173,13 +161,13 @@
         const AI_CONFIGS = {
             'albert': {
                 name: "IA Albert", storageKey: STO.ALB,
-                getUrl: (workerUrl) => workerUrl,
+                getUrl: (w) => w,
                 getHeaders: () => ({ 'Content-Type': 'application/json' }),
-                getPayload: (p, m) => ({ message: p, model: m || "openai/gpt-oss-120b", temperature: 0.7 }),
-                parseRes: (r) => { if(r.error) throw new Error(r.error); return r.choices[0].message.content; }
+                getPayload: (p, m) => ({ message: p, model: m, temperature: 0.7 }),
+                parseRes: (r) => r.choices[0].message.content
             },
             'gemini': {
-                name: "Google Gemini", storageKey: STO.GEM,
+                name: "Gemini", storageKey: STO.GEM,
                 getUrl: (k) => `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${k}`,
                 getHeaders: () => ({ 'Content-Type': 'application/json' }),
                 getPayload: (p) => ({ contents: [{ parts: [{ text: p }] }] }),
@@ -189,7 +177,7 @@
                 name: "OpenRouter", storageKey: STO.ORO,
                 getUrl: () => 'https://openrouter.ai/api/v1/chat/completions',
                 getHeaders: (k) => ({ 'Content-Type': 'application/json', 'Authorization': `Bearer ${k}` }),
-                getPayload: (p, m) => ({ model: m || "anthropic/claude-3.5-sonnet", messages: [{ role: 'user', content: p }] }),
+                getPayload: (p, m) => ({ model: m, messages: [{ role: 'user', content: p }] }),
                 parseRes: (r) => r.choices[0].message.content
             }
         };
@@ -202,15 +190,13 @@
 
         async function callAPI(prompt, key, type, model) {
             const config = AI_CONFIGS[type];
-            const baseUrl = typeof config.getUrl === 'function' ? config.getUrl(key) : config.getUrl;
-            let targetUrl = baseUrl;
+            let targetUrl = typeof config.getUrl === 'function' ? config.getUrl(key) : config.getUrl;
 
-            if (type === 'openrouter') {
-                const proxyType = EL.proxySel().value;
-                if(proxyType !== 'direct') targetUrl = PROXIES[proxyType](baseUrl);
+            if (type === 'openrouter' && EL.proxySel().value === 'corsproxy') {
+                targetUrl = `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`;
             }
 
-            log(`Appel ${type} via ${type === 'albert' ? 'Worker Cloudflare' : 'Direct/Proxy'}...`);
+            log(`Appel à ${config.name}...`);
             
             try {
                 const response = await fetch(targetUrl, {
@@ -219,20 +205,18 @@
                     body: JSON.stringify(config.getPayload(prompt, model))
                 });
 
-                if (!response.ok) {
-                    const errorTxt = await response.text();
-                    log(`Erreur HTTP ${response.status}`, true);
-                    throw new Error(`Erreur ${response.status} : ${errorTxt}`);
+                const contentType = response.headers.get("content-type");
+                if (contentType && contentType.includes("application/json")) {
+                    const data = await response.json();
+                    if (!response.ok) throw new Error(data.error?.message || data.error || `Erreur ${response.status}`);
+                    return config.parseRes(data);
+                } else {
+                    const text = await response.text();
+                    if (text.includes("error code: 1016")) {
+                        throw new Error("ERREUR 1016 : Le Worker n'arrive pas à joindre l'API d'Albert. Vérifiez l'URL de l'API dans votre code Worker.");
+                    }
+                    throw new Error(`Réponse non-JSON reçue du serveur.`);
                 }
-
-                const data = await response.json();
-                
-                if (type === 'albert' && data.error) {
-                    throw new Error("Erreur Worker: " + data.error);
-                }
-
-                log(`Succès ! Réponse reçue.`);
-                return config.parseRes(data);
             } catch (err) {
                 log(`ÉCHEC : ${err.message}`, true);
                 throw err;
@@ -245,44 +229,18 @@
             document.getElementById('albert-model-config').classList.toggle('hidden', sel !== 'albert');
             document.getElementById('openrouter-model-config').classList.toggle('hidden', sel !== 'openrouter');
             
-            if (sel === 'albert') {
-                EL.keyInp().type = 'text';
-                EL.keyInp().placeholder = "https://gillecormi.gilles-cormi.workers.dev";
-            } else {
-                EL.keyInp().type = 'password';
-                EL.keyInp().placeholder = "Collez votre clé API ici...";
-            }
+            EL.keyInp().type = (sel === 'albert') ? 'text' : 'password';
+            EL.keyInp().placeholder = (sel === 'albert') ? "https://mon-worker.workers.dev" : "Collez votre clé API...";
 
             const savedKey = localStorage.getItem(AI_CONFIGS[sel].storageKey);
             if (savedKey) {
                 EL.config().classList.add('hidden');
                 EL.promptSec().classList.remove('hidden');
-                EL.statusTxt().innerText = `${AI_CONFIGS[sel].name} Connecté`;
+                EL.statusTxt().innerText = `${AI_CONFIGS[sel].name} : Connecté`;
             } else {
                 EL.config().classList.remove('hidden');
                 EL.promptSec().classList.add('hidden');
                 EL.keyInp().value = '';
-            }
-        }
-
-        async function gererGeneration() {
-            const prompt = EL.promptInp().value.trim();
-            const aiType = EL.aiSel().value;
-            const key = localStorage.getItem(AI_CONFIGS[aiType].storageKey);
-            const model = aiType === 'albert' ? EL.albMod().value : (aiType === 'openrouter' ? EL.orMod().value : '');
-
-            if (!prompt || !key) return;
-            EL.spinner().classList.remove('hidden'); EL.resSec().classList.remove('hidden');
-            EL.prev().innerHTML = ''; EL.raw().textContent = ''; EL.genBtn().disabled = true;
-
-            try {
-                const res = await callAPI(prompt, key, aiType, model);
-                const clean = res.replace(/```html|```/g, '').trim();
-                EL.prev().innerHTML = clean; EL.raw().textContent = clean;
-            } catch (e) {
-                EL.prev().innerHTML = `<p class="text-red-600 font-bold p-4 bg-red-50 rounded">⚠️ Erreur : ${e.message}</p>`;
-            } finally {
-                EL.spinner().classList.add('hidden'); EL.genBtn().disabled = false;
             }
         }
 
@@ -292,25 +250,43 @@
             updateUI();
 
             EL.aiCards().forEach(card => card.onclick = () => { EL.aiSel().value = card.getAttribute('data-value'); localStorage.setItem(STO.AI, EL.aiSel().value); updateUI(); });
-            EL.saveBtn().onclick = () => { const ai = EL.aiSel().value; const key = EL.keyInp().value.trim(); if(key) { localStorage.setItem(AI_CONFIGS[ai].storageKey, key); updateUI(); log(`Clé ${ai} enregistrée.`); } };
-            EL.clearBtn().onclick = () => { localStorage.removeItem(AI_CONFIGS[EL.aiSel().value].storageKey); updateUI(); log("Clé effacée."); };
-            EL.genBtn().onclick = gererGeneration;
-
+            EL.saveBtn().onclick = () => { const key = EL.keyInp().value.trim(); if(key) { localStorage.setItem(AI_CONFIGS[EL.aiSel().value].storageKey, key); updateUI(); log("Connexion configurée."); } };
+            EL.clearBtn().onclick = () => { localStorage.removeItem(AI_CONFIGS[EL.aiSel().value].storageKey); updateUI(); log("Déconnexion."); };
+            
             EL.testBtn().onclick = async () => {
                 const ai = EL.aiSel().value;
-                const key = localStorage.getItem(AI_CONFIGS[ai].storageKey);
-                if(!key) return alert("Configurez une clé.");
+                const key = EL.keyInp().value.trim() || localStorage.getItem(AI_CONFIGS[ai].storageKey);
+                if(!key) return alert("Veuillez entrer une URL ou une clé.");
                 EL.testBtn().innerText = "...";
-                try { await callAPI("Dis 'OK'", key, ai, ""); alert("✅ Test réussi !"); } 
-                catch(e) { alert("❌ Échec. Regardez les logs noirs."); }
+                try { await callAPI("Dis OK", key, ai, ""); alert("✅ Test réussi !"); } catch(e) { alert("❌ Échec."); }
                 finally { EL.testBtn().innerHTML = '<i class="fas fa-plug"></i> Tester'; }
+            };
+
+            EL.genBtn().onclick = async () => {
+                const prompt = EL.promptInp().value.trim();
+                const ai = EL.aiSel().value;
+                const key = localStorage.getItem(AI_CONFIGS[ai].storageKey);
+                const model = ai === 'albert' ? EL.albMod().value : (ai === 'openrouter' ? EL.orMod().value : '');
+
+                if (!prompt) return;
+                EL.resSec().classList.remove('hidden'); EL.spinner().classList.remove('hidden');
+                EL.prev().innerHTML = ''; EL.genBtn().disabled = true;
+
+                try {
+                    const res = await callAPI(prompt, key, ai, model);
+                    const clean = res.replace(/```html|```/g, '').trim();
+                    EL.prev().innerHTML = clean; EL.raw().textContent = clean;
+                } catch (e) {
+                    EL.prev().innerHTML = `<p class="text-red-600 p-4 bg-red-50 rounded">Erreur : ${e.message}</p>`;
+                } finally {
+                    EL.spinner().classList.add('hidden'); EL.genBtn().disabled = false;
+                }
             };
 
             document.getElementById('tab-preview').onclick = () => { EL.prev().classList.remove('hidden'); EL.rawCont().classList.add('hidden'); document.getElementById('tab-preview').classList.add('active'); document.getElementById('tab-raw').classList.remove('active'); };
             document.getElementById('tab-raw').onclick = () => { EL.prev().classList.add('hidden'); EL.rawCont().classList.remove('hidden'); document.getElementById('tab-raw').classList.add('active'); document.getElementById('tab-preview').classList.remove('active'); };
             document.getElementById('copy-text-button').onclick = () => { navigator.clipboard.writeText(EL.raw().textContent); alert("Code copié !"); };
             document.getElementById('export-html-button').onclick = () => { const blob = new Blob([EL.raw().textContent], { type: 'text/html' }); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'manuel.html'; a.click(); };
-            document.getElementById('export-text-button').onclick = () => { const blob = new Blob([EL.raw().textContent], { type: 'text/plain' }); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'manuel.txt'; a.click(); };
         });
     </script>
 </body>
