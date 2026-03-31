@@ -427,7 +427,18 @@
                     body: JSON.stringify({contents:[{parts:[{text:'Réponds juste: OK'}]}]})
                 });
                 if(r.ok) { res.style.background='#f0fdf4'; res.style.color='#16a34a'; res.textContent='✅ Clé Gemini valide ! L\'IA est opérationnelle.'; }
-                else { const j=await r.json(); res.style.background='#fef2f2'; res.style.color='#ef4444'; res.textContent='❌ Gemini erreur '+r.status+': '+(j.error?.message||'Clé invalide ou quota dépassé'); }
+                else {
+                    const j=await r.json();
+                    const status = r.status;
+                    const msg = j.error?.message||'';
+                    if(status===429) {
+                        res.style.background='#fffbeb'; res.style.color='#92400e';
+                        res.innerHTML='⚠️ Clé valide mais quota épuisé (erreur 429).<br><strong>Solution :</strong> Créez une clé sur <a href="https://aistudio.google.com/apikey" target="_blank" style="color:#d97706">aistudio.google.com/apikey</a> — quota gratuit illimité inclus.';
+                    } else {
+                        res.style.background='#fef2f2'; res.style.color='#ef4444';
+                        res.textContent='❌ Gemini erreur '+status+': '+(msg||'Clé invalide');
+                    }
+                }
             } else {
                 const r = await fetch('https://albert.api.gouv.fr/v1/models', { headers:{'Authorization':'Bearer '+alk} });
                 if(r.ok) { res.style.background='#f0fdf4'; res.style.color='#16a34a'; res.textContent='✅ Clé Albert valide !'; }
