@@ -20,6 +20,11 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
+    <!-- Firebase SDK Compat -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+
     <style>
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -90,17 +95,14 @@
         .folder-tab:hover { background: #f8fafc; }
         .folder-tab.active { background: var(--text); color: white; border-color: var(--text); }
         
-        /* Drag & Drop Visuals */
         .folder-tab.drag-over { background: var(--accent-light); color: var(--accent); border-color: var(--accent); transform: scale(1.05); box-shadow: 0 0 0 3px rgba(99,102,241,0.2); }
         
-        /* Actions sur l'onglet du dossier */
         .folder-actions { display: flex; align-items: center; gap: 2px; margin-left: 4px; opacity: 0.5; transition: 0.2s; }
         .folder-tab:hover .folder-actions { opacity: 1; }
         .folder-action-btn { background: none; border: none; color: inherit; cursor: pointer; font-size: 0.75rem; padding: 4px; border-radius: 4px; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
         .folder-action-btn:hover { background: rgba(0,0,0,0.08); color: var(--text); }
         .folder-action-btn.delete:hover { color: #ef4444; background: #fee2e2; }
 
-        /* Couleurs du dossier */
         .color-picker-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
         .color-dot { width: 32px; height: 32px; border-radius: 50%; border: 3px solid transparent; cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.1); transition: all 0.2s; }
         .color-dot:hover { transform: scale(1.15); }
@@ -294,6 +296,8 @@
                 <button class="btn-confirm danger" id="btn-confirm-action">Confirmer</button>
             </div>
         </div>
+    </div>
+
     <!-- MODAL: PARAMÈTRES IA -->
     <div class="modal-overlay" id="modal-ai-settings" style="z-index: 1001;">
         <div class="modal-box" style="max-width: 450px;">
@@ -324,13 +328,9 @@
         </div>
     </div>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-auth.js";
-        import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, updateDoc, doc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
-
-        // ====== FIREBASE SETUP ======
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
+    <script>
+        // ====== CONFIGURATION ======
+        const firebaseConfig = {
             apiKey: "AIzaSyBGxXTvy8thfYJZTP-QbWrV-2euTmj4NPY",
             authDomain: "portail-postits.firebaseapp.com",
             projectId: "portail-postits",
@@ -338,28 +338,69 @@
             messagingSenderId: "494625342197",
             appId: "1:494625342197:web:9cc573fda25019e57ebbbc"
         };
+        const appId = 'favoris-app';
 
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        
         // ====== STATE ======
         let bookmarks = [];
         let folders = [];
         let currentFilter = 'Tous';
-        let userId = null;
+        let userId = localStorage.getItem('fb_user_id') || 'session_gilles_' + Math.random().toString(36).substr(2, 5);
+        localStorage.setItem('fb_user_id', userId);
+        
         let bookmarksRef = null;
         let foldersRef = null;
-        
         let confirmCallback = null;
         let bookmarkToMoveId = null;
-        
+        let selectedFolderColor = '#64748b';
         let editingFolderId = null;
         let editingFolderOldName = null;
-        let selectedFolderColor = '#64748b';
 
-        // ====== UI STATUS & TOAST ======
+        // Init Firebase
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        // ====== EXPOSE GLOBALS ======
+        window.openAISettingsModal = () => {
+            document.getElementById('modal-ai-settings').classList.add('active');
+            const engine = localStorage.getItem('selectedAI') || 'albert';
+            document.getElementById('select-ai-engine').value = engine;
+            document.getElementById('input-albert-key').value = localStorage.getItem('albertApiKey') || '';
+            document.getElementById('input-gemini-key').value = localStorage.getItem('geminiApiKey') || '';
+            
+            const toggle = () => {
+                const val = document.getElementById('select-ai-engine').value;
+                document.getElementById('settings-albert').style.display = val === 'albert' ? 'block' : 'none';
+                document.getElementById('settings-gemini').style.display = val === 'gemini' ? 'block' : 'none';
+            };
+            document.getElementById('select-ai-engine').onchange = toggle;
+            toggle();
+        };
+
+        window.saveAISettings = () => {
+            const engine = document.getElementById('select-ai-engine').value;
+            localStorage.setItem('selectedAI', engine);
+            localStorage.setItem('albertApiKey', document.getElementById('input-albert-key').value);
+            localStorage.setItem('geminiApiKey', document.getElementById('input-gemini-key').value);
+            showToast("Paramètres IA enregistrés !");
+            updateAIStatusUI();
+            window.closeModals();
+        };
+
+        window.closeModals = () => {
+            document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('active'));
+        };
+
+        window.setFilter = (tag) => { currentFilter = tag; renderUI(); };
+
+        // UI HELPERS
+        function updateAIStatusUI() {
+            const engine = localStorage.getItem('selectedAI') || 'albert';
+            const key = engine === 'albert' ? localStorage.getItem('albertApiKey') : localStorage.getItem('geminiApiKey');
+            const dot = document.getElementById('ai-status-dot');
+            if (dot) dot.style.background = (key && key.trim()) ? '#22c55e' : '#ef4444';
+        }
+
         function setSyncStatus(state, msg) {
             const dot = document.getElementById('sync-dot');
             dot.className = 'sync-dot ' + state;
@@ -377,92 +418,39 @@
             toastTimer = setTimeout(() => t.classList.remove('show'), 3000);
         }
 
-        // ====== MODALS SYSTEM ======
-        window.closeModals = () => {
-            document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('active'));
-            confirmCallback = null;
-            editingFolderId = null;
-            editingFolderOldName = null;
-        };
-
-        function showConfirmModal(title, desc, callback, btnText = "Confirmer", isDanger = true) {
-            document.getElementById('confirm-title').textContent = title;
-            document.getElementById('confirm-desc').textContent = desc;
-            const btn = document.getElementById('btn-confirm-action');
-            btn.textContent = btnText;
-            if(isDanger) btn.classList.add('danger'); else btn.classList.remove('danger');
-            confirmCallback = callback;
-            document.getElementById('modal-confirm').classList.add('active');
-        }
-
-        document.getElementById('btn-confirm-action').addEventListener('click', () => {
-            if(confirmCallback) confirmCallback();
-            window.closeModals();
-        });
-
-        // ====== AUTH ======
-        const initAuth = async () => {
+        // ====== AUTH & DATA ======
+        const init = async () => {
+            updateAIStatusUI();
             try {
-                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                    await signInWithCustomToken(auth, __initial_auth_token);
-                } else {
-                    await signInAnonymously(auth);
-                }
-            } catch(e) { 
-                console.warn("Auth Error, using session fallback");
-                // Fallback sur l'UID par défaut (Session Gilles) si l'auth anonyme échoue
-                userId = "f2659e26b5b7efa7d8099b64d60a7f68c7797c735cc2f2807923129f397a21a1"; 
-                setSyncStatus('saved', 'Session Restaurée');
-                setupRefs(userId);
-                loadData();
+                // Essayer l'auth anonyme
+                await auth.signInAnonymously();
+            } catch (e) {
+                console.warn("Auth failed, using localStorage UID");
+                setSyncStatus('saved', 'Mode Local');
             }
         };
 
-        function setupRefs(uid) {
-            bookmarksRef = collection(db, 'artifacts', appId, 'users', uid, 'bookmarks');
-            foldersRef = collection(db, 'artifacts', appId, 'users', uid, 'folders');
-        }
-
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                userId = user.uid;
-                setupRefs(userId);
-                loadData();
-            }
+        auth.onAuthStateChanged(user => {
+            const finalUid = user ? user.uid : userId;
+            bookmarksRef = db.collection('artifacts').doc(appId).collection('users').doc(finalUid).collection('bookmarks');
+            foldersRef = db.collection('artifacts').doc(appId).collection('users').doc(finalUid).collection('folders');
+            loadData();
         });
-        
-        // Initialisation immédiate des réglages IA UI
-        function updateAIStatusUI() {
-            const engine = localStorage.getItem('selectedAI') || 'albert';
-            const key = engine === 'albert' ? localStorage.getItem('albertApiKey') : localStorage.getItem('geminiApiKey');
-            const dot = document.getElementById('ai-status-dot');
-            if (dot) dot.style.background = key ? '#22c55e' : '#ef4444';
-        }
-        updateAIStatusUI();
-        initAuth();
 
-        // ====== DATA LOADING ======
         function loadData() {
-            if (!userId) return;
-            onSnapshot(bookmarksRef, (snapshot) => {
-                bookmarks = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-                bookmarks.sort((a,b) => (b.createdAt?.toMillis() || 0) - (a.createdAt?.toMillis() || 0));
+            bookmarksRef.orderBy('createdAt', 'desc').onSnapshot(snap => {
+                bookmarks = snap.docs.map(d => ({ id: d.id, ...d.data() }));
                 renderUI();
                 setSyncStatus('saved', 'Synchronisé');
-            });
-            onSnapshot(foldersRef, (snapshot) => {
-                folders = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+            }, err => setSyncStatus('error', 'Erreur Sync'));
+
+            foldersRef.orderBy('createdAt', 'asc').onSnapshot(snap => {
+                folders = snap.docs.map(d => ({ id: d.id, ...d.data() }));
                 renderUI();
             });
         }
 
-        // ====== RENDER ENGINE ======
-        function getUniqueTags() {
-            const tags = new Set(folders.map(f => f.name));
-            bookmarks.forEach(b => { if(b.tag && b.tag !== 'Non classé') tags.add(b.tag); });
-            return Array.from(tags).sort((a, b) => a.localeCompare(b));
-        }
-
+        // ====== RENDERING ======
         function renderUI() {
             renderFolders();
             renderBookmarks();
@@ -470,56 +458,26 @@
 
         function renderFolders() {
             const container = document.getElementById('folders-container');
-            const allTags = getUniqueTags();
-            
-            if (currentFilter !== 'Tous' && currentFilter !== 'Non classé' && !allTags.includes(currentFilter)) {
-                currentFilter = 'Tous';
-            }
+            const tags = new Set(folders.map(f => f.name));
+            bookmarks.forEach(b => { if(b.tag && b.tag !== 'Non classé') tags.add(b.tag); });
+            const allTags = Array.from(tags).sort();
 
             let html = `
-                <div class="folder-tab ${currentFilter === 'Tous' ? 'active' : ''}" 
-                     onclick="window.setFilter('Tous')"
-                     ondragover="event.preventDefault(); this.classList.add('drag-over')"
-                     ondragleave="this.classList.remove('drag-over')"
-                     ondrop="window.handleDrop(event, 'Tous')">
+                <div class="folder-tab ${currentFilter === 'Tous' ? 'active' : ''}" onclick="window.setFilter('Tous')">
                     <i class="fas fa-layer-group"></i> Tous
                 </div>
-                <div class="folder-tab ${currentFilter === 'Non classé' ? 'active' : ''}" 
-                     onclick="window.setFilter('Non classé')"
-                     ondragover="event.preventDefault(); this.classList.add('drag-over')"
-                     ondragleave="this.classList.remove('drag-over')"
-                     ondrop="window.handleDrop(event, 'Non classé')">
+                <div class="folder-tab ${currentFilter === 'Non classé' ? 'active' : ''}" onclick="window.setFilter('Non classé')">
                     <i class="fas fa-inbox"></i> Non classé
                 </div>
             `;
-            
             allTags.forEach(tag => {
-                const folderDoc = folders.find(f => f.name === tag);
-                const folderColor = folderDoc?.color || '#64748b';
-                const folderId = folderDoc?.id;
-                
-                const styleActive = currentFilter === tag ? `background: ${folderColor}; border-color: ${folderColor}; color: white;` : '';
-                const iconColor = currentFilter === tag ? 'white' : folderColor;
-
+                const f = folders.find(x => x.name === tag);
+                const color = f ? f.color : '#64748b';
                 html += `
                     <div class="folder-tab ${currentFilter === tag ? 'active' : ''}" 
-                         style="${styleActive}"
-                         onclick="window.setFilter('${escHtml(tag)}')"
-                         ondragover="event.preventDefault(); this.classList.add('drag-over')"
-                         ondragleave="this.classList.remove('drag-over')"
-                         ondrop="window.handleDrop(event, '${escHtml(tag)}')">
-                        <i class="fas fa-folder${currentFilter === tag ? '-open' : ''}" style="color: ${iconColor}"></i> ${escHtml(tag)}
-                        
-                        <div class="folder-actions">
-                            ${folderId ? `
-                            <button class="folder-action-btn" onclick="event.stopPropagation(); window.openEditFolderModal('${folderId}', '${escHtml(tag)}', '${folderColor}')" title="Modifier le dossier">
-                                <i class="fas fa-pen"></i>
-                            </button>
-                            ` : ''}
-                            <button class="folder-action-btn delete" onclick="event.stopPropagation(); window.promptDeleteFolder('${escHtml(tag)}')" title="Supprimer le dossier">
-                                <i class="fas fa-times"></i>
-                            </button>
-                        </div>
+                         style="${currentFilter === tag ? 'background:'+color+';color:white;border-color:'+color : ''}"
+                         onclick="window.setFilter('${tag.replace(/'/g, "\\'")}')">
+                        <i class="fas fa-folder" style="color:${currentFilter === tag ? 'white' : color}"></i> ${tag}
                     </div>
                 `;
             });
@@ -528,412 +486,100 @@
 
         function renderBookmarks() {
             const grid = document.getElementById('bookmarks-grid');
-            const filtered = currentFilter === 'Tous' 
-                ? bookmarks 
-                : bookmarks.filter(b => b.tag === currentFilter || (currentFilter==='Non classé' && !b.tag));
-
+            const filtered = currentFilter === 'Tous' ? bookmarks : bookmarks.filter(b => (b.tag === currentFilter) || (currentFilter === 'Non classé' && !b.tag));
+            
             if (filtered.length === 0) {
-                grid.innerHTML = `
-                    <div class="empty-state">
-                        <i class="fas fa-folder-open"></i>
-                        <h2>Dossier vide</h2>
-                        <p>Collez un lien ou glissez-y vos favoris !</p>
-                    </div>`;
+                grid.innerHTML = `<div class="empty-state"><i class="fas fa-folder-open"></i><h2>Dossier vide</h2></div>`;
                 return;
             }
 
             grid.innerHTML = filtered.map(b => `
-                <div class="bookmark-card" draggable="true" ondragstart="event.dataTransfer.setData('text/plain', '${b.id}')">
+                <div class="bookmark-card">
                     <div class="card-header">
-                        <h3 class="card-title" title="${escHtml(b.title)}">${escHtml(b.title)}</h3>
+                        <h3 class="card-title">${escHtml(b.title)}</h3>
                         <span class="card-tag">${escHtml(b.tag || 'Non classé')}</span>
                     </div>
-                    <p class="card-summary" title="${escHtml(b.summary)}">${escHtml(b.summary)}</p>
+                    <p class="card-summary">${escHtml(b.summary || '')}</p>
                     <div class="card-footer">
-                        <a href="${escHtml(b.url)}" target="_blank" rel="noopener noreferrer" class="card-link" title="${escHtml(b.url)}">
-                            Ouvrir <i class="fas fa-external-link-alt"></i>
-                        </a>
-                        <div class="card-actions">
-                            <button class="btn-action" onclick="window.openEditBookmarkModal('${b.id}')" title="Modifier le lien">
-                                <i class="fas fa-pen"></i>
-                            </button>
-                            <button class="btn-action" onclick="window.openMoveModal('${b.id}')" title="Déplacer">
-                                <i class="fas fa-folder-open"></i>
-                            </button>
-                            <button class="btn-action delete" onclick="window.promptDeleteBookmark('${b.id}')" title="Supprimer">
-                                <i class="fas fa-trash-alt"></i> Supprimer
-                            </button>
-                        </div>
+                        <a href="${b.url}" target="_blank" class="card-link">Ouvrir <i class="fas fa-external-link-alt"></i></a>
+                        <button class="btn-action delete" onclick="deleteBookmark('${b.id}')"><i class="fas fa-trash"></i></button>
                     </div>
                 </div>
             `).join('');
         }
 
-        // ====== DOSSIERS ACTIONS ======
-        window.setFilter = (tag) => { currentFilter = tag; renderUI(); };
-
-        document.querySelectorAll('.color-dot').forEach(dot => {
-            dot.addEventListener('click', (e) => {
-                document.querySelectorAll('.color-dot').forEach(d => d.classList.remove('selected'));
-                e.target.classList.add('selected');
-                selectedFolderColor = e.target.dataset.color;
-            });
-        });
-
-        function setSelectedColorUI(colorHex) {
-            selectedFolderColor = colorHex;
-            document.querySelectorAll('.color-dot').forEach(d => {
-                d.classList.toggle('selected', d.dataset.color === colorHex);
-            });
-        }
-
-        window.openAddFolderModal = () => {
-            editingFolderId = null;
-            editingFolderOldName = null;
-            document.getElementById('modal-folder-title').textContent = "Nouveau dossier";
-            document.getElementById('modal-folder-desc').textContent = "Saisissez un nom et une couleur pour votre dossier.";
-            document.getElementById('input-folder-name').value = '';
-            setSelectedColorUI('#64748b');
-            document.getElementById('modal-folder').classList.add('active');
-            setTimeout(() => document.getElementById('input-folder-name').focus(), 100);
+        // ====== ACTIONS ======
+        window.deleteBookmark = async (id) => {
+            if(!confirm("Supprimer ?")) return;
+            await bookmarksRef.doc(id).delete();
+            showToast("Supprimé");
         };
-
-        window.openEditFolderModal = (id, currentName, currentColor) => {
-            editingFolderId = id;
-            editingFolderOldName = currentName;
-            document.getElementById('modal-folder-title').textContent = "Modifier le dossier";
-            document.getElementById('modal-folder-desc').textContent = "Modifiez le nom ou la couleur du dossier.";
-            document.getElementById('input-folder-name').value = currentName;
-            setSelectedColorUI(currentColor);
-            document.getElementById('modal-folder').classList.add('active');
-            setTimeout(() => {
-                const input = document.getElementById('input-folder-name');
-                input.focus(); input.select();
-            }, 100);
-        };
-
-        window.saveFolder = async () => {
-            const name = document.getElementById('input-folder-name').value.trim();
-            if (!name) return;
-            
-            const exists = folders.find(f => f.name.toLowerCase() === name.toLowerCase() && f.id !== editingFolderId);
-            if(name === 'Tous' || name === 'Non classé' || exists) {
-                showToast("Ce nom de dossier existe déjà.", true);
-                return;
-            }
-
-            window.closeModals();
-
-            if (editingFolderId) {
-                await updateDoc(doc(db, 'artifacts', appId, 'users', userId, 'folders', editingFolderId), { 
-                    name: name, color: selectedFolderColor 
-                });
-                
-                if (editingFolderOldName !== name) {
-                    const linksToUpdate = bookmarks.filter(b => b.tag === editingFolderOldName);
-                    for(let b of linksToUpdate) {
-                        await updateDoc(doc(db, 'artifacts', appId, 'users', userId, 'bookmarks', b.id), { tag: name });
-                    }
-                    if (currentFilter === editingFolderOldName) currentFilter = name;
-                }
-                showToast("Dossier mis à jour !");
-            } else {
-                await addDoc(foldersRef, { name: name, color: selectedFolderColor, createdAt: serverTimestamp() });
-                showToast(`Dossier "${name}" créé !`);
-            }
-        };
-
-        window.promptDeleteFolder = (folderName) => {
-            showConfirmModal(
-                `Supprimer "${folderName}" ?`,
-                `Le dossier sera supprimé. Ses liens seront déplacés dans "Non classé" pour ne pas les perdre.`,
-                async () => {
-                    const links = bookmarks.filter(b => b.tag === folderName);
-                    for(let b of links) {
-                        await updateDoc(doc(db, 'artifacts', appId, 'users', userId, 'bookmarks', b.id), { tag: 'Non classé' });
-                    }
-                    const folderDoc = folders.find(f => f.name === folderName);
-                    if (folderDoc) {
-                        await deleteDoc(doc(db, 'artifacts', appId, 'users', userId, 'folders', folderDoc.id));
-                    }
-                    showToast("Dossier supprimé.");
-                }
-            );
-        };
-
-        // ====== DÉPLACER (DRAG & DROP + MODAL) ======
-        window.handleDrop = async (e, targetFolder) => {
-            e.preventDefault();
-            e.currentTarget.classList.remove('drag-over');
-            const bookmarkId = e.dataTransfer.getData('text/plain');
-            if(!bookmarkId) return;
-            
-            const newTag = targetFolder === 'Tous' ? 'Non classé' : targetFolder;
-            await updateDoc(doc(db, 'artifacts', appId, 'users', userId, 'bookmarks', bookmarkId), { tag: newTag });
-            showToast(`Lien déplacé vers ${newTag}`);
-        };
-
-        window.openEditBookmarkModal = (bookmarkId) => {
-            bookmarkToMoveId = bookmarkId; // On réutilise cette variable pour stocker l'ID en cours d'édition
-            const b = bookmarks.find(x => x.id === bookmarkId);
-            if (!b) return;
-
-            document.getElementById('edit-bookmark-title').value = b.title || '';
-            document.getElementById('edit-bookmark-summary').value = b.summary || '';
-            document.getElementById('edit-bookmark-url').value = b.url || '';
-            document.getElementById('modal-bookmark-edit').classList.add('active');
-        };
-
-        window.saveBookmarkEdit = async () => {
-            if(!bookmarkToMoveId) return;
-            const newTitle = document.getElementById('edit-bookmark-title').value.trim();
-            const newSummary = document.getElementById('edit-bookmark-summary').value.trim();
-            const newUrl = document.getElementById('edit-bookmark-url').value.trim();
-            
-            if(!newTitle || !newUrl) return;
-
-            window.closeModals();
-            await updateDoc(doc(db, 'artifacts', appId, 'users', userId, 'bookmarks', bookmarkToMoveId), { 
-                title: newTitle, 
-                summary: newSummary,
-                url: newUrl 
-            });
-            showToast(`Lien mis à jour !`);
-        };
-
-        window.confirmMove = async () => {
-            if(!bookmarkToMoveId) return;
-            const newTag = document.getElementById('select-folder-move').value;
-            window.closeModals();
-            await updateDoc(doc(db, 'artifacts', appId, 'users', userId, 'bookmarks', bookmarkToMoveId), { tag: newTag });
-            showToast(`Lien déplacé vers ${newTag}`);
-        };
-
-        // ====== BOOKMARK ACTIONS ======
-        window.promptDeleteBookmark = (id) => {
-            showConfirmModal("Supprimer ce favori ?", "Cette action est définitive.", async () => {
-                await deleteDoc(doc(db, 'artifacts', appId, 'users', userId, 'bookmarks', id));
-                showToast("Favori supprimé.");
-            });
-        };
-
-        // ====== AI SETTINGS ======
-        window.openAISettingsModal = () => {
-            document.getElementById('modal-ai-settings').classList.add('active');
-            const engine = localStorage.getItem('selectedAI') || 'albert';
-            document.getElementById('select-ai-engine').value = engine;
-            document.getElementById('input-albert-key').value = localStorage.getItem('albertApiKey') || '';
-            document.getElementById('input-gemini-key').value = localStorage.getItem('geminiApiKey') || '';
-            
-            // Toggle view
-            const toggle = () => {
-                const val = document.getElementById('select-ai-engine').value;
-                document.getElementById('settings-albert').style.display = val === 'albert' ? 'block' : 'none';
-                document.getElementById('settings-gemini').style.display = val === 'gemini' ? 'block' : 'none';
-            };
-            document.getElementById('select-ai-engine').onchange = toggle;
-            toggle();
-        };
-
-        window.saveAISettings = () => {
-            const engine = document.getElementById('select-ai-engine').value;
-            const albertKey = document.getElementById('input-albert-key').value;
-            const geminiKey = document.getElementById('input-gemini-key').value;
-            
-            localStorage.setItem('selectedAI', engine);
-            localStorage.setItem('albertApiKey', albertKey);
-            localStorage.setItem('geminiApiKey', geminiKey);
-            
-            showToast("Paramètres IA enregistrés !");
-            updateAIStatusUI();
-            window.closeModals();
-        };
-
-        async function analyzeUrlWithAI(url) {
-            const engine = localStorage.getItem('selectedAI') || 'albert';
-            const albertKey = localStorage.getItem('albertApiKey');
-            const geminiKey = localStorage.getItem('geminiApiKey');
-            
-            if (engine === 'albert' && !albertKey) {
-                showToast("Claude Albert : Clé manquante. Utilisation du mode manuel.", true);
-                return manualFallback(url);
-            }
-            if (engine === 'gemini' && !geminiKey) {
-                showToast("Gemini : Clé manquante. Utilisation du mode manuel.", true);
-                return manualFallback(url);
-            }
-
-            try {
-                showToast(`IA (${engine}) en cours d'analyse...`);
-                
-                const prompt = `Analyse l'URL suivante: ${url}. 
-                Retourne une réponse JSON STRICTE (sans markdown) avec: 
-                - title: un titre clair
-                - description: un résumé court (1-2 phrases)
-                - category: un nom de catégorie court et pertinent (ex: Tech, Education, Outils, Veille, News, Loisirs)
-                EXEMPLE: {"title": "Google", "description": "Moteur de recherche mondial.", "category": "Outils"}`;
-
-                let response, data;
-
-                if (engine === 'albert') {
-                    response = await fetch("https://albert.api.gouv.fr/v1/chat/completions", {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/json",
-                            "Authorization": `Bearer ${albertKey}`
-                        },
-                        body: JSON.stringify({
-                            model: "openai/gpt-oss-120b",
-                            messages: [{ role: "user", content: prompt }],
-                            temperature: 0.1
-                        })
-                    });
-                    const result = await response.json();
-                    if (!response.ok) throw new Error(result.error?.message || "Erreur Albert");
-                    const content = result.choices[0].message.content;
-                    data = JSON.parse(content.replace(/```json|```/g, '').trim());
-                } else {
-                    // Moteur Gemini
-                    response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`, {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({
-                            contents: [{ parts: [{ text: prompt }] }],
-                            generationConfig: { response_mime_type: "application/json" }
-                        })
-                    });
-                    const result = await response.json();
-                    if (!response.ok) throw new Error(result.error?.message || "Erreur Gemini");
-                    data = JSON.parse(result.candidates[0].content.parts[0].text);
-                }
-
-                return {
-                    title: data.title || "Lien analysé",
-                    description: data.description || "Aucune description générée.",
-                    category: data.category || "Import"
-                };
-            } catch (err) {
-                console.error("AI Error:", err);
-                showToast("L'IA a échoué. Utilisation du mode manuel.", true);
-                return manualFallback(url);
-            }
-        }
-
-        function manualFallback(url) {
-            try {
-                const urlObj = new URL(url);
-                return {
-                    title: urlObj.hostname,
-                    description: "Favori ajouté sans analyse IA (clé API manquante ou erreur).",
-                    category: "Import"
-                };
-            } catch(e) {
-                return { title: url, description: "Lien non classé", category: "Import" };
-            }
-        }
 
         document.getElementById('add-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const input = document.getElementById('url-input');
             let url = input.value.trim();
-            if (!url || !bookmarksRef) return;
-            if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
+            if(!url) return;
+            if(!/^https?:\/\//i.test(url)) url = 'https://' + url;
 
             const btn = document.getElementById('btn-add');
-            btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Analyse...';
-            setSyncStatus('saving', 'Analyse...');
+            btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
 
             try {
                 const aiResult = await analyzeUrlWithAI(url);
-                const newTag = aiResult.category || "Autre";
-                
-                if(!folders.find(f => f.name.toLowerCase() === newTag.toLowerCase()) && newTag !== 'Autre') {
-                    await addDoc(foldersRef, { name: newTag, color: '#64748b', createdAt: serverTimestamp() });
-                }
+                const tag = aiResult.category || "Autre";
 
-                await addDoc(bookmarksRef, {
-                    url: url, 
-                    title: aiResult.title || url, 
-                    summary: aiResult.description || "Aucune description.",
-                    tag: newTag, 
-                    createdAt: serverTimestamp()
+                await bookmarksRef.add({
+                    url, title: aiResult.title || url, summary: aiResult.description || "",
+                    tag, createdAt: firebase.firestore.FieldValue.serverTimestamp()
                 });
-
                 input.value = '';
-                showToast("Favori ajouté !");
-            } catch (error) {
-                showToast("Erreur d'analyse. Ajout annulé.", true);
+                showToast("Ajouté !");
+            } catch(err) {
+                showToast("Erreur", true);
             } finally {
                 btn.disabled = false; btn.innerHTML = '<i class="fas fa-magic"></i> Analyser';
-                setSyncStatus('saved', 'Synchronisé');
             }
         });
 
-        // ====== IMPORT CHROME BOOKMARKS ======
-        document.getElementById('import-file').addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
+        async function analyzeUrlWithAI(url) {
+            const engine = localStorage.getItem('selectedAI') || 'albert';
+            const albertKey = localStorage.getItem('albertApiKey');
+            const geminiKey = localStorage.getItem('geminiApiKey');
+            const key = engine === 'albert' ? albertKey : geminiKey;
 
-            const reader = new FileReader();
-            reader.onload = (event) => {
-                const html = event.target.result;
-                const parser = new DOMParser();
-                const docParsed = parser.parseFromString(html, "text/html");
-                const links = Array.from(docParsed.querySelectorAll("a"));
-                
-                if (links.length === 0) {
-                    showToast("Aucun favori trouvé.", true);
-                    return;
+            if(!key) return { title: url, description: "Mode manuel", category: "Import" };
+
+            try {
+                let response, data;
+                const prompt = `Analyse l'URL: ${url}. Retourne JSON: {"title": "...", "description": "...", "category": "..."}`;
+
+                if(engine === 'albert') {
+                    response = await fetch("https://albert.api.gouv.fr/v1/chat/completions", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${albertKey}` },
+                        body: JSON.stringify({ model: "openai/gpt-oss-120b", messages: [{role:"user", content: prompt}] })
+                    });
+                    const res = await response.json();
+                    data = JSON.parse(res.choices[0].message.content.replace(/```json|```/g, ''));
+                } else {
+                    response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+                    });
+                    const res = await response.json();
+                    data = JSON.parse(res.candidates[0].content.parts[0].text);
                 }
-
-                showConfirmModal(
-                    "Importer les favoris ?", 
-                    `Nous avons trouvé ${links.length} favoris dans ce fichier. L'importation peut prendre un instant.`,
-                    async () => {
-                        setSyncStatus('saving', 'Importation...');
-                        try {
-                            let importedTags = new Set();
-                            const itemsToSave = links.map(a => {
-                                let tag = "Import Navigateur";
-                                let dl = a.closest('dl');
-                                if (dl && dl.previousElementSibling && dl.previousElementSibling.tagName === 'H3') {
-                                    tag = dl.previousElementSibling.textContent;
-                                }
-                                if (tag === "Bookmarks bar" || tag === "Bookmarks Bar" || tag === "Volet des favoris") tag = "Barre de favoris";
-                                importedTags.add(tag);
-                                return { url: a.href, title: a.textContent || a.href, tag };
-                            });
-
-                            for (let tag of importedTags) {
-                                if (!folders.find(f => f.name.toLowerCase() === tag.toLowerCase()) && tag !== 'Non classé') {
-                                    await addDoc(foldersRef, { name: tag, color: '#64748b', createdAt: serverTimestamp() });
-                                }
-                            }
-
-                            for (let i = 0; i < itemsToSave.length; i += 50) {
-                                const chunk = itemsToSave.slice(i, i + 50);
-                                await Promise.all(chunk.map(item => 
-                                    addDoc(bookmarksRef, {
-                                        url: item.url, title: item.title.substring(0, 150),
-                                        summary: "Importé depuis le navigateur.", tag: item.tag, createdAt: serverTimestamp()
-                                    })
-                                ));
-                            }
-                            showToast(`${links.length} favoris importés !`);
-                        } catch (error) {
-                            showToast("Une erreur est survenue.", true);
-                        } finally {
-                            e.target.value = ''; 
-                            setSyncStatus('saved', 'Synchronisé');
-                        }
-                    },
-                    "Lancer l'importation", false
-                );
-            };
-            reader.readAsText(file);
-        });
+                return data;
+            } catch(e) {
+                return { title: url, description: "Erreur IA", category: "Import" };
+            }
+        }
 
         function escHtml(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+        init();
     </script>
 </body>
 </html>
