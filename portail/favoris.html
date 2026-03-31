@@ -106,7 +106,7 @@
         <div>
             <div style="display:flex; align-items:center; gap:8px">
                 <div class="app-title">Favoris IA</div>
-                <span style="font-size:.6rem; font-weight:800; background:#f1f5f9; color:#94a3b8; padding:2px 8px; border-radius:20px; letter-spacing:.05em">v2.7</span>
+                <span style="font-size:.6rem; font-weight:800; background:#f1f5f9; color:#94a3b8; padding:2px 8px; border-radius:20px; letter-spacing:.05em">v2.8</span>
             </div>
             <div class="sync-line"><div class="sdot" id="sdot"></div><span id="slabel">Connexion...</span></div>
         </div>
@@ -153,6 +153,7 @@
                 <i class="fas fa-wand-sparkles"></i> Analyser &amp; Ajouter
             </button>
         </form>
+        <div style="display:flex; justify-content:flex-end; margin-bottom:14px" id="grid-header-tools"></div>
         <div class="grid" id="grid"></div>
     </main>
 </div>
@@ -262,10 +263,20 @@
     // ── RENDU CARTES ──────────────────────────────────────────────────
     function renderCards() {
         const grid = document.getElementById('grid');
+        const tools = document.getElementById('grid-header-tools');
+        
         document.getElementById('total-count').textContent = allFavs.length;
         let data = [...allFavs].sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
+        
         if      (activeFilter==='none') data = data.filter(f=>!f.folderId);
         else if (activeFilter!=='all')  data = data.filter(f=>f.folderId===activeFilter);
+
+        const missingDesc = data.filter(f => !f.desc);
+        if (missingDesc.length > 0 && (localStorage.getItem('fav_albert')||localStorage.getItem('fav_gemini'))) {
+            tools.innerHTML = `<button onclick="autoRefreshAll()" style="font-size:12px; padding:6px 14px; border-radius:12px; border:none; background:linear-gradient(135deg, #8b5cf6, #6366f1); color:white; cursor:pointer; font-weight:bold; box-shadow:0 4px 6px -1px rgba(99,102,241,0.2), 0 2px 4px -1px rgba(99,102,241,0.1); transition:transform 0.2s"><i class="fas fa-wand-magic-sparkles"></i> Enrichir automatiquement ${missingDesc.length} favoris manquants</button>`;
+        } else {
+            tools.innerHTML = '';
+        }
 
         if (!data.length) {
             grid.innerHTML=`<div class="empty"><div class="ei"><i class="fas fa-bookmark"></i></div>
@@ -395,11 +406,31 @@
         if(Object.keys(update).length) {
             try {
                 await favRef.doc(id).update(update);
-                toast('✅ Favori mis à jour !');
+                // Le toast est suffisant
             } catch(e) { toast('❌ Erreur écriture BDD'); }
         } else {
             toast('⚠️ Impossible de récupérer les infos de ce site.');
         }
+    }
+
+    // ── AUTO-REFRESH MASSIF ───────────────────────────────────────────
+    async function autoRefreshAll() {
+        const missing = allFavs.filter(f => !f.desc);
+        if(!missing.length) return;
+        if(!confirm(`Lancer l'analyse IA automatique pour combler les ${missing.length} descriptions manquantes ? (Ne quittez pas la page)`)) return;
+        
+        const tools = document.getElementById('grid-header-tools');
+        tools.innerHTML = `<span style="font-size:12px; color:#6366f1; font-weight:bold"><i class="fas fa-spinner fa-spin"></i> Enrichissement en cours...</span>`;
+        
+        for(let i=0; i<missing.length; i++) {
+            const f = missing[i];
+            toast(`⏳ Analyse IA progress : ${i+1} / ${missing.length} (${f.title || f.url.substring(0,30)})`);
+            await refreshDesc(f.id, f.url);
+            // Attente de sécurité (3s) pour éviter de saturer/être bloqué par le proxy ou l'IA Gouv
+            await new Promise(r => setTimeout(r, 2000));
+        }
+        toast('✅ Enrichissement automatique de masse terminé !');
+        renderCards(); // Forcer une mise à jour d'UI propre
     }
 
     // ── SUPPRESSION ───────────────────────────────────────────────────
@@ -477,10 +508,14 @@
                     const r = await fetchAlbert(alk, 'Réponds juste: OK', 5);
                     if(r.ok) {
                         res.style.cssText='display:block;background:#f0fdf4;color:#16a34a;padding:10px 14px;border-radius:10px;font-size:.78rem;margin-bottom:14px';
-                        res.textContent='✅ [v2.6] Connexion Albert réussie ! (Via ' + r.methodUsed + ')';
+                        res.textContent='✅ [v2.8] Connexion réussie ! (Clé auto-sauvegardée via ' + r.methodUsed + ')';
+                        // AUTO-SAVE immédiate (évite l'oubli du bouton enregistrer)
+                        localStorage.setItem('fav_albert', alk);
+                        if(gek) localStorage.setItem('fav_gemini', gek);
+                        document.getElementById('ai-dot').className='ai-dot on';
                     } else {
                         res.style.cssText='display:block;background:#fef2f2;color:#ef4444;padding:10px 14px;border-radius:10px;font-size:.78rem;margin-bottom:14px';
-                        res.textContent='❌ [v2.6] Albert a refusé l\'accès (Erreur '+r.status+')';
+                        res.textContent='❌ [v2.8] Albert a refusé l\'accès (Erreur '+r.status+')';
                     }
                 } catch(err) {
                     res.style.cssText='display:block;background:#fffbeb;color:#92400e;padding:10px 14px;border-radius:10px;font-size:.7rem;margin-bottom:14px;line-height:1.4;white-space:pre-wrap;overflow-x:auto';
