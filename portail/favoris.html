@@ -3,59 +3,57 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Favoris Intelligents | Portail</title>
+    <title>Favoris IA | Portail</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
     <style>
-        :root { --accent: #6366f1; --accent-light: #eef2ff; --bg: #f1f5f9; --text: #0f172a; --text-light: #64748b; }
+        :root { --accent: #6366f1; --accent-light: #eef2ff; --bg: #f8fafc; --text: #0f172a; }
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
         
-        .header { background: white; border-bottom: 1px solid #e2e8f0; padding: 12px 24px; display: flex; align-items: center; justify-content: space-between; z-index: 100; box-shadow: 0 2px 10px rgba(0,0,0,0.02); }
+        .header { background: white; border-bottom: 2px solid #f1f5f9; padding: 12px 24px; display: flex; align-items: center; justify-content: space-between; z-index: 100; }
         .header-left { display: flex; align-items: center; gap: 16px; }
-        .back-btn { width: 36px; height: 36px; border-radius: 10px; background: #f8fafc; border: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: center; color: var(--accent); text-decoration: none; transition: 0.2s; }
-        .back-btn:hover { background: var(--accent-light); border-color: var(--accent); }
-        .logo-box { width: 40px; height: 40px; background: linear-gradient(135deg, var(--accent), #8b5cf6); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; box-shadow: 0 4px 12px rgba(99,102,241,0.2); }
-        .app-info h1 { font-family: 'Outfit', sans-serif; font-size: 1rem; font-weight: 800; }
-        .sync-status { display: flex; align-items: center; gap: 6px; font-size: 0.7rem; font-weight: 600; color: #94a3b8; }
-        .dot { width: 8px; height: 8px; border-radius: 50%; background: #f59e0b; }
-        .dot.online { background: #22c55e; }
+        .logo-box { width: 38px; height: 38px; background: linear-gradient(135deg, var(--accent), #8b5cf6); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: white; box-shadow: 0 4px 10px rgba(99,102,241,0.2); }
+        .app-info h1 { font-family: 'Outfit', sans-serif; font-size: 1rem; font-weight: 800; margin-bottom: 2px; }
+        .sync-label { display: flex; align-items: center; gap: 6px; font-size: 0.72rem; font-weight: 700; color: #94a3b8; }
+        .dot { width: 8px; height: 8px; border-radius: 50%; background: #fbbf24; }
+        .dot.online { background: #22c55e; box-shadow: 0 0 8px #22c55e; }
         .dot.error { background: #ef4444; }
 
-        .main-container { flex: 1; display: flex; overflow: hidden; }
-        .sidebar { width: 260px; background: white; border-right: 1px solid #e2e8f0; padding: 20px; display: flex; flex-direction: column; gap: 20px; overflow-y: auto; }
-        .section-title { font-size: 0.65rem; font-weight: 800; text-transform: uppercase; color: #94a3b8; letter-spacing: 0.1em; margin-bottom: 10px; }
-        .folder-item { padding: 10px 12px; border-radius: 10px; font-size: 0.85rem; font-weight: 600; color: #475569; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: 0.2s; }
-        .folder-item:hover { background: #f8fafc; color: var(--accent); }
-        .folder-item.active { background: var(--accent-light); color: var(--accent); }
-        
-        .content { flex: 1; padding: 24px; overflow-y: auto; display: flex; flex-direction: column; gap: 24px; }
-        .action-bar { background: white; padding: 8px; border-radius: 16px; display: flex; border: 1px solid #e2e8f0; box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
-        .url-input { flex: 1; border: none; padding: 12px 20px; outline: none; font-size: 0.9rem; font-weight: 500; }
-        .btn-analyze { background: var(--accent); color: white; border: none; padding: 10px 24px; border-radius: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: 0.2s; }
-        .btn-analyze:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(99,102,241,0.3); }
+        .main-view { flex: 1; display: flex; overflow: hidden; }
+        .sidebar { width: 250px; background: white; border-right: 2px solid #f1f5f9; padding: 20px; overflow-y: auto; }
+        .folder-btn { width: 100%; padding: 10px 12px; border-radius: 10px; border: none; background: none; text-align: left; font-size: 0.85rem; font-weight: 600; color: #64748b; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: 0.2s; margin-bottom: 5px; }
+        .folder-btn:hover { background: #f8fafc; color: var(--accent); }
+        .folder-btn.active { background: var(--accent-light); color: var(--accent); }
 
-        .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
-        .card { background: white; border-radius: 18px; padding: 20px; border: 1px solid #e2e8f0; transition: 0.3s; position: relative; display: flex; flex-direction: column; gap: 12px; }
-        .card:hover { transform: translateY(-4px); border-color: var(--accent); box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05); }
-        .card-tag { font-size: 0.6rem; font-weight: 800; text-transform: uppercase; padding: 4px 10px; background: var(--accent-light); color: var(--accent); border-radius: 6px; width: fit-content; }
-        .card-title { font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 1rem; line-height: 1.3; }
-        .card-desc { font-size: 0.8rem; color: var(--text-light); line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-        .card-actions { margin-top: auto; padding-top: 15px; border-top: 1px solid #f1f5f9; display: flex; align-items: center; justify-content: space-between; }
-        .link-visit { font-size: 0.8rem; font-weight: 700; color: var(--accent); text-decoration: none; display: flex; align-items: center; gap: 6px; }
-        .btn-delete { color: #94a3b8; border: none; background: none; cursor: pointer; padding: 5px; transition: 0.2s; }
-        .btn-delete:hover { color: #ef4444; }
+        .content { flex: 1; padding: 24px; overflow-y: auto; display: flex; flex-direction: column; gap: 24px; max-width: 1100px; margin: 0 auto; width: 100%; }
+        .add-area { background: white; padding: 10px; border-radius: 16px; display: flex; gap: 10px; border: 2px solid #f1f5f9; box-shadow: 0 4px 20px rgba(0,0,0,0.03); }
+        .url-input { flex: 1; border: none; padding: 10px 20px; outline: none; font-size: 0.9rem; font-weight: 500; font-family: inherit; }
+        .btn-magic { background: var(--accent); color: white; border: none; padding: 10px 24px; border-radius: 10px; font-weight: 750; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: 0.2s; }
+        .btn-magic:hover { transform: scale(1.02); }
+        .btn-magic:disabled { opacity: 0.5; }
+
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
+        .card { background: white; border-radius: 20px; padding: 20px; border: 2px solid #f1f5f9; transition: 0.3s; display: flex; flex-direction: column; gap: 12px; }
+        .card:hover { border-color: var(--accent); box-shadow: 0 10px 30px -10px rgba(99,102,241,0.1); }
+        .card-tag { font-size: 0.65rem; font-weight: 800; background: #f1f5f9; color: #64748b; padding: 3px 8px; border-radius: 5px; width: fit-content; text-transform: uppercase; }
+        .card-title { font-family: 'Outfit', sans-serif; font-weight: 750; font-size: 1.05rem; color: #1e293b; line-height: 1.3; }
+        .card-desc { font-size: 0.82rem; color: #64748b; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+        .card-foot { margin-top: auto; padding-top: 15px; display: flex; align-items: center; justify-content: space-between; border-top: 1px solid #f1f5f9; }
+        .card-link { font-size: 0.85rem; font-weight: 700; color: var(--accent); text-decoration: none; }
+        .btn-trash { color: #cbd5e1; border: none; background: none; cursor: pointer; transition: 0.2s; }
+        .btn-trash:hover { color: #ef4444; }
 
         .modal { position: fixed; inset: 0; background: rgba(15,23,42,0.6); backdrop-filter: blur(4px); z-index: 1000; display: none; align-items: center; justify-content: center; }
         .modal.active { display: flex; }
-        .modal-box { background: white; border-radius: 24px; padding: 32px; width: 400px; max-width: 90%; box-shadow: 0 30px 60px -12px rgba(0,0,0,0.25); }
-        .inner-label { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; color: #94a3b8; margin-bottom: 8px; display: block; }
-        .modal-input { width: 100%; padding: 12px 16px; border-radius: 12px; border: 1.5px solid #e2e8f0; margin-bottom: 20px; outline: none; font-family: 'Inter', sans-serif; }
+        .modal-box { background: white; border-radius: 24px; padding: 30px; width: 400px; max-width: 90%; }
+        .modal-input { width: 100%; padding: 12px; border: 2px solid #f1f5f9; border-radius: 12px; margin: 10px 0 20px 0; outline: none; font-family: inherit; }
         .modal-input:focus { border-color: var(--accent); }
-        
-        .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: #1e293b; color: white; padding: 12px 24px; border-radius: 30px; font-size: 0.85rem; font-weight: 600; box-shadow: 0 10px 30px rgba(0,0,0,0.2); opacity: 0; transition: 0.3s; pointer-events: none; z-index: 9999; }
+
+        .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: #1e293b; color: white; padding: 12px 25px; border-radius: 40px; font-size: 0.85rem; opacity: 0; transition: 0.3s; z-index: 2000; }
         .toast.show { opacity: 1; transform: translateX(-50%) translateY(-10px); }
     </style>
 </head>
@@ -63,253 +61,222 @@
 
     <header class="header">
         <div class="header-left">
-            <a href="index.html" class="back-btn"><i class="fas fa-arrow-left"></i></a>
-            <div class="logo-box"><i class="fas fa-bookmark"></i></div>
+            <a href="index.html" style="color:var(--accent); margin-right:10px"><i class="fas fa-chevron-left"></i></a>
+            <div class="logo-box"><i class="fas fa-sparkles"></i></div>
             <div class="app-info">
-                <h1>Mes Favoris</h1>
-                <div class="sync-status">
-                    <div class="dot" id="sync-dot"></div>
-                    <span id="sync-label">Connexion...</span>
+                <h1>Favoris IA</h1>
+                <div class="sync-label">
+                    <div class="dot" id="dot"></div>
+                    <span id="label">Synchronisation...</span>
                 </div>
             </div>
         </div>
         <div style="display:flex; gap:10px">
-            <button class="back-btn" onclick="openAIModal()" title="Paramètres IA"><i class="fas fa-robot"></i></button>
-            <button class="back-btn" onclick="openFolderModal()" title="Nouveau Dossier"><i class="fas fa-plus"></i></button>
+            <button class="folder-btn" style="width:40px; justify-content:center" onclick="openAI()" title="IA"><i class="fas fa-robot"></i></button>
+            <button class="btn-magic" onclick="openFolder()"><i class="fas fa-folder-plus"></i> Dossier</button>
         </div>
     </header>
 
-    <div class="main-container">
-        <aside class="sidebar">
-            <div>
-                <p class="section-title">Collections</p>
-                <div id="folder-list">
-                    <div class="folder-item active" onclick="setFolder('all')"><i class="fas fa-th-large"></i> Tous les liens</div>
-                    <div class="folder-item" onclick="setFolder('none')"><i class="fas fa-inbox"></i> Non classés</div>
-                </div>
-            </div>
+    <div class="main-view">
+        <aside class="sidebar" id="sidebar">
+            <p style="font-size:0.65rem; font-weight:800; color:#cbd5e1; text-transform:uppercase; margin-bottom:15px; letter-spacing:1px">Ma Collection</p>
+            <button class="folder-btn active" onclick="filter('all')"><i class="fas fa-layer-group"></i> Tout voir</button>
+            <button class="folder-btn" onclick="filter('none')"><i class="fas fa-inbox"></i> Non classés</button>
+            <div id="folders-custom" style="margin-top:15px"></div>
         </aside>
 
         <main class="content">
-            <form class="action-bar" onsubmit="addLink(event)">
-                <input type="url" id="url-input" class="url-input" placeholder="Collez l'URL d'un article ou d'un site ici..." required>
-                <button type="submit" class="btn-analyze" id="btn-submit">
-                    <i class="fas fa-wand-magic-sparkles"></i> Analyser
-                </button>
+            <form class="add-area" onsubmit="handleAdd(event)">
+                <input type="url" id="url" class="url-input" placeholder="Collez l'URL à analyser ici..." required>
+                <button type="submit" class="btn-magic" id="btn-add"><i class="fas fa-wand-sparkles"></i> Analyser</button>
             </form>
-
-            <div class="cards-grid" id="cards-grid">
-                <!-- Les cartes arrivent ici -->
-            </div>
+            <div class="grid" id="grid"></div>
         </main>
     </div>
 
     <!-- Modale IA -->
-    <div class="modal" id="modal-ai">
+    <div class="modal" id="modal-ia">
         <div class="modal-box">
-            <h2 style="font-family:'Outfit',sans-serif; margin-bottom:20px">Configuration IA</h2>
-            <label class="inner-label">Albert AI (Bearer Key)</label>
-            <input type="password" id="key-albert" class="modal-input" placeholder="Clé Albert...">
-            <label class="inner-label">Google Gemini (API Key)</label>
-            <input type="password" id="key-gemini" class="modal-input" placeholder="Clé Gemini...">
-            <button onclick="saveKeys()" class="btn-analyze" style="width:100%; justify-content:center">Enregistrer les clés</button>
-            <button onclick="closeModals()" style="width:100%; margin-top:10px; border:none; background:none; color:#94a3b8; font-size:min-vw(0.85rem); cursor:pointer">Fermer</button>
+            <h2 style="font-family:'Outfit',sans-serif; margin-bottom:20px">Paramètres IA</h2>
+            <label style="font-size:0.75rem; font-weight:700; color:#94a3b8">ALBERT AI (Bearer Key)</label>
+            <input type="password" id="key-a" class="modal-input" placeholder="Clé Albert gouv.fr...">
+            <label style="font-size:0.75rem; font-weight:700; color:#94a3b8">GOOGLE GEMINI (API Key)</label>
+            <input type="password" id="key-g" class="modal-input" placeholder="Clé Gemini Flash...">
+            <button class="btn-magic" style="width:100%; justify-content:center" onclick="saveK()">Sauvegarder</button>
+            <button style="width:100%; border:none; background:none; padding:15px; color:#cbd5e1; cursor:pointer" onclick="closeM()">Fermer</button>
         </div>
     </div>
 
     <!-- Modale Dossier -->
-    <div class="modal" id="modal-folder">
+    <div class="modal" id="modal-f">
         <div class="modal-box">
             <h2 style="font-family:'Outfit',sans-serif; margin-bottom:20px">Nouveau Dossier</h2>
-            <label class="inner-label">Nom du dossier</label>
-            <input type="text" id="folder-name" class="modal-input" placeholder="Nom...">
-            <button onclick="saveFolder()" class="btn-analyze" style="width:100%; justify-content:center">Créer le dossier</button>
-            <button onclick="closeModals()" style="width:100%; margin-top:10px; border:none; background:none; color:#94a3b8; font-size:0.8rem; cursor:pointer">Annuler</button>
+            <input type="text" id="fn" class="modal-input" placeholder="Nom du dossier...">
+            <button class="btn-magic" style="width:100%; justify-content:center" onclick="saveF()">Créer</button>
+            <button style="width:100%; border:none; background:none; padding:15px; color:#cbd5e1; cursor:pointer" onclick="closeM()">Annuler</button>
         </div>
     </div>
 
-    <div id="toast" class="toast">Lien ajouté !</div>
+    <div class="toast" id="toast"></div>
 
     <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyBGxXTvy8thfYJZTP-QbWrV-2euTmj4NPY",
-            authDomain: "portail-postits.firebaseapp.com",
-            projectId: "portail-postits",
-            storageBucket: "portail-postits.firebasestorage.app",
-            messagingSenderId: "494625342197",
-            appId: "1:494625342197:web:9cc573fda25019e57ebbbc"
+        // CONFIG DE LA VEILLE (MAVEILLECG) - LA PLUS FIABLE
+        const fbConfig = {
+            apiKey: "AIzaSyAMyCPEipO3lr2o2OU4wVRETe708UArsOI",
+            authDomain: "maveillecg.firebaseapp.com",
+            projectId: "maveillecg",
+            storageBucket: "maveillecg.firebasestorage.app",
+            messagingSenderId: "823281436949",
+            appId: "1:823281436949:web:df46ec3073c7772818411c"
         };
+        const GillesUID = "f2659e26b5b7efa7d8099b64d60a7f68c7797c735cc2f2807923129f397a21a1";
 
-        // On utilise des collections RACINES comme pour les Post-its (accès libre)
-        let db, favRef, foldersRef;
-        let bookmarks = [], folders = [];
-        let currentFolder = 'all';
+        let db, favRef, foldersRef, activeF = 'all';
+        let favs = [], flds = [];
 
-        function showToast(msg) {
+        function setStatus(c, l) {
+            document.getElementById('dot').className = 'dot ' + c;
+            document.getElementById('label').innerText = l;
+        }
+
+        function toast(m) {
             const t = document.getElementById('toast');
-            t.innerText = msg; t.classList.add('show');
-            setTimeout(() => t.classList.remove('show'), 3000);
+            t.innerText = m; t.className = 'toast show';
+            setTimeout(() => t.className = 'toast', 3000);
         }
 
-        function setFolder(id) {
-            currentFolder = id;
-            document.querySelectorAll('.folder-item').forEach(el => el.classList.remove('active'));
-            event.currentTarget.classList.add('active');
-            renderUI();
+        function openAI() {
+            document.getElementById('modal-ia').classList.add('active');
+            document.getElementById('key-a').value = localStorage.getItem('alk') || '';
+            document.getElementById('key-g').value = localStorage.getItem('gek') || '';
+        }
+        function openFolder() { document.getElementById('modal-f').classList.add('active'); }
+        function closeM() { document.querySelectorAll('.modal').forEach(m => m.classList.remove('active')); }
+        
+        function saveK() {
+            localStorage.setItem('alk', document.getElementById('key-a').value.trim());
+            localStorage.setItem('gek', document.getElementById('key-g').value.trim());
+            closeM(); toast("Paramètres IA sauvés !");
         }
 
-        function openAIModal() {
-            document.getElementById('modal-ai').classList.add('active');
-            document.getElementById('key-albert').value = localStorage.getItem('albert_key') || '';
-            document.getElementById('key-gemini').value = localStorage.getItem('gemini_key') || '';
+        async function saveF() {
+            const n = document.getElementById('fn').value.trim();
+            if(!n) return;
+            await foldersRef.add({ name: n, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
+            document.getElementById('fn').value=''; closeM(); toast("Dossier créé !");
         }
 
-        function openFolderModal() {
-            document.getElementById('modal-folder').classList.add('active');
-        }
-
-        function closeModals() {
-            document.querySelectorAll('.modal').forEach(m => m.classList.remove('active'));
-        }
-
-        function saveKeys() {
-            localStorage.setItem('albert_key', document.getElementById('key-albert').value.trim());
-            localStorage.setItem('gemini_key', document.getElementById('key-gemini').value.trim());
-            closeModals(); showToast("Clés IA mises à jour !");
-        }
-
-        async function saveFolder() {
-            const name = document.getElementById('folder-name').value.trim();
-            if(!name) return;
-            await foldersRef.add({ name, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
-            document.getElementById('folder-name').value = '';
-            closeModals(); showToast("Dossier créé !");
+        function filter(id) {
+            activeF = id;
+            document.querySelectorAll('.folder-btn').forEach(b => b.classList.toggle('active', b.onclick.toString().includes(`'${id}'`)));
+            render();
         }
 
         async function init() {
             try {
-                firebase.initializeApp(firebaseConfig);
+                firebase.initializeApp(fbConfig);
+                const auth = firebase.auth();
                 db = firebase.firestore();
-                
-                // On pointe sur des collections racines (beaucoup plus de chances que ce soit ouvert)
-                favRef = db.collection('favoris_v2'); 
-                foldersRef = db.collection('favoris_folders_v2');
 
-                // Listener Favoris
-                favRef.orderBy('createdAt', 'desc').onSnapshot(snap => {
-                    bookmarks = snap.docs.map(d => ({id: d.id, ...d.data()}));
-                    renderUI();
-                    document.getElementById('sync-dot').className = 'dot online';
-                    document.getElementById('sync-label').innerText = 'Session Active';
-                }, err => {
-                    console.error(err);
-                    document.getElementById('sync-dot').className = 'dot error';
-                    document.getElementById('sync-label').innerText = 'Erreur Droits';
+                // On force la connexion anonyme comme dans Veille Pro
+                await auth.signInAnonymously();
+
+                favRef = db.collection('artifacts').doc('favoris-ia').collection('users').doc(GillesUID).collection('bookmarks');
+                foldersRef = db.collection('artifacts').doc('favoris-ia').collection('users').doc(GillesUID).collection('folders');
+
+                favRef.orderBy('createdAt', 'desc').onSnapshot(s => {
+                    favs = s.docs.map(d => ({id:d.id, ...d.data()}));
+                    render();
+                    setStatus('online', 'Gilles Connecté');
+                }, e => {
+                    console.error(e);
+                    setStatus('error', 'Erreur de Droits');
                 });
 
-                // Listener Dossiers
-                foldersRef.orderBy('name').onSnapshot(snap => {
-                    folders = snap.docs.map(d => ({id: d.id, ...d.data()}));
-                    renderFolders();
+                foldersRef.orderBy('name').onSnapshot(s => {
+                    flds = s.docs.map(d => ({id:d.id, ...d.data()}));
+                    renderF();
                 });
 
             } catch(e) {
                 console.error(e);
+                setStatus('error', 'Erreur Init');
             }
         }
 
-        function renderFolders() {
-            const list = document.getElementById('folder-list');
-            list.innerHTML = `
-                <div class="folder-item ${currentFolder === 'all' ? 'active' : ''}" onclick="setFolder('all')"><i class="fas fa-th-large"></i> Tous les liens</div>
-                <div class="folder-item ${currentFolder === 'none' ? 'active' : ''}" onclick="setFolder('none')"><i class="fas fa-inbox"></i> Non classés</div>
-            `;
-            folders.forEach(f => {
-                list.innerHTML += `<div class="folder-item ${currentFolder === f.id ? 'active' : ''}" onclick="setFolder('${f.id}')"><i class="fas fa-folder"></i> ${f.name}</div>`;
-            });
+        function renderF() {
+            const container = document.getElementById('folders-custom');
+            container.innerHTML = flds.map(f => `
+                <button class="folder-btn ${activeF === f.id ? 'active' : ''}" onclick="filter('${f.id}')">
+                    <i class="fas fa-folder"></i> ${f.name}
+                </button>
+            `).join('');
         }
 
-        function renderUI() {
-            const grid = document.getElementById('cards-grid');
-            let filtered = bookmarks;
-            if(currentFolder === 'none') filtered = bookmarks.filter(b => !b.folderId);
-            else if(currentFolder !== 'all') filtered = bookmarks.filter(b => b.folderId === currentFolder);
+        function render() {
+            const g = document.getElementById('grid');
+            let f = favs;
+            if(activeF === 'none') f = favs.filter(b => !b.fid);
+            else if(activeF !== 'all') f = favs.filter(b => b.fid === activeF);
 
-            if(filtered.length === 0) {
-                grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:100px;color:#94a3b8">Aucun favori ici.</div>';
-                return;
-            }
+            if(f.length === 0) { g.innerHTML = '<div style="grid-column:1/-1; text-align:center; padding:80px; color:#cbd5e1">Aucun favori trouvé.</div>'; return; }
 
-            grid.innerHTML = filtered.map(b => `
+            g.innerHTML = f.map(b => `
                 <div class="card">
                     <div class="card-tag">${b.tag || 'Lien'}</div>
                     <div class="card-title">${b.title || 'Sans titre'}</div>
                     <div class="card-desc">${b.desc || ''}</div>
-                    <div class="card-actions">
-                        <a href="${b.url}" target="_blank" class="link-visit">Ouvrir <i class="fas fa-external-link-alt"></i></a>
-                        <button class="btn-delete" onclick="deleteLink('${b.id}')"><i class="fas fa-trash"></i></button>
+                    <div class="card-foot">
+                        <a href="${b.url}" target="_blank" class="card-link">Consulter <i class="fas fa-external-link"></i></a>
+                        <button class="btn-trash" onclick="delLink('${b.id}')"><i class="fas fa-trash-can"></i></button>
                     </div>
                 </div>
             `).join('');
         }
 
-        async function deleteLink(id) {
-            if(confirm("Supprimer ce favori ?")) {
-                await favRef.doc(id).delete(); showToast("Supprimé");
-            }
+        async function delLink(id) {
+            if(confirm("Supprimer ce favori ?")) { await favRef.doc(id).delete(); toast("Supprimé"); }
         }
 
-        async function addLink(e) {
+        async function handleAdd(e) {
             e.preventDefault();
-            const urlInput = document.getElementById('url-input');
-            const btn = document.getElementById('btn-submit');
-            let url = urlInput.value.trim();
+            const u = document.getElementById('url');
+            const b = document.getElementById('btn-add');
+            let url = u.value.trim();
             if(!url) return;
 
-            btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Analyse...';
+            b.disabled = true; b.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Analyse...';
 
             try {
-                const prompt = `Extraire titre, description courte, et catégorie d'un mot pour ce site: ${url}. Répondre uniquement en JSON: {"title":"","desc":"","tag":""}`;
+                const prompt = `Analyse ce site: ${url}. Réponds en JSON: {"title":"","desc":"","tag":""}`;
                 let res = { title: url, desc: "", tag: "Autre" };
-                
-                const alk = localStorage.getItem('albert_key');
-                const gek = localStorage.getItem('gemini_key');
+                const alk = localStorage.getItem('alk');
+                const gek = localStorage.getItem('gek');
 
                 if(alk || gek) {
                     try {
                         if(alk) {
-                            const response = await fetch("https://albert.api.gouv.fr/v1/chat/completions", {
+                            const resp = await fetch("https://albert.api.gouv.fr/v1/chat/completions", {
                                 method: "POST", headers: { "Content-Type":"application/json", "Authorization":`Bearer ${alk}` },
                                 body: JSON.stringify({ model:"openai/gpt-oss-120b", messages:[{role:"user", content:prompt}] })
                             });
-                            const j = await response.json();
+                            const j = await resp.json();
                             res = JSON.parse(j.choices[0].message.content.replace(/```json|```/g,'').trim());
                         } else {
-                            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${gek}`, {
+                            const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${gek}`, {
                                 method: "POST", headers: { "Content-Type":"application/json" },
                                 body: JSON.stringify({ contents:[{parts:[{text:prompt}]}] })
                             });
-                            const j = await response.json();
+                            const j = await resp.json();
                             res = JSON.parse(j.candidates[0].content.parts[0].text.replace(/```json|```/g,'').trim());
                         }
-                    } catch(e) { console.warn("IA error", e); }
+                    } catch(e) { console.warn(e); }
                 }
 
-                await favRef.add({
-                    url, ...res,
-                    folderId: currentFolder === 'all' ? null : currentFolder,
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                });
-
-                urlInput.value = '';
-                showToast("Lien ajouté !");
-            } catch(err) {
-                showToast("Erreur lors de l'ajout.");
-            } finally {
-                btn.disabled = false;
-                btn.innerHTML = '<i class="fas fa-wand-magic-sparkles"></i> Analyser';
-            }
+                await favRef.add({ ...res, url, fid: activeF === 'all' ? null : activeF, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
+                u.value = ''; toast("Ajouté avec succès !");
+            } catch(e) { toast("Erreur de sauvegarde"); }
+            finally { b.disabled = false; b.innerHTML = '<i class="fas fa-wand-sparkles"></i> Analyser'; }
         }
 
         window.onload = init;
