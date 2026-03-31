@@ -106,7 +106,7 @@
         <div>
             <div style="display:flex; align-items:center; gap:8px">
                 <div class="app-title">Favoris IA</div>
-                <span style="font-size:.6rem; font-weight:800; background:#f1f5f9; color:#94a3b8; padding:2px 8px; border-radius:20px; letter-spacing:.05em">v1.8</span>
+                <span style="font-size:.6rem; font-weight:800; background:#f1f5f9; color:#94a3b8; padding:2px 8px; border-radius:20px; letter-spacing:.05em">v1.9</span>
             </div>
             <div class="sync-line"><div class="sdot" id="sdot"></div><span id="slabel">Connexion...</span></div>
         </div>
@@ -418,33 +418,52 @@
         const res = document.getElementById('ai-test-result');
         const gek = document.getElementById('k-gemini').value.trim();
         const alk = document.getElementById('k-albert').value.trim();
-        if(!gek && !alk) { res.style.display='block'; res.style.background='#fef2f2'; res.style.color='#ef4444'; res.textContent='❌ Aucune clé renseignée.'; return; }
-        res.style.display='block'; res.style.background='#f8fafc'; res.style.color='#64748b'; res.textContent='⏳ Test en cours...';
+        if(!gek && !alk) {
+            res.style.cssText='display:block;background:#fef2f2;color:#ef4444;padding:10px 14px;border-radius:10px;font-size:.78rem;margin-bottom:14px';
+            res.textContent='❌ Aucune clé renseignée.'; return;
+        }
+        res.style.cssText='display:block;background:#f8fafc;color:#64748b;padding:10px 14px;border-radius:10px;font-size:.78rem;margin-bottom:14px';
+        res.textContent='⏳ Test en cours...';
         try {
+            // Tester Albert en PRIORITÉ (fonctionne en France/EU)
+            if(alk) {
+                const r = await fetch('https://albert.api.gouv.fr/v1/models', {
+                    headers:{'Authorization':'Bearer '+alk}
+                });
+                if(r.ok) {
+                    res.style.cssText='display:block;background:#f0fdf4;color:#16a34a;padding:10px 14px;border-radius:10px;font-size:.78rem;margin-bottom:14px';
+                    res.textContent='✅ Clé Albert valide ! L\'IA analyser vos liens en français. (Gemini ignoré car bloqué en EU)';
+                    return;
+                } else {
+                    res.style.cssText='display:block;background:#fef2f2;color:#ef4444;padding:10px 14px;border-radius:10px;font-size:.78rem;margin-bottom:14px';
+                    res.textContent='❌ Albert erreur '+r.status+' : Clé invalide ou expirée';
+                    return;
+                }
+            }
+            // Tester Gemini seulement si pas de clé Albert
             if(gek) {
                 const r = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key='+gek, {
                     method:'POST', headers:{'Content-Type':'application/json'},
                     body: JSON.stringify({contents:[{parts:[{text:'Réponds juste: OK'}]}]})
                 });
-                if(r.ok) { res.style.background='#f0fdf4'; res.style.color='#16a34a'; res.textContent='✅ Clé Gemini valide ! L\'IA est opérationnelle.'; }
-                else {
-                    const j=await r.json();
-                    const status = r.status;
-                    const msg = j.error?.message||'';
-                    if(status===429) {
-                        res.style.background='#fffbeb'; res.style.color='#92400e';
-                        res.innerHTML='⚠️ Clé valide mais quota épuisé (erreur 429).<br><strong>Solution :</strong> Créez une clé sur <a href="https://aistudio.google.com/apikey" target="_blank" style="color:#d97706">aistudio.google.com/apikey</a> — quota gratuit illimité inclus.';
+                if(r.ok) {
+                    res.style.cssText='display:block;background:#f0fdf4;color:#16a34a;padding:10px 14px;border-radius:10px;font-size:.78rem;margin-bottom:14px';
+                    res.textContent='✅ Clé Gemini valide !';
+                } else {
+                    const j = await r.json();
+                    if(r.status===429) {
+                        res.style.cssText='display:block;background:#fffbeb;color:#92400e;padding:10px 14px;border-radius:10px;font-size:.78rem;margin-bottom:14px;line-height:1.5';
+                        res.innerHTML='⚠️ Gemini bloqué en UE (quota=0 obligatoire en Europe).<br>👉 Utilisez plutôt <strong>Albert AI</strong> — clé gratuite sur <a href="https://albert.api.gouv.fr" target="_blank" style="color:#d97706">albert.api.gouv.fr</a>';
                     } else {
-                        res.style.background='#fef2f2'; res.style.color='#ef4444';
-                        res.textContent='❌ Gemini erreur '+status+': '+(msg||'Clé invalide');
+                        res.style.cssText='display:block;background:#fef2f2;color:#ef4444;padding:10px 14px;border-radius:10px;font-size:.78rem;margin-bottom:14px';
+                        res.textContent='❌ Gemini erreur '+r.status+': '+(j.error?.message||'Clé invalide');
                     }
                 }
-            } else {
-                const r = await fetch('https://albert.api.gouv.fr/v1/models', { headers:{'Authorization':'Bearer '+alk} });
-                if(r.ok) { res.style.background='#f0fdf4'; res.style.color='#16a34a'; res.textContent='✅ Clé Albert valide !'; }
-                else { res.style.background='#fef2f2'; res.style.color='#ef4444'; res.textContent='❌ Albert erreur '+r.status+': Clé invalide ou expirée'; }
             }
-        } catch(err) { res.style.background='#fef2f2'; res.style.color='#ef4444'; res.textContent='❌ Erreur réseau : '+err.message; }
+        } catch(err) {
+            res.style.cssText='display:block;background:#fef2f2;color:#ef4444;padding:10px 14px;border-radius:10px;font-size:.78rem;margin-bottom:14px';
+            res.textContent='❌ Erreur réseau : '+err.message;
+        }
     }
     function closeOverlay() { document.querySelectorAll('.overlay').forEach(o=>o.classList.remove('open')); }
 
@@ -481,19 +500,11 @@
         const gek = localStorage.getItem('fav_gemini');
 
         if(alk||gek) {
-            // Prompt demandant une EXPLICATION réelle du site (2 phrases)
-            const prompt = `Tu es un assistant de veille documentaire. Donne une explication claire et informative de ce site web en 2 phrases maximum, en français. Retourne UNIQUEMENT ce JSON sur une ligne : {"title":"nom du site","desc":"Explication : à quoi sert ce site, qui l'utilise, quel est son contenu principal.","tag":"catégorie en 1 mot ex: Éducation/Technologie/Actualités/Finance"}. URL : ${url}`;
+            const prompt = `Tu es un assistant de veille documentaire. Donne une explication claire et informative de ce site web en 2 phrases maximum, en français. Retourne UNIQUEMENT ce JSON sur une ligne : {"title":"nom du site","desc":"Explication en 2 phrases : à quoi sert ce site, qui l'utilise, quel est son contenu principal.","tag":"catégorie en 1 mot ex: Éducation/Technologie/Actualités/Finance"}. URL : ${url}`;
             try {
                 let raw='';
-                if(gek) {
-                    // Gemini 2.0 Flash Lite (modèle gratuit actuel)
-                    const r = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key='+gek, {
-                        method:'POST', headers:{'Content-Type':'application/json'},
-                        body: JSON.stringify({contents:[{parts:[{text:prompt}]}], generationConfig:{maxOutputTokens:300, temperature:0.2}})
-                    });
-                    if(r.ok) raw=(await r.json()).candidates?.[0]?.content?.parts?.[0]?.text||'';
-                    else { const j=await r.json(); toast('Gemini '+r.status+': '+(j.error?.message||'Erreur clé')); }
-                } else if(alk) {
+                // Albert EN PRIORITÉ (fonctionne en France, gratuit, fiable)
+                if(alk) {
                     const r = await fetch('https://albert.api.gouv.fr/v1/chat/completions', {
                         method:'POST',
                         headers:{'Content-Type':'application/json','Authorization':'Bearer '+alk},
@@ -501,12 +512,20 @@
                     });
                     if(r.ok) raw=(await r.json()).choices?.[0]?.message?.content||'';
                     else toast('Albert erreur '+r.status);
+                } else if(gek) {
+                    // Gemini si pas d'Albert (attention : bloqué en EU)
+                    const r = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key='+gek, {
+                        method:'POST', headers:{'Content-Type':'application/json'},
+                        body: JSON.stringify({contents:[{parts:[{text:prompt}]}], generationConfig:{maxOutputTokens:300, temperature:0.2}})
+                    });
+                    if(r.ok) raw=(await r.json()).candidates?.[0]?.content?.parts?.[0]?.text||'';
+                    else { const j=await r.json(); console.warn('Gemini bloqué:', j.error?.message); }
                 }
                 // Extraction JSON robuste
                 const match = raw.match(/\{[^{}]+\}/);
                 if(match) {
                     const parsed = JSON.parse(match[0]);
-                    if(parsed.desc) data = parsed; // n'écrase que si l'IA a bien répondu
+                    if(parsed.desc) data = parsed;
                 }
             } catch(err) { console.warn('IA ignorée:',err.message); }
         }
