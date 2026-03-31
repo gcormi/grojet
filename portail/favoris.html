@@ -97,7 +97,7 @@
                 <div class="app-title">Favoris Intelligents</div>
                 <div class="sync-status">
                     <span class="sync-dot saving" id="sync-dot"></span>
-                    <span id="sync-label">Initialisation...</span>
+                    <span id="sync-label">Connexion...</span>
                 </div>
             </div>
             <button class="btn-new-folder" id="btn-ai-config" style="margin-left: 10px; position: relative;" onclick="window.openAISettingsModal()">
@@ -149,6 +149,7 @@
         </div>
     </div>
 
+    <!-- MODAL: NOUVEAU DOSSIER -->
     <div class="modal-overlay" id="modal-folder">
         <div class="modal-box">
             <h3 class="modal-title">Nouveau dossier</h3>
@@ -163,25 +164,22 @@
     <div class="toast" id="toast"><span>Message</span></div>
 
     <script>
-        window.closeModals = () => {
-            document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('active'));
-        };
-
+        // Fonctions Globales
+        window.closeModals = () => { document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('active')); };
         window.openAISettingsModal = () => {
             document.getElementById('modal-ai-settings').classList.add('active');
             const engine = localStorage.getItem('selectedAI') || 'albert';
             document.getElementById('select-ai-engine').value = engine;
             document.getElementById('input-albert-key').value = localStorage.getItem('albertApiKey') || '';
             document.getElementById('input-gemini-key').value = localStorage.getItem('geminiApiKey') || '';
-            const toggle = () => {
-                const val = document.getElementById('select-ai-engine').value;
-                document.getElementById('settings-albert').style.display = val === 'albert' ? 'block' : 'none';
-                document.getElementById('settings-gemini').style.display = val === 'gemini' ? 'block' : 'none';
+            const t = () => {
+                const v = document.getElementById('select-ai-engine').value;
+                document.getElementById('settings-albert').style.display = v === 'albert' ? 'block' : 'none';
+                document.getElementById('settings-gemini').style.display = v === 'gemini' ? 'block' : 'none';
             };
-            document.getElementById('select-ai-engine').onchange = toggle;
-            toggle();
+            document.getElementById('select-ai-engine').onchange = t;
+            t();
         };
-
         window.saveAISettings = () => {
             localStorage.setItem('selectedAI', document.getElementById('select-ai-engine').value);
             localStorage.setItem('albertApiKey', document.getElementById('input-albert-key').value);
@@ -190,12 +188,7 @@
             updateAIStatusUI();
             window.closeModals();
         };
-
-        window.openAddFolderModal = () => {
-            document.getElementById('input-folder-name').value = '';
-            document.getElementById('modal-folder').classList.add('active');
-        };
-
+        window.openAddFolderModal = () => { document.getElementById('input-folder-name').value = ''; document.getElementById('modal-folder').classList.add('active'); };
         window.setFilter = (tag) => { currentFilter = tag; renderUI(); };
 
         function updateAIStatusUI() {
@@ -212,14 +205,12 @@
             setTimeout(() => t.classList.remove('show'), 4000);
         }
 
-        function setSyncStatus(state, msg) {
-            const dot = document.getElementById('sync-dot');
-            if(dot) {
-                dot.className = 'sync-dot ' + state;
-                document.getElementById('sync-label').textContent = msg;
-            }
+        function setSyncStatus(s, m) {
+            const d = document.getElementById('sync-dot');
+            if(d) { d.className = 'sync-dot ' + s; document.getElementById('sync-label').textContent = m; }
         }
 
+        // Configuration Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyBGxXTvy8thfYJZTP-QbWrV-2euTmj4NPY",
             authDomain: "portail-postits.firebaseapp.com",
@@ -229,36 +220,30 @@
             appId: "1:494625342197:web:9cc573fda25019e57ebbbc"
         };
         const appId = 'favoris-app';
+        const sessionUid = "f2659e26b5b7efa7d8099b64d60a7f68c7797c735cc2f2807923129f397a21a1"; // Session Gilles
 
-        let bookmarks = [];
-        let folders = [];
-        let currentFilter = 'Tous';
+        let bookmarks = []; let folders = []; let currentFilter = 'Tous';
         let bookmarksRef, foldersRef;
 
+        // INITIALISATION DIRECTE SANS ATTENDRE L'AUTH
         try {
             firebase.initializeApp(firebaseConfig);
             const db = firebase.firestore();
-            const auth = firebase.auth();
-
-            auth.onAuthStateChanged(user => {
-                if (user) {
-                    setSyncStatus('saved', 'Connecté');
-                    const uid = user.uid;
-                    bookmarksRef = db.collection('artifacts').doc(appId).collection('users').doc(uid).collection('bookmarks');
-                    foldersRef = db.collection('artifacts').doc(appId).collection('users').doc(uid).collection('folders');
-                    loadData();
-                } else {
-                    setSyncStatus('saving', 'Connexion...');
-                    auth.signInAnonymously();
-                }
-            });
+            
+            // Accès immédiat aux données via session fixe
+            bookmarksRef = db.collection('artifacts').doc(appId).collection('users').doc(sessionUid).collection('bookmarks');
+            foldersRef = db.collection('artifacts').doc(appId).collection('users').doc(sessionUid).collection('folders');
 
             function loadData() {
+                setSyncStatus('saving', 'Chargement...');
                 bookmarksRef.orderBy('createdAt', 'desc').onSnapshot(snap => {
                     bookmarks = snap.docs.map(d => ({ id: d.id, ...d.data() }));
                     renderUI();
+                    setSyncStatus('saved', 'Session Active');
                 }, err => {
-                    if(err.code === 'permission-denied') showToast("Non autorisé (Rules Firebase)", true);
+                    console.error(err);
+                    setSyncStatus('error', 'Erreur Droits Firebase');
+                    showToast("Erreur Firestore: Vérifiez les règles de sécurité.");
                 });
 
                 foldersRef.orderBy('createdAt', 'asc').onSnapshot(snap => {
@@ -266,6 +251,11 @@
                     renderUI();
                 });
             }
+
+            loadData();
+            
+            // On peut tenter l'auth en tâche de fond mais sans bloquer l'UI
+            firebase.auth().signInAnonymously().catch(() => console.warn("Auth silencieuse échouée"));
 
         } catch (e) { console.error(e); }
 
@@ -278,10 +268,7 @@
         };
 
         window.deleteBookmark = async (id) => {
-            if(confirm("Supprimer ?")) {
-                await bookmarksRef.doc(id).delete();
-                showToast("Supprimé");
-            }
+            if(confirm("Supprimer ?")) { await bookmarksRef.doc(id).delete(); showToast("Supprimé"); }
         };
 
         function renderUI() {
@@ -311,7 +298,7 @@
                         <p class="card-summary">${(b.summary || '').substring(0,120)}...</p>
                         <div class="card-footer">
                             <a href="${b.url}" target="_blank" class="card-link">Ouvrir <i class="fas fa-external-link-alt"></i></a>
-                            <button class="delete" onclick="deleteBookmark('${b.id}')"><i class="fas fa-trash"></i></button>
+                            <button class="delete" style="color:#ef4444;border:none;background:none;cursor:pointer" onclick="deleteBookmark('${b.id}')"><i class="fas fa-trash"></i></button>
                         </div>
                     </div>
                 `).join('');
@@ -324,25 +311,17 @@
             let url = input.value.trim();
             if(!url || !bookmarksRef) return;
             if(!/^https?:\/\//i.test(url)) url = 'https://' + url;
-
             const btn = document.getElementById('btn-add');
             btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-
             try {
                 const aiResult = await analyzeUrlWithAI(url);
                 await bookmarksRef.add({
                     url, title: aiResult.title || url, summary: aiResult.description || "",
-                    tag: aiResult.category || "Non classé",
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                    tag: aiResult.category || "Non classé", createdAt: firebase.firestore.FieldValue.serverTimestamp()
                 });
-                input.value = '';
-                showToast("Lien ajouté !");
-            } catch(err) {
-                showToast("Erreur Firestore: " + err.message);
-                console.error(err);
-            } finally {
-                btn.disabled = false; btn.innerHTML = '<i class="fas fa-magic"></i> Analyser';
-            }
+                input.value = ''; showToast("Lien ajouté !");
+            } catch(err) { showToast("Erreur Firestore: " + err.message); }
+            finally { btn.disabled = false; btn.innerHTML = '<i class="fas fa-magic"></i> Analyser'; }
         });
 
         async function analyzeUrlWithAI(url) {
@@ -350,8 +329,7 @@
             const albertKey = localStorage.getItem('albertApiKey');
             const geminiKey = localStorage.getItem('geminiApiKey');
             const key = engine === 'albert' ? albertKey : geminiKey;
-            if(!key) return { title: url, category: "Non classé", description: "Ajouté sans IA" };
-
+            if(!key) { showToast("IA: Pas de clé. Ajout simple."); return { title: url, category: "Non classé" }; }
             try {
                 const prompt = `Analyse l'URL: ${url}. Retourne JSON: {"title": "...", "description": "...", "category": "..."}`;
                 let res, data;
@@ -360,33 +338,21 @@
                         method: "POST", headers: { "Content-Type": "application/json", "Authorization": `Bearer ${key.trim()}` },
                         body: JSON.stringify({ model: "openai/gpt-oss-120b", messages: [{role:"user", content: prompt}] })
                     });
-                    if(!res.ok) {
-                        const err = await res.json();
-                        throw new Error("Albert Error: " + (err.error?.message || res.status));
-                    }
+                    if(!res.ok) throw new Error("Albert " + res.status);
                     const json = await res.json();
-                    const content = json.choices[0].message.content;
-                    data = JSON.parse(content.replace(/```json|```/g, '').trim());
+                    data = JSON.parse(json.choices[0].message.content.replace(/```json|```/g, '').trim());
                 } else {
                     res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key.trim()}`, {
                         method: "POST", headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
                     });
-                    if(!res.ok) {
-                        const err = await res.json();
-                        throw new Error("Gemini Error: " + (err.error?.message || res.status));
-                    }
+                    if(!res.ok) throw new Error("Gemini " + res.status);
                     const json = await res.json();
-                    const text = json.candidates[0].content.parts[0].text;
-                    data = JSON.parse(text.replace(/```json|```/g, '').trim());
+                    data = JSON.parse(json.candidates[0].content.parts[0].text.replace(/```json|```/g, '').trim());
                 }
                 return data;
-            } catch(e) { 
-                showToast("IA Error: " + e.message);
-                return { title: url, category: "Non classé" }; 
-            }
+            } catch(e) { showToast("IA Error: " + e.message); return { title: url, category: "Non classé" }; }
         }
-
         updateAIStatusUI();
     </script>
 </body>
