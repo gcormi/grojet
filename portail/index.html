@@ -1629,7 +1629,7 @@
             </p>
             <button onclick="window.login()" class="login-btn">
                 <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" width="20">
-                <span>Accéder au Portail (V3.2 - FORCE-REFRESH)</span>
+                <span>Accéder au Portail (V3.3 - REPAIR COMPLETE)</span>
             </button>
             <div class="mt-8 pt-8 border-t border-slate-100">
                 <p class="text-xs text-slate-400 font-medium">Session sécurisée par Firebase Auth & Push Mobile</p>
@@ -1672,7 +1672,7 @@
                         <i class="fas fa-graduation-cap text-lg" aria-hidden="true"></i>
                     </div>
                     <div>
-                        <span class="block font-extrabold text-base leading-none text-slate-900 tracking-tight">Espace de Travail Augmenté de <span id="portal-user-name" class="text-indigo-600">Gilles</span> <span class="ml-2 px-1.5 py-0.5 bg-indigo-600 text-white text-[8px] rounded font-black tracking-widest uppercase">V3.2</span></span>
+                        <span class="block font-extrabold text-base leading-none text-slate-900 tracking-tight">Espace de Travail Augmenté de <span id="portal-user-name" class="text-indigo-600">Gilles</span> <span class="ml-2 px-1.5 py-0.5 bg-indigo-600 text-white text-[8px] rounded font-black tracking-widest uppercase">V3.3</span></span>
                         <span class="text-[9px] text-slate-400 font-bold uppercase tracking-widest mt-0.5 block">Maîtrise du Workflow & IA Générative</span>
                     </div>
                 </a>
@@ -1787,7 +1787,7 @@
                 <div class="flex-grow text-left">
                     <div class="flex items-center justify-between">
                         <span class="sidebar-fav-btn-title">Mes Liens</span>
-                        <span class="text-[9px] font-black bg-indigo-100 text-indigo-600 px-1.5 py-0.5 rounded-md">V2.9</span>
+                        <span class="text-[9px] font-black bg-indigo-100 text-indigo-600 px-1.5 py-0.5 rounded-md">V3.3</span>
                     </div>
                     <span class="sidebar-fav-btn-subtitle">Cliquez ici pour ouvrir</span>
                 </div>
@@ -3566,9 +3566,12 @@
                 const portalName = document.getElementById('portal-user-name');
                 const photoDisplay = document.getElementById('user-photo');
                 
-                if(nameDisplay) nameDisplay.textContent = user.displayName || "Gilles";
+                
+                if(nameDisplay) nameDisplay.textContent = user.displayName || "Gilles (V3.3)";
                 if(portalName) portalName.textContent = (user.displayName || "Gilles").split(' ')[0];
                 if(photoDisplay) photoDisplay.src = user.photoURL || 'https://ui-avatars.com/api/?name=Gilles';
+                
+                console.log("NOM MIS A JOUR : V3.3");
                 
                 if(typeof applyFiltersAndSearch === 'function') applyFiltersAndSearch();
                 if(typeof startHubSync === 'function') startHubSync();
