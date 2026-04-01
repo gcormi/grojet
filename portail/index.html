@@ -16,6 +16,8 @@
     <!-- Firebase SDK (pour liens personnalisés + post-its) -->
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 
     <style>
         :root {
@@ -1054,8 +1056,8 @@
             }
         }
 
-        /* ===================== LOCK SCREEN ===================== */
-        #lock-screen {
+        /* ===================== AUTH OVERLAY (STYLE HERITÉ) ===================== */
+        .auth-overlay {
             position: fixed;
             inset: 0;
             z-index: 999999;
@@ -1068,18 +1070,11 @@
             transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
-        html.dark-mode #lock-screen {
+        html.dark-mode .auth-overlay {
             background: rgba(15, 23, 42, 0.4);
         }
 
-        #lock-screen.hidden {
-            opacity: 0;
-            visibility: hidden;
-            pointer-events: none;
-            transform: scale(1.05);
-        }
-
-        .lock-card {
+        .auth-card {
             background: rgba(255, 255, 255, 0.9);
             padding: 48px;
             border-radius: 32px;
@@ -1091,7 +1086,7 @@
             animation: lock-card-pop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
 
-        html.dark-mode .lock-card {
+        html.dark-mode .auth-card {
             background: rgba(30, 41, 59, 0.8);
             border-color: rgba(255, 255, 255, 0.1);
             color: white;
@@ -1102,7 +1097,7 @@
             to { opacity: 1; transform: translateY(0) scale(1); }
         }
 
-        .lock-icon {
+        .auth-icon {
             width: 64px;
             height: 64px;
             background: linear-gradient(135deg, #4f46e5, #0ea5e9);
@@ -1116,7 +1111,7 @@
             box-shadow: 0 10px 20px rgba(79, 70, 229, 0.3);
         }
 
-        .lock-title {
+        .auth-card h1 {
             font-family: 'Outfit', sans-serif;
             font-size: 1.5rem;
             font-weight: 800;
@@ -1124,60 +1119,34 @@
             color: var(--text-primary);
         }
 
-        .lock-subtitle {
+        .auth-card p {
             font-size: 0.875rem;
             color: var(--text-secondary);
             margin-bottom: 32px;
         }
 
-        .lock-input-group {
-            position: relative;
-            margin-bottom: 24px;
-        }
-
-        #portal-password-input {
-            width: 100%;
-            padding: 14px 20px;
-            border-radius: 16px;
-            border: 1.5px solid var(--border-color);
-            background: var(--bg-primary);
-            color: var(--text-primary);
-            font-weight: 600;
-            text-align: center;
-            letter-spacing: 0.2em;
-            transition: all 0.3s ease;
-            outline: none;
-        }
-
-        #portal-password-input:focus {
-            border-color: var(--primary);
-            box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
-        }
-
-        .lock-btn {
+        .login-btn {
             width: 100%;
             padding: 14px;
             border-radius: 16px;
-            background: linear-gradient(135deg, #4f46e5, #6366f1);
-            color: white;
+            background: white;
+            color: #334155;
             font-weight: 700;
-            border: none;
+            border: 1.5px solid #e2e8f0;
             cursor: pointer;
             transition: all 0.3s ease;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
-            box-shadow: 0 10px 20px rgba(79, 70, 229, 0.2);
+            gap: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
         }
 
-        .lock-btn:hover {
+        .login-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 15px 30px rgba(79, 70, 229, 0.3);
-            filter: brightness(1.1);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            background: #f8fafc;
         }
-
-        .lock-btn i { font-size: 0.8rem; }
 
         .shake {
             animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
@@ -1548,94 +1517,21 @@
 
 <body class="text-slate-700 antialiased flex flex-col min-h-screen">
 
-    <!-- Screen Lock Overlay -->
-    <div id="lock-screen" aria-modal="true" role="dialog">
-        <div class="lock-card">
-            <div class="lock-icon">
+    <!-- Google Auth Overlay (V3.8) -->
+    <div id="auth-overlay" class="auth-overlay active">
+        <div class="auth-card">
+            <div class="auth-icon">
                 <i class="fas fa-lock"></i>
             </div>
-            <h1 class="lock-title">Accès Protégé</h1>
-            <p class="lock-subtitle">Veuillez entrer le mot de passe pour accéder au Portail de l'Ingénierie Pédagogique.</p>
-            
-            <form id="lock-form" onsubmit="return false;">
-                <div class="lock-input-group">
-                    <input type="password" id="portal-password-input" placeholder="••••••••" autocomplete="current-password" required>
-                </div>
-                <button type="submit" id="unlock-button" class="lock-btn">
-                    Accéder au portail
-                    <i class="fas fa-chevron-right"></i>
-                </button>
-            </form>
-            
-            <p id="lock-error" class="text-xs text-rose-500 font-bold mt-4 opacity-0 transition-opacity">Mot de passe incorrect. Réessayez.</p>
+            <h1>Espace Sécurisé</h1>
+            <p>Connectez-vous avec Google pour accéder à l'ensemble de vos outils.</p>
+            <button onclick="window.login()" class="login-btn">
+                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" width="20">
+                <span>Accéder au Portail (V3.8)</span>
+            </button>
         </div>
     </div>
 
-    <script>
-        // Logic for unlocking the portal
-        const VALID_PASSWORD = "Brigitte*1963";
-        
-        document.addEventListener('DOMContentLoaded', () => {
-            const lockScreen = document.getElementById('lock-screen');
-            const passwordInput = document.getElementById('portal-password-input');
-            const lockForm = document.getElementById('lock-form');
-            const lockError = document.getElementById('lock-error');
-
-            // If already unlocked via localStorage, hide lock screen immediately
-            if (localStorage.getItem('portal_unlocked') === 'true') {
-                lockScreen.classList.add('hidden');
-                document.body.style.overflow = '';
-            } else {
-                document.body.style.overflow = 'hidden';
-            }
-
-            function handleUnlock() {
-                const entered = passwordInput.value;
-                if (entered === VALID_PASSWORD) {
-                    localStorage.setItem('portal_unlocked', 'true');
-                    lockScreen.classList.add('hidden');
-                    document.body.style.overflow = '';
-                    
-                    // Small toast success
-                    if (typeof showToast === 'function') {
-                        showToast('Bonjour Brigitte ! Portail déverrouillé.');
-                    }
-                } else {
-                    // Password failed
-                    const card = document.querySelector('.lock-card');
-                    card.classList.add('shake');
-                    lockError.classList.remove('opacity-0');
-                    passwordInput.value = '';
-                    passwordInput.focus();
-                    
-                    setTimeout(() => {
-                        card.classList.remove('shake');
-                    }, 500);
-                }
-            }
-
-            lockForm.addEventListener('submit', (e) => {
-                e.preventDefault();
-                handleUnlock();
-            });
-
-            // Focus on input automatically
-            if (!lockScreen.classList.contains('hidden')) {
-                passwordInput.focus();
-            }
-
-            // Logout/Lock Logic
-            const logoutBtns = [document.getElementById('logout-portal-btn')];
-            logoutBtns.forEach(btn => {
-                btn?.addEventListener('click', () => {
-                    if (confirm('Voulez-vous verrouiller l\'accès au portail ?')) {
-                        localStorage.removeItem('portal_unlocked');
-                        location.reload();
-                    }
-                });
-            });
-        });
-    </script>
 
     <!-- Skip to content (Accessibilité) -->
     <a href="#main-content" class="skip-link">Aller au contenu principal</a>
@@ -1673,7 +1569,7 @@
                         Philosophie
                     </button>
                     <!-- Logout/Lock Button -->
-                    <button id="logout-portal-btn" title="Verrouiller le portail" class="w-10 h-10 rounded-xl flex items-center justify-center text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-all border border-transparent hover:border-rose-100">
+                    <button onclick="window.logout()" id="logout-portal-btn" title="Se déconnecter" class="w-10 h-10 rounded-xl flex items-center justify-center text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-all border border-transparent hover:border-rose-100">
                         <i class="fas fa-power-off text-sm"></i>
                     </button>
                 </nav>
@@ -1755,7 +1651,7 @@
             
             <!-- NOUVEAU BOUTON MES LIENS -->
             <button id="sidebar-fav-toggle" class="sidebar-fav-btn" aria-label="Ouvrir mes favoris" onclick="window.openDrawer ? window.openDrawer() : console.error('openDrawer non défini')">
-                <div class="version-badge">V2.5</div>
+                <div class="version-badge">V3.8</div>
                 <div class="sidebar-fav-btn-icon">
                     <i class="fas fa-star"></i>
                 </div>
@@ -2610,7 +2506,7 @@
                 <p>L'application se décompose en <strong>six familles fonctionnelles complémentaires</strong> :</p>
 
                 <div class="modal-pillar">
-                    <div class="modal-pillar-icon">📖</div>
+                    <div class="modal-modal-pillar-icon">📖</div>
                     <div class="modal-pillar-content">
                         <strong>A. Générateurs de Cours Disciplinaires</strong>
                         <p>Sciences (Technologie, SVT, Physique-Chimie, Mathématiques), Sciences Humaines (Histoire, Géographie, EMC), Langues & Arts (Français, Anglais, Espagnol, Italien, LCC, Arts Plastiques, Éducation Musicale), Lycée (SNT, SES)</p>
@@ -2695,6 +2591,46 @@
 
     <!-- ============================== SCRIPTS ============================== -->
     <script>
+        // --- AUTHENTIFICATION & CONFIGURATION (V3.7) ---
+        try {
+            if (!firebase.apps.length) {
+                firebase.initializeApp({
+                    apiKey: "AIzaSyBGxXTvy8thfYJZTP-QbWrV-2euTmj4NPY",
+                    authDomain: "portail-postits.firebaseapp.com",
+                    projectId: "portail-postits",
+                    storageBucket: "portail-postits.firebasestorage.app",
+                    messagingSenderId: "494625342197",
+                    appId: "1:494625342197:web:9cc573fda25019e57ebbbc"
+                });
+            }
+        } catch (e) { console.error("Firebase Init:", e); }
+
+        window.login = function() {
+            const provider = new firebase.auth.GoogleAuthProvider();
+            firebase.auth().signInWithPopup(provider).catch(err => {
+                if(err.code === 'auth/popup-blocked') firebase.auth().signInWithRedirect(provider);
+            });
+        };
+
+        window.logout = function() {
+            if(confirm('Se déconnecter ?')) firebase.auth().signOut().then(() => location.reload());
+        };
+
+        firebase.auth().onAuthStateChanged(user => {
+            const overlay = document.getElementById('auth-overlay');
+            if (user) {
+                overlay.style.display = 'none';
+                document.body.style.overflow = '';
+                // Mise à jour visuelle du prénom (si l'élément existe)
+                const portalName = document.getElementById('portal-user-name');
+                if(portalName && user.displayName) portalName.textContent = user.displayName.split(' ')[0];
+                if(typeof renderSidebarLinks === 'function') renderSidebarLinks();
+            } else {
+                overlay.style.display = 'flex';
+                document.body.style.overflow = 'hidden';
+            }
+        });
+
         // ====== ACCESSIBILITY SETTINGS MANAGEMENT ======
         const STORAGE_KEY_DARK_MODE = 'accessibility-dark-mode';
         const STORAGE_KEY_DYSLEXIA = 'accessibility-dyslexia';
