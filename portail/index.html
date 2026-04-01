@@ -1755,7 +1755,7 @@
             
             <!-- NOUVEAU BOUTON MES LIENS -->
             <button id="sidebar-fav-toggle" class="sidebar-fav-btn" aria-label="Ouvrir mes favoris" onclick="window.openDrawer ? window.openDrawer() : console.error('openDrawer non défini')">
-                <div class="version-badge">V2.2</div>
+                <div class="version-badge">V2.3</div>
                 <div class="sidebar-fav-btn-icon">
                     <i class="fas fa-star"></i>
                 </div>
@@ -3261,11 +3261,11 @@
     </script>
 
     <!-- Mes Favoris Modal (Small Center Modal) -->
-    <div id="drawer-overlay" class="fav-modal-overlay" aria-hidden="true">
+    <div id="drawer-overlay" class="fav-modal-overlay" aria-hidden="true" onclick="window.closeDrawer()">
         <div id="fav-drawer" class="fav-modal-container" role="dialog" aria-labelledby="drawer-title" onclick="event.stopPropagation()">
             <div class="drawer-header">
                 <h2 id="drawer-title"><i class="fas fa-star"></i> Mes Favoris</h2>
-                <button id="drawer-close" class="drawer-close-btn" aria-label="Fermer le menu">
+                <button id="drawer-close" class="drawer-close-btn" aria-label="Fermer le menu" onclick="window.closeDrawer()">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
