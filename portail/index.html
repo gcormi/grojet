@@ -1581,10 +1581,10 @@
         .auth-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(255, 255, 255, 0.4); backdrop-filter: blur(25px);
-            z-index: 9999; display: flex; align-items: center; justify-content: center;
-            opacity: 0; pointer-events: none; transition: opacity 0.4s ease;
+            z-index: 9999; display: none; align-items: center; justify-content: center;
+            opacity: 0; transition: opacity 0.4s ease;
         }
-        .auth-overlay.active { opacity: 1; pointer-events: all; }
+        .auth-overlay.active { display: flex; opacity: 1; }
 
         .auth-card {
             background: white; border: 1px solid rgba(0,0,0,0.05); border-radius: 32px;
@@ -1615,11 +1615,10 @@
 
 <body class="text-slate-700 antialiased flex flex-col min-h-screen">
     <!-- ECRAN DE VERROUILLAGE SÉCURISÉ V2.6 -->
-    <div id="auth-overlay" class="auth-overlay active">
+    <div id="auth-overlay" class="auth-overlay">
         <script>
-            // Failsafe instantané : si déjà loggé, on cache tout avant le rendu
+            // Failsafe instantané : si mémorisé, on ne montre RIEN
             if (localStorage.getItem('portal_logged_in') === 'true') {
-                document.getElementById('auth-overlay').classList.remove('active');
                 document.getElementById('auth-overlay').style.display = 'none';
             }
         </script>
@@ -1633,7 +1632,7 @@
             </p>
             <button onclick="window.login()" class="login-btn">
                 <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" width="20">
-                <span>Déverrouiller avec mon compte Google (V2.8.5 - FINAL)</span>
+                <span>Déverrouiller avec mon compte Google (V2.9.0 - ULTRA-FIX)</span>
             </button>
             <div class="mt-8 pt-8 border-t border-slate-100">
                 <p class="text-xs text-slate-400 font-medium">Session sécurisée par Firebase Auth & Push Mobile</p>
@@ -2771,7 +2770,14 @@
                 document.getElementById('user-photo').src = user.photoURL || 'https://ui-avatars.com/api/?name='+user.displayName;
                 if(typeof startHubSync === 'function') startHubSync();
             } else {
+                currentUser = null;
                 localStorage.removeItem('portal_logged_in');
+                // GRACE PERIOD : on attend avant d'afficher le verrou au cas où
+                setTimeout(() => {
+                    if (!firebase.auth().currentUser && authOverlay) {
+                        authOverlay.classList.add('active');
+                    }
+                }, 1500);
             }
         });
 
