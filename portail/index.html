@@ -1632,7 +1632,7 @@
             </p>
             <button onclick="window.login()" class="login-btn">
                 <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" width="20">
-                <span>Déverrouiller avec mon compte Google (V2.9.0 - ULTRA-FIX)</span>
+                <span>Déverrouiller avec mon compte Google (V2.9.1 - LIGHT-ON)</span>
             </button>
             <div class="mt-8 pt-8 border-t border-slate-100">
                 <p class="text-xs text-slate-400 font-medium">Session sécurisée par Firebase Auth & Push Mobile</p>
@@ -1675,7 +1675,7 @@
                         <i class="fas fa-graduation-cap text-lg" aria-hidden="true"></i>
                     </div>
                     <div>
-                        <span class="block font-extrabold text-base leading-none text-slate-900 tracking-tight">Espace de Travail Augmenté de <span class="text-indigo-600">Gilles</span></span>
+                        <span class="block font-extrabold text-base leading-none text-slate-900 tracking-tight">Espace de Travail Augmenté de <span id="portal-user-name" class="text-indigo-600">Gilles</span></span>
                         <span class="text-[9px] text-slate-400 font-bold uppercase tracking-widest mt-0.5 block">Maîtrise du Workflow & IA Générative</span>
                     </div>
                 </a>
@@ -1790,7 +1790,7 @@
                 <div class="flex-grow text-left">
                     <div class="flex items-center justify-between">
                         <span class="sidebar-fav-btn-title">Mes Liens</span>
-                        <span class="text-[9px] font-black bg-indigo-100 text-indigo-600 px-1.5 py-0.5 rounded-md">V2.8</span>
+                        <span class="text-[9px] font-black bg-indigo-100 text-indigo-600 px-1.5 py-0.5 rounded-md">V2.9</span>
                     </div>
                     <span class="sidebar-fav-btn-subtitle">Cliquez ici pour ouvrir</span>
                 </div>
@@ -2759,6 +2759,7 @@
             const authOverlay = document.getElementById('auth-overlay');
             const profileSection = document.getElementById('user-profile-section');
             if (user) {
+                console.log("ACCÈS VALITÉ :", user.displayName);
                 currentUser = user;
                 localStorage.setItem('portal_logged_in', 'true');
                 if(authOverlay) {
@@ -2766,13 +2767,26 @@
                     authOverlay.style.display = 'none';
                 }
                 if(profileSection) profileSection.classList.remove('hidden');
-                document.getElementById('user-name').textContent = user.displayName;
-                document.getElementById('user-photo').src = user.photoURL || 'https://ui-avatars.com/api/?name='+user.displayName;
+                
+                // Mise à jour des noms partout
+                const nameDisplay = document.getElementById('user-name');
+                const portalName = document.getElementById('portal-user-name');
+                if(nameDisplay) nameDisplay.textContent = user.displayName;
+                if(portalName) portalName.textContent = user.displayName.split(' ')[0]; // On garde juste le prénom en haut pour le style
+                
+                const photoDisplay = document.getElementById('user-photo');
+                if(photoDisplay) photoDisplay.src = user.photoURL || 'https://ui-avatars.com/api/?name='+user.displayName;
+                
+                // FORCER L'AFFICHAGE DES OUTILS
+                if(typeof applyFiltersAndSearch === 'function') {
+                    console.log("Déclenchement affichage grille outils...");
+                    applyFiltersAndSearch();
+                }
+                
                 if(typeof startHubSync === 'function') startHubSync();
             } else {
                 currentUser = null;
                 localStorage.removeItem('portal_logged_in');
-                // GRACE PERIOD : on attend avant d'afficher le verrou au cas où
                 setTimeout(() => {
                     if (!firebase.auth().currentUser && authOverlay) {
                         authOverlay.classList.add('active');
@@ -3531,8 +3545,10 @@
 
         // Init on startup
         setTimeout(() => {
+            console.log("INIT FINAL : Lancement des filtres et zones de drop...");
+            if(typeof applyFiltersAndSearch === 'function') applyFiltersAndSearch();
             initTransitDropZones();
-            // Bloquage global du drop navigateur pour éviter l'ouverture/triage auto du fichier
+            // Bloquage global du drop navigateur
             ['dragover', 'drop'].forEach(eventName => {
                 window.addEventListener(eventName, e => {
                     e.preventDefault();
