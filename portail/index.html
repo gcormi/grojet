@@ -1632,7 +1632,7 @@
             </p>
             <button onclick="window.login()" class="login-btn">
                 <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" width="20">
-                <span>Déverrouiller avec mon compte Google (V2.9.6 - FINAL-LIGHT)</span>
+                <span>Déverrouiller avec mon compte Google (V2.9.9 - MASTER-RESCUE)</span>
             </button>
             <div class="mt-8 pt-8 border-t border-slate-100">
                 <p class="text-xs text-slate-400 font-medium">Session sécurisée par Firebase Auth & Push Mobile</p>
@@ -1773,7 +1773,7 @@
         <aside class="w-full lg:w-64 xl:w-72 flex-shrink-0 lg:sticky lg:top-24 card-soft rounded-3xl p-5 border border-slate-200 shadow-xl z-20" style="max-height: calc(100vh - 7rem); overflow-y: auto; scrollbar-width: thin;">
             
             <!-- PROFIL UTILISATEUR V2.6 -->
-            <div id="user-profile-section" class="profile-section hidden">
+            <div id="user-profile-section" class="profile-section">
                 <img id="user-photo" src="" alt="Photo" class="user-avatar">
                 <div class="user-info">
                     <span id="user-name" class="user-name">Chargement...</span>
@@ -1801,7 +1801,7 @@
                     <i class="fas fa-layer-group"></i>
                 </div>
                 <div>
-                    <h2 class="font-display font-bold text-slate-900 text-base leading-tight">Hub Personnel</h2>
+                    <h2 class="font-display font-bold text-slate-900 text-base leading-tight">Hub Personnel <span class="text-[9px] text-indigo-400">V2.9.9</span></h2>
                     <span class="text-[9px] uppercase tracking-widest text-slate-400 font-bold block">Raccourcis rapides</span>
                 </div>
             </div>
@@ -1986,7 +1986,7 @@
                 </article>
 
                 <!-- 2. Master Technologie -->
-                <article class="card-soft rounded-2xl p-8 flex flex-col h-full fade-in-up stagger-2 card-wrapper"
+                <article class="card-soft rounded-2xl p-8 flex flex-col h-full card-wrapper"
                          data-category="ia,creation"
                          data-name="Master Technologie Cours Complet Ressources Pédagogiques"
                          aria-label="Master Technologie">
@@ -2014,7 +2014,7 @@
                 </article>
 
                 <!-- 3. Adaptation Inclusive -->
-                <article class="card-soft rounded-2xl p-8 flex flex-col h-full fade-in-up stagger-3 card-wrapper"
+                <article class="card-soft rounded-2xl p-8 flex flex-col h-full card-wrapper"
                          data-category="inclusion"
                          data-name="Adaptation Inclusive DYS TDAH Accessibilité Ressources"
                          aria-label="Adaptation Inclusive">
@@ -2041,7 +2041,7 @@
                 </article>
 
                 <!-- 4. Post-its (Nouveau) -->
-                <article class="card-soft rounded-2xl p-8 flex flex-col h-full fade-in-up stagger-4 card-wrapper"
+                <article class="card-soft rounded-2xl p-8 flex flex-col h-full card-wrapper"
                          data-category="orga"
                          data-name="Post-its Brainstorming Organisation Notes"
                          aria-label="Post-its Interactifs">
@@ -2982,6 +2982,15 @@
 
             noResults.style.display = visible === 0 ? 'block' : 'none';
             console.log("OUTILS VISIBLES :", visible, "/", cardWrappers.length);
+            
+            // FORCE VISIBILITY FAILSAFE
+            cardWrappers.forEach(card => {
+                if(card.classList.contains('fade-in-up')) {
+                    card.classList.add('visible');
+                    card.style.opacity = "1";
+                    card.style.transform = "translateY(0)";
+                }
+            });
         }
 
         filterPills.forEach(pill => {
@@ -3179,11 +3188,10 @@
         // Init Hub initialement géré par initializeApp au dessus
 
         function startHubSync() {
+            renderSidebarLinks(); // On affiche déjà le dur
             if(!currentUser) return;
             customLinksRef = hubDb.collection('customHubLinks');
             
-            // On flitre par userId si on veut que ce soit strictement personnel
-            // Pour l'instant on garde global mais on se prépare au perso
             customLinksRef.orderBy('createdAt', 'asc').onSnapshot(snapshot => {
                 const customLinks = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
                 renderSidebarLinks();
@@ -3510,6 +3518,7 @@
         // Init on startup
         setTimeout(() => {
             console.log("INIT FINAL : Lancement des filtres et zones de drop...");
+            renderSidebarLinks(); // FORCE AFFICHAGE MENU SIDEBAR
             if(typeof applyFiltersAndSearch === 'function') applyFiltersAndSearch();
             initTransitDropZones();
             // Bloquage global du drop navigateur
