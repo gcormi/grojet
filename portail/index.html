@@ -2731,15 +2731,26 @@
     <script>
         // --- PRIORITE ABSOLUE : INITIALISATION DU BOUTON ---
         window.login = function() {
-            alert("Bouton cliqué : Lancement de la connexion Google...");
+            if (typeof firebase === 'undefined' || !firebase.auth) {
+                alert("Firebase n'est pas encore prêt. Veuillez patienter 2 secondes et réessuyer.");
+                return;
+            }
+            
+            console.log("Lancement de la connexion Google...");
             const provider = new firebase.auth.GoogleAuthProvider();
+            
+            // On essaie d'ouvrir le popup directement
             firebase.auth().signInWithPopup(provider)
                 .then(result => {
-                    console.log("Login OK:", result.user.displayName);
+                    console.log("Connexion réussie !");
                 })
                 .catch(error => {
-                    console.error("Login failed:", error);
-                    alert("Erreur de connexion : " + error.message);
+                    console.error("Erreur Auth:", error);
+                    if (error.code === 'auth/popup-blocked') {
+                        alert("La fenêtre de connexion a été bloquée par votre navigateur. Veuillez autoriser les popups pour ce site.");
+                    } else {
+                        alert("Erreur de connexion : " + error.message);
+                    }
                 });
         };
 
