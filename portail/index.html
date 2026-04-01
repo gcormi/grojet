@@ -2729,6 +2729,20 @@
 
     <!-- ============================== SCRIPTS ============================== -->
     <script>
+        // --- PRIORITE ABSOLUE : INITIALISATION DU BOUTON ---
+        window.login = function() {
+            alert("Bouton cliqué : Lancement de la connexion Google...");
+            const provider = new firebase.auth.GoogleAuthProvider();
+            firebase.auth().signInWithPopup(provider)
+                .then(result => {
+                    console.log("Login OK:", result.user.displayName);
+                })
+                .catch(error => {
+                    console.error("Login failed:", error);
+                    alert("Erreur de connexion : " + error.message);
+                });
+        };
+
         // ====== ACCESSIBILITY SETTINGS MANAGEMENT ======
         const STORAGE_KEY_DARK_MODE = 'accessibility-dark-mode';
         const STORAGE_KEY_DYSLEXIA = 'accessibility-dyslexia';
@@ -3098,18 +3112,7 @@
             document.body.style.overflow = '';
         };
 
-        window.login = function() {
-            console.log("Starting Login Flow...");
-            const provider = new firebase.auth.GoogleAuthProvider();
-            firebase.auth().signInWithPopup(provider)
-                .then(result => {
-                    console.log("Login OK:", result.user.email);
-                })
-                .catch(error => {
-                    console.error("Login failed:", error);
-                    alert("Erreur de connexion : " + error.message);
-                });
-        };
+        // Handlers déjà définis en haut du script
         
         // Démarrage immédiat de Firebase
         try {
