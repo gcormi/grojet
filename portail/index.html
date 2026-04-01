@@ -1228,232 +1228,79 @@
             visibility: visible;
         }
 
-        #fav-drawer-toggle {
-            position: fixed;
-            top: 50%;
-            right: 0;
-            transform: translateY(-50%);
-            background: linear-gradient(135deg, #4f46e5, #6366f1);
+        /* Sidebar Favoris Button */
+        .sidebar-fav-btn {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px;
+            background: linear-gradient(135deg, #6366f1, #4f46e5);
             color: white;
-            padding: 24px 10px;
-            border-radius: 20px 0 0 20px;
-            cursor: pointer;
-            z-index: 900;
-            box-shadow: -4px 0 15px rgba(79, 70, 229, 0.3);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 12px;
-            font-weight: 800;
-            font-size: 0.7rem;
-            writing-mode: vertical-rl;
-            text-orientation: mixed;
-            transition: all 0.3s ease;
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-right: none;
-        }
-
-        #fav-drawer-toggle:hover {
-            padding-right: 15px;
-            background: linear-gradient(135deg, #4338ca, #4f46e5);
-            box-shadow: -6px 0 20px rgba(79, 70, 229, 0.4);
-        }
-
-        #fav-drawer-toggle i {
-            writing-mode: horizontal-tb;
-            font-size: 1.1rem;
-            margin-bottom: 5px;
-        }
-
-        .drawer-header {
-            padding: 24px;
-            border-bottom: 1px solid var(--border-color);
-            background: var(--bg-tertiary);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .drawer-header h2 {
-            font-family: 'Outfit', sans-serif;
-            font-size: 1.25rem;
-            font-weight: 800;
-            color: var(--text-primary);
-            margin: 0;
-        }
-
-        .drawer-close-btn {
-            background: var(--bg-primary);
-            border: 1px solid var(--border-color);
-            width: 36px;
-            height: 36px;
-            border-radius: 10px;
-            color: var(--text-secondary);
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.2s ease;
-        }
-
-        .drawer-close-btn:hover {
-            color: var(--primary);
-            border-color: var(--primary);
-            transform: rotate(90deg);
-        }
-
-        .drawer-content {
-            flex: 1;
-            overflow-y: auto;
-            padding: 20px;
-        }
-
-        .drawer-footer {
-            padding: 20px;
-            border-top: 1px solid var(--border-color);
-            background: var(--bg-tertiary);
-        }
-
-        .fav-link-item {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 12px;
-            border-radius: 16px;
-            background: var(--bg-secondary);
-            border: 1px solid var(--border-color);
-            margin-bottom: 10px;
-            transition: all 0.3s ease;
+            border-radius: 20px;
             text-decoration: none;
-            color: var(--text-primary);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(79, 70, 229, 0.2);
+            cursor: pointer;
             position: relative;
+            overflow: hidden;
         }
 
-        .fav-link-item:hover {
-            transform: translateX(-5px);
-            border-color: var(--primary);
-            background: var(--bg-primary);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        .sidebar-fav-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(79, 70, 229, 0.3);
+            background: linear-gradient(135deg, #4f46e5, #4338ca);
         }
 
-        .fav-link-icon-container {
-            width: 40px;
-            height: 40px;
+        .sidebar-fav-btn::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: 0.5s;
+        }
+
+        .sidebar-fav-btn:hover::after {
+            left: 100%;
+        }
+
+        .sidebar-fav-btn-icon {
+            width: 38px;
+            height: 38px;
+            background: rgba(255, 255, 255, 0.2);
             border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 1.1rem;
-            flex-shrink: 0;
-            transition: transform 0.3s ease;
+            backdrop-filter: blur(4px);
         }
 
-        .fav-link-item:hover .fav-link-icon-container {
-            transform: scale(1.1);
+        .sidebar-fav-btn-text {
+            display: flex;
+            flex-direction: column;
+            text-align: left;
         }
 
-        .fav-link-info {
-            flex: 1;
-            min-width: 0;
-        }
-
-        .fav-link-title {
-            font-weight: 700;
-            font-size: 0.9rem;
-            margin-bottom: 1px;
-            display: block;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .fav-link-url {
-            font-size: 0.7rem;
-            color: var(--text-secondary);
-            display: block;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            opacity: 0.6;
-        }
-
-        .fav-link-badge {
-            font-size: 0.6rem;
+        .sidebar-fav-btn-title {
             font-weight: 800;
+            font-size: 0.85rem;
             text-transform: uppercase;
             letter-spacing: 0.05em;
-            padding: 2px 6px;
-            border-radius: 6px;
-            background: var(--bg-tertiary);
-            color: var(--text-secondary);
-            border: 1px solid var(--border-color);
-            margin-left: auto;
         }
 
-        .fav-add-btn {
-            width: 100%;
-            padding: 14px;
-            border-radius: 14px;
-            border: 2px dashed var(--primary);
-            background: var(--primary-light);
-            color: var(--primary);
-            font-weight: 700;
-            font-size: 0.85rem;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            margin-top: 5px;
-        }
-
-        html.dark-mode .fav-add-btn {
-            background: rgba(79, 70, 229, 0.1);
-        }
-
-        .fav-add-btn:hover {
-            background: var(--primary);
-            color: white;
-            border-style: solid;
-        }
-
-        .fav-link-delete {
-            position: absolute;
-            right: 8px;
-            top: 50%;
-            transform: translateY(-50%) scale(0.8);
-            opacity: 0;
-            width: 28px;
-            height: 28px;
-            border-radius: 8px;
-            background: #ffe4e6;
-            color: #e11d48;
-            border: none;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.2s ease;
-        }
-
-        .fav-link-item:hover .fav-link-delete {
-            opacity: 1;
-            transform: translateY(-50%) scale(1);
-        }
-
-        .fav-link-delete:hover {
-            background: #fb7185;
-            color: white;
+        .sidebar-fav-btn-subtitle {
+            font-size: 0.65rem;
+            opacity: 0.8;
+            font-weight: 500;
         }
 
         @media (max-width: 640px) {
-            #fav-drawer-toggle {
-                padding: 16px 8px;
-                font-size: 0.6rem;
-            }
             .drawer-right {
                 width: 100%;
             }
@@ -1676,6 +1523,18 @@
         
         <!-- SIDEBAR HUB -->
         <aside class="w-full lg:w-64 xl:w-72 flex-shrink-0 lg:sticky lg:top-24 card-soft rounded-3xl p-5 border border-slate-200 shadow-xl z-20" style="max-height: calc(100vh - 7rem); overflow-y: auto; scrollbar-width: thin;">
+            
+            <!-- NOUVEAU BOUTON MES LIENS -->
+            <button id="sidebar-fav-toggle" class="sidebar-fav-btn" aria-label="Ouvrir mes favoris" aria-expanded="false" aria-controls="fav-drawer">
+                <div class="sidebar-fav-btn-icon">
+                    <i class="fas fa-star"></i>
+                </div>
+                <div class="sidebar-fav-btn-text">
+                    <span class="sidebar-fav-btn-title">Mes Liens</span>
+                    <span class="sidebar-fav-btn-subtitle">Favoris personnels</span>
+                </div>
+            </button>
+
             <div class="flex items-center gap-3 mb-6 px-1">
                 <div class="w-10 h-10 bg-gradient-to-br from-indigo-600 to-blue-500 rounded-xl flex items-center justify-center text-white shadow-md shadow-indigo-200">
                     <i class="fas fa-layer-group"></i>
@@ -3112,7 +2971,7 @@
         // Drawer Handlers
         const favDrawer = document.getElementById('fav-drawer');
         const drawerOverlay = document.getElementById('drawer-overlay');
-        const drawerToggle = document.getElementById('fav-drawer-toggle');
+        const drawerToggle = document.getElementById('sidebar-fav-toggle');
         const drawerClose = document.getElementById('drawer-close');
         const drawerAddBtn = document.getElementById('drawer-add-link');
 
@@ -3213,11 +3072,7 @@
         </div>
     </div>
 
-    <!-- Toggle Button for Drawer -->
-    <button id="fav-drawer-toggle" aria-label="Ouvrir mes favoris" aria-expanded="false" aria-controls="fav-drawer">
-        <i class="fas fa-star"></i>
-        <span>Mes Liens</span>
-    </button>
+    <!-- (Le bouton flottant a été déplacé dans la barre latérale gauche) -->
 
 </body>
 </html>
