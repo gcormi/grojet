@@ -3423,10 +3423,11 @@
                 try {
                     await storageRef.put(file);
                     showToast(`✅ ${file.name} ajouté !`, "success");
-                    refreshTransitLists();
+                    // Attente de 1 seconde pour l'indexation Firebase
+                    setTimeout(refreshTransitLists, 1000);
                 } catch (err) {
-                    console.error(err);
-                    showToast(`❌ Erreur : ${file.name}`, "error");
+                    console.error("Upload Error:", err);
+                    showToast(`❌ Erreur : ${file.name} (${err.code})`, "error");
                 }
             }
         }
@@ -3493,7 +3494,16 @@
         };
 
         // Init on startup
-        setTimeout(initTransitDropZones, 1500);
+        setTimeout(() => {
+            initTransitDropZones();
+            // Bloquage global du drop navigateur pour éviter l'ouverture/triage auto du fichier
+            ['dragover', 'drop'].forEach(eventName => {
+                window.addEventListener(eventName, e => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                }, false);
+            });
+        }, 1500);
 
         console.log('--- Hub Script Loaded (V2.8 - Secure) ---');
     </script>
