@@ -1569,105 +1569,38 @@
         .logout-btn { color: #ef4444; font-size: 10px; font-weight: bold; text-transform: uppercase; cursor: pointer; letter-spacing: 0.5px; opacity: 0.7; }
         .logout-btn:hover { opacity: 1; text-decoration: underline; }
     </style>
-    <script>
-        // Check unlock status immediately to prevent flash
-        (function() {
-            const unlocked = localStorage.getItem('portal_unlocked') === 'true';
-            if (unlocked) {
-                document.documentElement.classList.add('portal-unlocked');
-            }
-        })();
-    </script>
 </head>
 
 <body class="text-slate-700 antialiased flex flex-col min-h-screen">
-
-    <!-- Screen Lock Overlay -->
-    <div id="lock-screen" aria-modal="true" role="dialog">
-        <div class="lock-card">
-            <div class="lock-icon">
-                <i class="fas fa-lock"></i>
+    <!-- ECRAN DE VERROUILLAGE SÉCURISÉ V2.6 -->
+    <div id="auth-overlay" class="auth-overlay active">
+        <div class="auth-card">
+            <div class="w-20 h-20 bg-indigo-600 rounded-3xl mx-auto mb-8 flex items-center justify-center text-white text-3xl shadow-xl shadow-indigo-100">
+                <i class="fas fa-shield-halved"></i>
             </div>
-            <h1 class="lock-title">Accès Protégé</h1>
-            <p class="lock-subtitle">Veuillez entrer le mot de passe pour accéder au Portail de l'Ingénierie Pédagogique.</p>
-            
-            <form id="lock-form" onsubmit="return false;">
-                <div class="lock-input-group">
-                    <input type="password" id="portal-password-input" placeholder="••••••••" autocomplete="current-password" required>
-                </div>
-                <button type="submit" id="unlock-button" class="lock-btn">
-                    Accéder au portail
-                    <i class="fas fa-chevron-right"></i>
-                </button>
-            </form>
-            
-            <p id="lock-error" class="text-xs text-rose-500 font-bold mt-4 opacity-0 transition-opacity">Mot de passe incorrect. Réessayez.</p>
+            <h2 class="text-3xl font-extrabold text-slate-900 mb-3">Accès Sécurisé</h2>
+            <p class="text-slate-500 mb-10 leading-relaxed">
+                Veuillez vous connecter avec votre compte pour accéder à votre écosystème de travail augmenté.
+            </p>
+            <button onclick="window.login()" class="login-btn">
+                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" width="20">
+                <span>Déverrouiller avec mon compte Google</span>
+            </button>
+            <div class="mt-8 pt-8 border-t border-slate-100">
+                <p class="text-xs text-slate-400 font-medium">Session sécurisée par Firebase Auth & Push Mobile</p>
+            </div>
         </div>
     </div>
 
     <script>
-        // Logic for unlocking the portal
-        const VALID_PASSWORD = "Brigitte*1963";
-        
         document.addEventListener('DOMContentLoaded', () => {
-            const lockScreen = document.getElementById('lock-screen');
-            const passwordInput = document.getElementById('portal-password-input');
-            const lockForm = document.getElementById('lock-form');
-            const lockError = document.getElementById('lock-error');
-
-            // If already unlocked via localStorage, hide lock screen immediately
-            if (localStorage.getItem('portal_unlocked') === 'true') {
-                lockScreen.classList.add('hidden');
-                document.body.style.overflow = '';
-            } else {
-                document.body.style.overflow = 'hidden';
+            // Synchronise l'ancien bouton Logout avec le nouveau système Firebase
+            const legacyLogoutBtn = document.getElementById('logout-portal-btn');
+            if (legacyLogoutBtn) {
+                legacyLogoutBtn.onclick = () => {
+                    if (window.logout) window.logout();
+                };
             }
-
-            function handleUnlock() {
-                const entered = passwordInput.value;
-                if (entered === VALID_PASSWORD) {
-                    localStorage.setItem('portal_unlocked', 'true');
-                    lockScreen.classList.add('hidden');
-                    document.body.style.overflow = '';
-                    
-                    // Small toast success
-                    if (typeof showToast === 'function') {
-                        showToast('Bonjour Brigitte ! Portail déverrouillé.');
-                    }
-                } else {
-                    // Password failed
-                    const card = document.querySelector('.lock-card');
-                    card.classList.add('shake');
-                    lockError.classList.remove('opacity-0');
-                    passwordInput.value = '';
-                    passwordInput.focus();
-                    
-                    setTimeout(() => {
-                        card.classList.remove('shake');
-                    }, 500);
-                }
-            }
-
-            lockForm.addEventListener('submit', (e) => {
-                e.preventDefault();
-                handleUnlock();
-            });
-
-            // Focus on input automatically
-            if (!lockScreen.classList.contains('hidden')) {
-                passwordInput.focus();
-            }
-
-            // Logout/Lock Logic
-            const logoutBtns = [document.getElementById('logout-portal-btn')];
-            logoutBtns.forEach(btn => {
-                btn?.addEventListener('click', () => {
-                    if (confirm('Voulez-vous verrouiller l\'accès au portail ?')) {
-                        localStorage.removeItem('portal_unlocked');
-                        location.reload();
-                    }
-                });
-            });
         });
     </script>
 
@@ -3078,18 +3011,18 @@
         let currentUser = null;
         const provider = new firebase.auth.GoogleAuthProvider();
 
-        function login() {
+        window.login = function() {
             firebase.auth().signInWithPopup(provider).catch(error => {
                 console.error("Login failed:", error);
                 alert("Erreur de connexion : " + error.message);
             });
-        }
+        };
 
-        function logout() {
+        window.logout = function() {
             if(confirm('Souhaitez-vous vous déconnecter de votre session ?')) {
                 firebase.auth().signOut();
             }
-        }
+        };
 
         // Monitoring de l'auth
         firebase.auth().onAuthStateChanged(user => {
@@ -3364,23 +3297,6 @@
         console.log('--- Hub Script Loaded (V2.6 - Secure) ---');
     </script>
 
-    <!-- ECRAN DE VERROUILLAGE V2.6 -->
-    <div id="auth-overlay" class="auth-overlay">
-        <div class="auth-card">
-            <div class="w-20 h-20 bg-indigo-600 rounded-3xl mx-auto mb-8 flex items-center justify-center text-white text-3xl shadow-xl shadow-indigo-100">
-                <i class="fas fa-shield-halved"></i>
-            </div>
-            <h2 class="text-3xl font-extrabold text-slate-900 mb-3">Accès Sécurisé</h2>
-            <p class="text-slate-500 mb-10 leading-relaxed">
-                Veuillez vous connecter avec votre compte pour accéder à votre écosystème de travail augmenté.
-            </p>
-            <button onclick="login()" class="login-btn">
-                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" width="20">
-                <span>Dévérouiller avec Google</span>
-            </button>
-            <div class="mt-8 pt-8 border-t border-slate-100">
-                <p class="text-xs text-slate-400 font-medium">Session sécurisée par Firebase Auth</p>
-            </div>
         </div>
     </div>
 
