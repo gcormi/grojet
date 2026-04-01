@@ -1230,6 +1230,41 @@
             transform: scale(1) translateY(0);
         }
 
+        /* Modal "Ajouter un lien" */
+        .custom-link-modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            z-index: 1100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .custom-link-modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .custom-link-modal-content {
+            width: 400px;
+            background: var(--bg-primary);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--border-color);
+            transform: scale(0.9);
+            transition: all 0.3s ease;
+        }
+
+        .custom-link-modal-overlay.active .custom-link-modal-content {
+            transform: scale(1);
+        }
+
         /* Sidebar Favoris Button */
         .sidebar-fav-btn {
             width: 100%;
@@ -1286,6 +1321,21 @@
             opacity: 0.8;
             font-weight: 500;
         }
+
+        /* Version Badge */
+        .version-badge {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            font-size: 8px;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 2px 5px;
+            border-radius: 4px;
+            font-weight: 800;
+            color: rgba(255,255,255,0.8);
+            pointer-events: none;
+        }
+
 
         .drawer-header {
             padding: 24px;
@@ -1705,6 +1755,7 @@
             
             <!-- NOUVEAU BOUTON MES LIENS -->
             <button id="sidebar-fav-toggle" class="sidebar-fav-btn" aria-label="Ouvrir mes favoris" aria-expanded="false" aria-controls="fav-drawer">
+                <div class="version-badge">V2.1</div>
                 <div class="sidebar-fav-btn-icon">
                     <i class="fas fa-star"></i>
                 </div>
@@ -3229,6 +3280,7 @@
                 showToast('Erreur Firebase : ' + e.message);
             }
         });
+        console.log('--- Hub Script Loaded (V2.1) ---');
     </script>
 
     <!-- Mes Favoris Modal (Small Center Modal) -->
@@ -3247,6 +3299,36 @@
                 <button id="drawer-add-link" class="fav-add-btn">
                     <i class="fas fa-plus"></i>
                     <span>Ajouter un favori</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Ajouter un lien -->
+    <div id="custom-link-modal" class="custom-link-modal-overlay" onclick="closeCustomLinkModal()">
+        <div class="custom-link-modal-content" onclick="event.stopPropagation()">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-xl font-extrabold text-slate-800">Ajouter un favori</h3>
+                <button id="modal-close-custom" class="text-slate-400 hover:text-red-500 transition-colors">
+                    <i class="fas fa-times text-lg"></i>
+                </button>
+            </div>
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5 ml-1">Nom du lien (ex: ENT)</label>
+                    <input type="text" id="custom-link-name" placeholder="Mon super outil..." class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-shadow text-slate-800">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5 ml-1">Adresse URL</label>
+                    <input type="text" id="custom-link-url" placeholder="https://..." class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-shadow text-slate-800">
+                </div>
+            </div>
+
+            <div class="flex gap-4 mt-8">
+                <button id="cancel-custom-link" class="flex-1 py-3 font-bold text-slate-500 hover:bg-slate-100 rounded-xl transition-colors">Annuler</button>
+                <button id="save-custom-link" class="flex-2 py-3 px-8 font-extrabold bg-indigo-600 text-white rounded-xl shadow-lg shadow-indigo-200 hover:bg-indigo-700 hover:scale-[1.02] active:scale-95 transition-all">
+                    Enregistrer le favori
                 </button>
             </div>
         </div>
