@@ -1388,14 +1388,24 @@
             flex: 1;
             overflow-y: auto;
             padding: 24px;
-            /* === TRANSIT MODAL === */
+        /* === TRANSIT MODAL ULTIMATE === */
         .transit-modal {
-            position: fixed; inset: 0; z-index: 9999;
+            position: fixed !important; 
+            top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important;
+            z-index: 99999 !important;
             display: none; align-items: center; justify-content: center;
-            padding: 1.5rem; background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(8px);
+            padding: 2rem; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(12px);
         }
-        .transit-modal.active { display: flex; animation: modalIn 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
-        @keyframes modalIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+        .transit-modal.active { display: flex !important; animation: modalIn 0.3s ease-out; }
+        
+        .transit-card {
+            background: white; border-radius: 40px;
+            width: 100%; max-width: 900px; max-height: 85vh;
+            box-shadow: 0 40px 100px -20px rgba(0,0,0,0.3);
+            display: flex; flex-direction: column; overflow: hidden;
+            transform: translateY(0);
+        }
+        @keyframes modalIn { from { opacity: 0; transform: scale(0.95) translateY(20px); } to { opacity: 1; transform: scale(1) translateY(0); } }
         
         .drop-zone {
             border: 2px dashed #e2e8f0;
@@ -3513,62 +3523,63 @@
 
     <!-- ============================== MODAL: TRANSIT ZONE ============================== -->
     <div id="transit-modal" class="transit-modal" onclick="window.closeTransitModal()">
-        <div class="bg-white rounded-[2.5rem] w-full max-w-5xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]" onclick="event.stopPropagation()">
+        <div class="transit-card" onclick="event.stopPropagation()">
             <!-- Header -->
             <div class="p-8 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
-                <div>
-                    <h2 class="text-3xl font-black text-slate-900 tracking-tighter flex items-center gap-3">
-                        <i class="fas fa-random text-indigo-600"></i>
-                        Zone de Transit <span class="bg-indigo-100 text-indigo-600 px-3 py-1 rounded-2xl text-xs font-black ml-2 uppercase">V2.8</span>
-                    </h2>
-                    <p class="text-slate-500 font-medium text-sm mt-1">Votre zone tampon cross-PC sécurisée.</p>
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 bg-indigo-600 rounded-2xl flex items-center justify-center text-white text-xl shadow-lg shadow-indigo-100">
+                        <i class="fas fa-random"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-2xl font-black text-slate-900 tracking-tighter">Zone de Transit</h2>
+                        <p class="text-slate-500 font-medium text-xs">Transférez vos fichiers entre vos différents postes de travail.</p>
+                    </div>
                 </div>
-                <button onclick="window.closeTransitModal()" class="w-12 h-12 rounded-full hover:bg-red-50 text-slate-400 hover:text-red-500 transition-colors flex items-center justify-center text-xl">
+                <button onclick="window.closeTransitModal()" class="w-10 h-10 rounded-full hover:bg-red-50 text-slate-400 hover:text-red-500 transition-all flex items-center justify-center text-lg border border-slate-100">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
             
-            <!-- Body -->
-            <div class="p-10 grid grid-cols-1 md:grid-cols-2 gap-10 overflow-y-auto">
+            <!-- Content -->
+            <div class="p-8 grid grid-cols-1 md:grid-cols-2 gap-10 overflow-y-auto">
                 <!-- Zone DRIVE -->
-                <div class="flex flex-col h-full">
-                    <div class="flex items-center gap-3 mb-6">
-                        <div class="w-8 h-8 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-xs">D</div>
-                        <h3 class="font-black text-slate-800 uppercase tracking-widest text-sm">Zone Transit DRIVE</h3>
-                    </div>
-                    <div id="drop-drive" class="drop-zone rounded-[2rem] flex flex-col items-center justify-center p-8 mb-6 cursor-pointer group" onclick="document.getElementById('input-drive').click()">
-                        <i class="fas fa-file-export text-4xl text-slate-300 mb-4 group-hover:text-blue-500 transition-colors"></i>
-                        <p class="text-xs font-bold text-slate-500 text-center uppercase tracking-wide">Glissez ou Cliquez ici</p>
+                <div class="flex flex-col">
+                    <h3 class="font-black text-slate-800 uppercase tracking-widest text-[11px] mb-4 flex items-center gap-2">
+                        <span class="w-2 h-2 rounded-full bg-blue-500"></span> Transit DRIVE
+                    </h3>
+                    <div id="drop-drive" class="drop-zone rounded-3xl flex flex-col items-center justify-center p-10 mb-6 cursor-pointer border-indigo-200" onclick="document.getElementById('input-drive').click()">
+                        <div class="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center text-blue-500 mb-4 transition-transform group-hover:scale-110">
+                            <i class="fas fa-file-export text-2xl"></i>
+                        </div>
+                        <p class="text-[11px] font-black text-slate-400 uppercase tracking-widest text-center">Glisser ou Cliquer</p>
                         <input type="file" id="input-drive" class="hidden" multiple onchange="handleTransitManualUpload(this.files, 'drive')">
                     </div>
-                    <div class="flex-grow">
-                        <div id="files-drive-container" class="space-y-2"></div>
-                    </div>
+                    <div id="files-drive-container" class="space-y-2"></div>
                 </div>
 
                 <!-- Zone NUAGE -->
-                <div class="flex flex-col h-full">
-                    <div class="flex items-center gap-3 mb-6">
-                        <div class="w-8 h-8 rounded-lg bg-orange-100 text-orange-600 flex items-center justify-center font-bold text-xs">N</div>
-                        <h3 class="font-black text-slate-800 uppercase tracking-widest text-sm">Zone Transit NUAGE</h3>
-                    </div>
-                    <div id="drop-nuage" class="drop-zone rounded-[2rem] flex flex-col items-center justify-center p-8 mb-6 cursor-pointer group" onclick="document.getElementById('input-nuage').click()">
-                        <i class="fas fa-cloud-upload-alt text-4xl text-slate-300 mb-4 group-hover:text-orange-500 transition-colors"></i>
-                        <p class="text-xs font-bold text-slate-500 text-center uppercase tracking-wide">Glissez ou Cliquez ici</p>
+                <div class="flex flex-col">
+                    <h3 class="font-black text-slate-800 uppercase tracking-widest text-[11px] mb-4 flex items-center gap-2">
+                        <span class="w-2 h-2 rounded-full bg-orange-500"></span> Transit NUAGE
+                    </h3>
+                    <div id="drop-nuage" class="drop-zone rounded-3xl flex flex-col items-center justify-center p-10 mb-6 cursor-pointer border-orange-200" onclick="document.getElementById('input-nuage').click()">
+                        <div class="w-16 h-16 bg-orange-50 rounded-full flex items-center justify-center text-orange-500 mb-4">
+                            <i class="fas fa-cloud-upload-alt text-2xl"></i>
+                        </div>
+                        <p class="text-[11px] font-black text-slate-400 uppercase tracking-widest text-center">Glisser ou Cliquer</p>
                         <input type="file" id="input-nuage" class="hidden" multiple onchange="handleTransitManualUpload(this.files, 'nuage')">
                     </div>
-                    <div class="flex-grow">
-                        <div id="files-nuage-container" class="space-y-2"></div>
-                    </div>
+                    <div id="files-nuage-container" class="space-y-2"></div>
                 </div>
             </div>
-            
-            <!-- Footer -->
-            <div class="p-6 bg-slate-50 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400 font-bold uppercase tracking-widest">
+
+            <!-- Footer Info -->
+            <div class="p-6 bg-slate-50 border-t border-slate-100 flex items-center justify-between text-[10px] text-slate-400 font-bold uppercase tracking-widest">
                 <div class="flex items-center gap-6">
-                    <span><i class="fas fa-hdd mr-2"></i> 5 Go Transit</span>
+                    <span class="flex items-center gap-2"><i class="fas fa-hdd"></i> 5 Go Transit Zone</span>
+                    <span class="flex items-center gap-2 text-emerald-600"><i class="fas fa-lock"></i> SSL Sécurisé Google</span>
                 </div>
-                <div>Écosystème Gilles · V2.8</div>
+                <div class="text-indigo-600">Gilles Ecosystem · V2.8</div>
             </div>
         </div>
     </div>
