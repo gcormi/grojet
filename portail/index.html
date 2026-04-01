@@ -39,8 +39,14 @@
         window.logout = function() {
             if(confirm('Voulez-vous vous déconnecter du portail ?')) {
                 firebase.auth().signOut().then(() => {
-                    window.location.href = window.location.pathname;
-                }).catch(err => alert("Logout error: " + err.message));
+                    localStorage.clear();
+                    sessionStorage.clear();
+                    console.log("[Auth] Déconnexion réussie V3.9.0");
+                    window.location.reload();
+                }).catch(error => {
+                    console.error("[Auth] Erreur déconnexion:", error);
+                    window.location.reload();
+                });
             }
         };
 
@@ -51,7 +57,7 @@
                 document.body.style.overflow = '';
                 const pName = document.getElementById('portal-user-name');
                 if(pName && user.displayName) pName.textContent = user.displayName.split(' ')[0];
-                if(typeof renderSidebarLinks === 'function') renderSidebarLinks();
+                // renderSidebarLinks will be called once script is fully loaded
             } else {
                 if(overlay) overlay.style.display = 'flex';
                 document.body.style.overflow = 'hidden';
@@ -1294,6 +1300,35 @@
             overflow: hidden;
         }
 
+        .search-container {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(226, 232, 240, 0.8);
+            border-radius: 20px;
+            padding: 10px 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+        
+        .search-container:focus-within {
+            background: white;
+            border-color: #6366f1;
+            box-shadow: 0 10px 25px -5px rgba(99, 102, 241, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .hero-glow {
+            position: absolute;
+            background: radial-gradient(circle at center, rgba(79, 70, 229, 0.1) 0%, transparent 70%);
+            border-radius: 50%;
+            filter: blur(80px);
+            z-index: 1;
+            pointer-events: none;
+        }
+
         .sidebar-fav-btn:hover {
             transform: translateY(-2px);
             box-shadow: 0 8px 25px rgba(79, 70, 229, 0.3);
@@ -1336,7 +1371,7 @@
             position: absolute;
             top: 10px;
             right: 12px;
-            background: #ef4444; /* Rouge vif pour le Debug */
+            background: #4f46e5; /* Retour à l'indigo premium */
             color: #ffffff;
             font-size: 8px;
             font-weight: 800;
@@ -1833,40 +1868,44 @@
 
         <!-- Hero Section -->
         <div class="flex flex-col lg:flex-row items-center gap-12 mb-20 relative">
-            <!-- Floating Decorative Elements (RIGHT) -->
-            <div class="hidden lg:block lg:w-1/3 relative h-64">
-                <div class="absolute -top-10 -right-4 w-64 h-64 bg-indigo-200/30 rounded-full blur-3xl animate-pulse"></div>
+            <!-- Background Glows -->
+            <div class="hero-glow w-96 h-96 -top-20 -left-20"></div>
+            <div class="hero-glow w-80 h-80 bottom-0 right-0 bg-indigo-200/5"></div>
+
+            <!-- Content (LEFT) -->
+            <div class="hidden lg:flex lg:w-5/12 flex-col justify-center gap-8 relative min-h-[400px]">
+                <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-indigo-100/30 rounded-full blur-[120px] animate-pulse"></div>
                 
                 <!-- Card IA -->
-                <div class="float-badge glass-morphism border border-white/50 rounded-2xl px-5 py-4 shadow-2xl flex items-center gap-4 animate-float stagger-1 absolute top-0 -right-6 z-10 w-60">
-                    <div class="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white shadow-lg">
-                        <i class="fas fa-microchip text-lg"></i>
+                <div class="float-badge glass-morphism border border-white/50 rounded-3xl px-6 py-5 shadow-xl flex items-center gap-4 animate-float stagger-1 self-end translate-x-4 z-10 w-72">
+                    <div class="w-12 h-12 bg-indigo-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-indigo-100">
+                        <i class="fas fa-microchip text-xl"></i>
                     </div>
                     <div>
-                        <div class="text-[10px] text-indigo-500 font-black uppercase tracking-widest leading-none mb-1">IA Générative</div>
-                        <div class="text-sm font-extrabold text-slate-800">Conception pédagogique</div>
+                        <div class="text-[10px] text-indigo-500 font-extrabold uppercase tracking-[0.15em] leading-none mb-1.5">IA Générative</div>
+                        <div class="text-sm font-black text-slate-800">Conception intuitive</div>
                     </div>
                 </div>
 
                 <!-- Card Accessibilité -->
-                <div class="float-badge glass-morphism border border-white/50 rounded-2xl px-5 py-4 shadow-2xl flex items-center gap-4 animate-float stagger-2 absolute top-24 -left-10 z-20 w-60">
-                    <div class="w-10 h-10 bg-emerald-500 rounded-xl flex items-center justify-center text-white shadow-lg">
-                        <i class="fas fa-universal-access text-lg"></i>
+                <div class="float-badge glass-morphism border border-white/50 rounded-3xl px-6 py-5 shadow-xl flex items-center gap-4 animate-float stagger-2 self-start -translate-x-6 z-20 w-72">
+                    <div class="w-12 h-12 bg-emerald-500 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-emerald-100">
+                        <i class="fas fa-zebra text-xl"></i>
                     </div>
                     <div>
-                        <div class="text-[10px] text-emerald-600 font-black uppercase tracking-widest leading-none mb-1">Accessibilité</div>
-                        <div class="text-sm font-extrabold text-slate-800">DYS / TDAH / Inclusion</div>
+                        <div class="text-[10px] text-emerald-600 font-extrabold uppercase tracking-[0.15em] leading-none mb-1.5">Éducation Inclusive</div>
+                        <div class="text-sm font-black text-slate-800">DYS / TDAH / HP</div>
                     </div>
                 </div>
 
                 <!-- Card Gamification -->
-                <div class="float-badge glass-morphism border border-white/50 rounded-2xl px-5 py-4 shadow-2xl flex items-center gap-4 animate-float stagger-3 absolute top-48 -right-2 z-10 w-60">
-                    <div class="w-10 h-10 bg-amber-500 rounded-xl flex items-center justify-center text-white shadow-lg">
-                        <i class="fas fa-gamepad text-lg"></i>
+                <div class="float-badge glass-morphism border border-white/50 rounded-3xl px-6 py-5 shadow-xl flex items-center gap-4 animate-float stagger-3 self-end translate-x-8 z-10 w-72">
+                    <div class="w-12 h-12 bg-amber-500 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-amber-100">
+                        <i class="fas fa-gamepad text-xl"></i>
                     </div>
                     <div>
-                        <div class="text-[10px] text-amber-600 font-black uppercase tracking-widest leading-none mb-1">Gamification</div>
-                        <div class="text-sm font-extrabold text-slate-800">Jeux & Escape games</div>
+                        <div class="text-[10px] text-amber-600 font-extrabold uppercase tracking-[0.15em] leading-none mb-1.5">Gamification</div>
+                        <div class="text-sm font-black text-slate-800">Escape games HTML</div>
                     </div>
                 </div>
             </div>
