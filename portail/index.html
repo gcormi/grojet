@@ -1686,9 +1686,18 @@
 
             <!-- Mobile Menu -->
             <div id="mobile-menu" role="navigation" aria-label="Menu mobile">
-                <nav class="pt-4 pb-2 flex flex-col gap-1 border-t border-slate-100/80 mt-3">
-                    <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-xs uppercase tracking-wide text-indigo-600 bg-indigo-50">
-                        <i class="fas fa-home w-4 text-center" aria-hidden="true"></i> Hub de Solutions
+                <nav class="space-y-1.5 px-3">
+                    <a href="#" onclick="showSection('home')" class="sidebar-link active" data-section="home">
+                        <i class="fas fa-home w-5"></i>
+                        <span>Accueil</span>
+                    </a>
+                    <a href="#" onclick="window.openTransitModal()" class="sidebar-link text-indigo-600 font-bold bg-indigo-50/50">
+                        <i class="fas fa-random w-5"></i>
+                        <span>Zone de Transit</span>
+                        <span class="ml-auto bg-indigo-500 text-white text-[8px] px-1.5 py-0.5 rounded-full uppercase">Live</span>
+                    </a>
+                    <a href="#" onclick="openDrawer()" class="sidebar-link">
+    <i class="fas fa-home w-4 text-center" aria-hidden="true"></i> Hub de Solutions
                     </a>
                     <button id="philosophy-mobile-btn" class="philosophy-btn w-full justify-center text-xs">
                         <i class="fas fa-book-open" aria-hidden="true"></i> Philosophie du Projet
@@ -3381,6 +3390,10 @@
             document.body.style.overflow = '';
         };
 
+        window.handleTransitManualUpload = function(files, zone) {
+            if (files.length > 0) handleTransitUpload(files, zone);
+        }
+
         // Initialize Drop Zones
         function initTransitDropZones() {
             const zones = ['drive', 'nuage'];
@@ -3388,15 +3401,14 @@
                 const el = document.getElementById(`drop-${zone}`);
                 if (!el) return;
 
-                el.addEventListener('dragover', (e) => {
-                    e.preventDefault();
-                    el.classList.add('dragover');
+                // Prevent default behaviors for drag and drop events
+                ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                    el.addEventListener(eventName, (e) => { e.preventDefault(); e.stopPropagation(); }, false);
                 });
-                el.addEventListener('dragleave', () => {
-                    el.classList.remove('dragover');
-                });
+
+                el.addEventListener('dragover', () => el.classList.add('dragover'));
+                el.addEventListener('dragleave', () => el.classList.remove('dragover'));
                 el.addEventListener('drop', (e) => {
-                    e.preventDefault();
                     el.classList.remove('dragover');
                     const files = e.dataTransfer.files;
                     handleTransitUpload(files, zone);
@@ -3518,9 +3530,10 @@
                         <div class="w-8 h-8 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-xs">D</div>
                         <h3 class="font-black text-slate-800 uppercase tracking-widest text-sm">Zone Transit DRIVE</h3>
                     </div>
-                    <div id="drop-drive" class="drop-zone rounded-[2rem] flex flex-col items-center justify-center p-8 mb-6 cursor-pointer">
-                        <i class="fas fa-file-export text-4xl text-slate-300 mb-4 pointer-events-none"></i>
-                        <p class="text-xs font-bold text-slate-500 text-center uppercase tracking-wide pointer-events-none">Drop to DRIVE</p>
+                    <div id="drop-drive" class="drop-zone rounded-[2rem] flex flex-col items-center justify-center p-8 mb-6 cursor-pointer group" onclick="document.getElementById('input-drive').click()">
+                        <i class="fas fa-file-export text-4xl text-slate-300 mb-4 group-hover:text-blue-500 transition-colors"></i>
+                        <p class="text-xs font-bold text-slate-500 text-center uppercase tracking-wide">Glissez ou Cliquez ici</p>
+                        <input type="file" id="input-drive" class="hidden" multiple onchange="handleTransitManualUpload(this.files, 'drive')">
                     </div>
                     <div class="flex-grow">
                         <div id="files-drive-container" class="space-y-2"></div>
@@ -3533,9 +3546,10 @@
                         <div class="w-8 h-8 rounded-lg bg-orange-100 text-orange-600 flex items-center justify-center font-bold text-xs">N</div>
                         <h3 class="font-black text-slate-800 uppercase tracking-widest text-sm">Zone Transit NUAGE</h3>
                     </div>
-                    <div id="drop-nuage" class="drop-zone rounded-[2rem] flex flex-col items-center justify-center p-8 mb-6 cursor-pointer">
-                        <i class="fas fa-cloud-upload-alt text-4xl text-slate-300 mb-4 pointer-events-none"></i>
-                        <p class="text-xs font-bold text-slate-500 text-center uppercase tracking-wide pointer-events-none">Drop to NUAGE</p>
+                    <div id="drop-nuage" class="drop-zone rounded-[2rem] flex flex-col items-center justify-center p-8 mb-6 cursor-pointer group" onclick="document.getElementById('input-nuage').click()">
+                        <i class="fas fa-cloud-upload-alt text-4xl text-slate-300 mb-4 group-hover:text-orange-500 transition-colors"></i>
+                        <p class="text-xs font-bold text-slate-500 text-center uppercase tracking-wide">Glissez ou Cliquez ici</p>
+                        <input type="file" id="input-nuage" class="hidden" multiple onchange="handleTransitManualUpload(this.files, 'nuage')">
                     </div>
                     <div class="flex-grow">
                         <div id="files-nuage-container" class="space-y-2"></div>
