@@ -1617,10 +1617,7 @@
     <!-- ECRAN DE VERROUILLAGE SÉCURISÉ V2.6 -->
     <div id="auth-overlay" class="auth-overlay">
         <script>
-            // Failsafe instantané : si mémorisé, on ne montre RIEN
-            if (localStorage.getItem('portal_logged_in') === 'true') {
-                document.getElementById('auth-overlay').style.display = 'none';
-            }
+            // Nettoyage au chargement pour garantir la visibilité de la fenêtre Google
         </script>
         <div class="auth-card">
             <div class="w-20 h-20 bg-indigo-600 rounded-3xl mx-auto mb-8 flex items-center justify-center text-white text-3xl shadow-xl shadow-indigo-100">
@@ -3573,18 +3570,16 @@
                 if(portalName) portalName.textContent = (user.displayName || "Gilles").split(' ')[0];
                 if(photoDisplay) photoDisplay.src = user.photoURL || 'https://ui-avatars.com/api/?name=Gilles';
                 
-                if(typeof applyFiltersAndSearch === 'function') {
-                    applyFiltersAndSearch();
-                }
+                if(typeof applyFiltersAndSearch === 'function') applyFiltersAndSearch();
                 if(typeof startHubSync === 'function') startHubSync();
             } else {
                 currentUser = null;
                 localStorage.removeItem('portal_logged_in');
-                setTimeout(() => {
-                    if (!firebase.auth().currentUser && authOverlay) {
-                        authOverlay.classList.add('active');
-                    }
-                }, 1000);
+                // On affiche l'overlay de connexion si on n'est pas loggé
+                if(authOverlay) {
+                    authOverlay.classList.add('active');
+                    authOverlay.style.display = 'flex';
+                }
             }
         });
 
