@@ -1624,9 +1624,9 @@
             <p class="text-slate-500 mb-10 leading-relaxed">
                 Veuillez vous connecter avec votre compte pour accéder à votre écosystème de travail augmenté.
             </p>
-            <button onclick="window.login()" class="login-btn">
+            <button onclick="console.log('Login request...'); window.login()" class="login-btn">
                 <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" width="20">
-                <span>Déverrouiller avec mon compte Google</span>
+                <span>Déverrouiller avec mon compte Google (V2.8.1 - FIX)</span>
             </button>
             <div class="mt-8 pt-8 border-t border-slate-100">
                 <p class="text-xs text-slate-400 font-medium">Session sécurisée par Firebase Auth & Push Mobile</p>
@@ -3099,11 +3099,16 @@
         };
 
         window.login = function() {
+            console.log("Starting Login Flow...");
             const provider = new firebase.auth.GoogleAuthProvider();
-            firebase.auth().signInWithPopup(provider).catch(error => {
-                console.error("Login failed:", error);
-                alert("Erreur de connexion : " + error.message);
-            });
+            firebase.auth().signInWithPopup(provider)
+                .then(result => {
+                    console.log("Login OK:", result.user.email);
+                })
+                .catch(error => {
+                    console.error("Login failed:", error);
+                    alert("Erreur de connexion : " + error.message);
+                });
         };
         
         // Démarrage immédiat de Firebase
