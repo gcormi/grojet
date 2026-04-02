@@ -693,18 +693,16 @@
         // La Forge MEN (api.albert.apps.education.fr) BLOQUE les appels navigateur (CSP/CORS).
         let logs = [];
         
-        const etalabEndpoint  = "https://albert.api.etalab.gouv.fr/v1/chat/completions";
+        const albertEndpoint = "https://albert.api.gouv.fr/v1/chat/completions";
         const model = 'openai/gpt-oss-120b';
         
         const endpoints = [
-            // Étalab direct en PREMIER : supporte CORS, clé albert.api.gouv.fr valide ici
-            { id: "Albert Étalab Direct", url: etalabEndpoint },
-            // Proxys CORS publics en fallback (utile si réseau d'école filtre Étalab)
-            { id: "Proxy Corsproxy",  url: `https://corsproxy.io/?url=${encodeURIComponent(etalabEndpoint)}` },
-            { id: "Proxy Thingproxy", url: `https://thingproxy.freeboard.io/fetch/${etalabEndpoint}` },
-            { id: "Proxy Codetabs",   url: `https://api.codetabs.com/v1/proxy?url=${encodeURIComponent(etalabEndpoint)}` },
-            // Forge MEN (BLOQUÉE navigateur — en dernier recours, échouera en CORS)
-            { id: "Forge MEN (CORS bloqué)", url: "https://api.albert.apps.education.fr/v1/chat/completions" }
+            // API Albert officielle (gouv.fr) — supporte CORS, c'est l'URL qui fonctionne
+            { id: "Albert Direct (gouv.fr)", url: albertEndpoint },
+            // Proxys CORS en fallback (réseau scolaire filtrant)
+            { id: "Proxy Corsproxy",  url: `https://corsproxy.io/?${encodeURIComponent(albertEndpoint)}` },
+            { id: "Proxy Thingproxy", url: `https://thingproxy.freeboard.io/fetch/${albertEndpoint}` },
+            { id: "Proxy Codetabs",   url: `https://api.codetabs.com/v1/proxy?url=${encodeURIComponent(albertEndpoint)}` }
         ];
         
         const bodyStr = JSON.stringify({model, messages:[{role:'user',content:promptText}], max_tokens:tokens});
