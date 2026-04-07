@@ -54,6 +54,7 @@
             if (user) {
                 if(overlay) overlay.style.display = 'none';
                 document.body.style.overflow = '';
+                localStorage.setItem('portal_unlocked', 'true');
             } else {
                 if(overlay) overlay.style.display = 'flex';
                 document.body.style.overflow = 'hidden';
@@ -329,6 +330,90 @@
                     </a>
                 </article>
 
+                <!-- CARTE APPLICATION: YOUTUBE EDUSYNC -->
+                <article class="card-soft rounded-3xl p-8 flex flex-col h-full fade-in-up stagger-2 card-wrapper" 
+                         data-category="multimedia,veille" 
+                         data-name="YOUTUBE EDUSYNC Vidéo Veille Pédagogique Sans Distraction">
+                    <div class="flex items-start justify-between mb-6">
+                        <div class="w-12 h-12 rounded-2xl bg-rose-100 flex items-center justify-center text-rose-600 text-xl shadow-inner">
+                            <i class="fab fa-youtube"></i>
+                        </div>
+                        <span class="category-pill bg-rose-50 text-rose-600 border border-rose-100/50">
+                            <i class="fas fa-tv text-[10px]"></i> Focus Vidéo
+                        </span>
+                    </div>
+                    <h3 class="text-lg font-black text-slate-900 mb-3 uppercase tracking-tight">YouTube EduSync</h3>
+                    <p class="text-sm text-slate-500 mb-6 leading-relaxed flex-grow">
+                        Accédez à vos abonnements YouTube dans un environnement sain, sans algorithmes de recommandation ni distractions.
+                    </p>
+                    <div class="flex flex-wrap gap-2 mb-8">
+                        <span class="keyword-tag">YouTube</span>
+                        <span class="keyword-tag">Veille</span>
+                        <span class="keyword-tag">Focus</span>
+                    </div>
+                    <a href="youtube_veille.html" 
+                       class="card-cta-small bg-rose-600 text-white hover:bg-rose-700 shadow-lg shadow-rose-100">
+                        <span class="uppercase tracking-widest font-black">Lancer le flux</span>
+                        <i class="fas fa-play"></i>
+                    </a>
+                </article>
+
+                <!-- CARTE APPLICATION: VEILLE STRATÉGIQUE -->
+                <article class="card-soft rounded-3xl p-8 flex flex-col h-full fade-in-up stagger-3 card-wrapper" 
+                         data-category="veille,orga" 
+                         data-name="VEILLE STRATÉGIQUE Flux RSS Centre de Veille Information">
+                    <div class="flex items-start justify-between mb-6">
+                        <div class="w-12 h-12 rounded-2xl bg-sky-100 flex items-center justify-center text-sky-600 text-xl shadow-inner">
+                            <i class="fas fa-satellite-dish"></i>
+                        </div>
+                        <span class="category-pill bg-sky-50 text-sky-600 border border-sky-100/50">
+                            <i class="fas fa-rss text-[10px]"></i> Information
+                        </span>
+                    </div>
+                    <h3 class="text-lg font-black text-slate-900 mb-3 uppercase tracking-tight">Centre de Veille</h3>
+                    <p class="text-sm text-slate-500 mb-6 leading-relaxed flex-grow">
+                        Agrégateur de flux RSS et gestionnaire de sources pour votre veille pédagogique et technologique.
+                    </p>
+                    <div class="flex flex-wrap gap-2 mb-8">
+                        <span class="keyword-tag">RSS</span>
+                        <span class="keyword-tag">Curation</span>
+                        <span class="keyword-tag">Audit</span>
+                    </div>
+                    <a href="veille.html" 
+                       class="card-cta-small bg-sky-600 text-white hover:bg-sky-700 shadow-lg shadow-sky-100">
+                        <span class="uppercase tracking-widest font-black">Ouvrir la veille</span>
+                        <i class="fas fa-rss"></i>
+                    </a>
+                </article>
+
+                <!-- CARTE APPLICATION: TABLEAU DE CLASSE -->
+                <article class="card-soft rounded-3xl p-8 flex flex-col h-full fade-in-up stagger-4 card-wrapper" 
+                         data-category="creation,orga" 
+                         data-name="TABLEAU DE BORD DE CLASSE Gestion Météo Timer Citations">
+                    <div class="flex items-start justify-between mb-6">
+                        <div class="w-12 h-12 rounded-2xl bg-emerald-100 flex items-center justify-center text-emerald-600 text-xl shadow-inner">
+                            <i class="fas fa-chalkboard-teacher"></i>
+                        </div>
+                        <span class="category-pill bg-emerald-50 text-emerald-600 border border-emerald-100/50">
+                            <i class="fas fa-school text-[10px]"></i> Classe
+                        </span>
+                    </div>
+                    <h3 class="text-lg font-black text-slate-900 mb-3 uppercase tracking-tight">Tableau de Classe</h3>
+                    <p class="text-sm text-slate-500 mb-6 leading-relaxed flex-grow">
+                        Tableau de bord interactif pour la classe : météo, timer, niveau sonore, date et citations inspirantes.
+                    </p>
+                    <div class="flex flex-wrap gap-2 mb-8">
+                        <span class="keyword-tag">Gestion</span>
+                        <span class="keyword-tag">Timer</span>
+                        <span class="keyword-tag">Météo</span>
+                    </div>
+                    <a href="classe.html" 
+                       class="card-cta-small bg-emerald-600 text-white hover:bg-emerald-700 shadow-lg shadow-emerald-100">
+                        <span class="uppercase tracking-widest font-black">Activer le tableau</span>
+                        <i class="fas fa-desktop"></i>
+                    </a>
+                </article>
+
                 <!-- 1. Assistant de Conception (IA) -->
                 <article class="card-soft rounded-3xl p-8 flex flex-col h-full fade-in-up stagger-2 card-wrapper" data-category="ia" data-name="Assistant IA Conception">
                     <div class="flex items-start justify-between mb-6">
@@ -409,6 +494,9 @@
         // Sidebar Links
         const sidebarLinks = [
             { titre: "EditeurHTML", url: "editeurhtml.html", icone: "fas fa-file-code", color: "text-indigo-600", badge: "Studio" },
+            { titre: "YouTube Sync", url: "youtube_veille.html", icone: "fab fa-youtube", color: "text-rose-500" },
+            { titre: "Veille Pro", url: "veille.html", icone: "fas fa-rss", color: "text-sky-500" },
+            { titre: "Tableau Classe", url: "classe.html", icone: "fas fa-chalkboard", color: "text-emerald-500" },
             { titre: "Post-its", url: "postits.html", icone: "fas fa-sticky-note", color: "text-yellow-500" },
             { titre: "Bloc-note", url: "blocnote.html", icone: "fas fa-book-open", color: "text-indigo-500" },
             { titre: "Favoris IA", url: "favoris.html", icone: "fas fa-bookmark", color: "text-purple-500" }
