@@ -18,6 +18,12 @@
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
     <script>
+        // Déverrouillage immédiat pour le mode local (localhost, 127.0.0.1, file ou hostname vide)
+        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:' || !window.location.hostname) {
+            document.documentElement.classList.add('portal-unlocked');
+            localStorage.setItem('portal_unlocked', 'true');
+        }
+
         const firebaseConfig = {
             apiKey: "AIzaSyBGxXTvy8thfYJZTP-QbWrV-2euTmj4NPY",
             authDomain: "portail-postits.firebaseapp.com",
@@ -51,7 +57,10 @@
 
         firebase.auth().onAuthStateChanged(user => {
             const overlay = document.getElementById('auth-overlay');
-            if (user) {
+            // Mode bypass pour le développement local
+            const isLocal = (location.hostname === 'localhost' || location.hostname === '127.0.0.1' || location.protocol === 'file:');
+            
+            if (user || isLocal) {
                 if(overlay) overlay.style.display = 'none';
                 document.body.style.overflow = '';
                 localStorage.setItem('portal_unlocked', 'true');
@@ -222,6 +231,10 @@
         }
 
         .hidden-filter { display: none !important; }
+        
+        /* Force le déblocage en local */
+        html.portal-unlocked #auth-overlay { display: none !important; }
+        html.portal-unlocked body { overflow: auto !important; }
     </style>
 </head>
 
