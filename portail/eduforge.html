@@ -22,7 +22,7 @@
             background-image: 
                 radial-gradient(at 0% 0%, rgba(79, 70, 229, 0.15) 0px, transparent 50%),
                 radial-gradient(at 100% 100%, rgba(124, 58, 237, 0.15) 0px, transparent 50%);
-            min-height: 100 screen;
+            min-height: 100vh;
         }
 
         .glass-card {
@@ -30,6 +30,8 @@
             backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.1);
             transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex;
+            flex-direction: column;
         }
 
         .glass-card:hover {
@@ -65,6 +67,15 @@
         .float-animation {
             animation: float 4s ease-in-out infinite;
         }
+
+        .category-tag {
+            font-size: 0.65rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            padding: 2px 8px;
+            border-radius: 6px;
+            letter-spacing: 0.05em;
+        }
     </style>
 </head>
 
@@ -74,61 +85,152 @@
     <header class="py-12 px-6">
         <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
             <div class="flex items-center gap-4">
-                <a href="index.html" class="w-12 h-12 glass-card rounded-2xl flex items-center justify-center hover:bg-slate-800 transition-colors">
+                <a href="index.html" class="w-12 h-12 glass-card rounded-2xl flex items-center justify-center hover:bg-slate-800 transition-colors" title="Retour au portail">
                     <i class="fa-solid fa-arrow-left text-indigo-400"></i>
                 </a>
                 <div>
                     <h1 class="text-4xl font-extrabold font-heading text-gradient tracking-tight">EduForge Explorer</h1>
-                    <p class="text-slate-400 font-medium">Curations des meilleures applications de la Forge Apps Éducation</p>
+                    <p class="text-slate-400 font-medium">L'écosystème complet des outils IA & Libres du portail</p>
                 </div>
             </div>
             <div class="flex items-center gap-3 badge px-4 py-2 rounded-full text-sm font-bold">
                 <i class="fa-solid fa-shield-halved text-indigo-400"></i>
-                OSINT & OUTILS LIBRES
+                OSINT & OUTILS SOUVERAINS
             </div>
         </div>
     </header>
 
-    <!-- App Grid -->
     <main class="max-w-7xl mx-auto px-6 pb-20">
         
         <!-- Intro Hero -->
         <div class="glass-card rounded-[40px] p-10 md:p-16 mb-16 relative overflow-hidden">
             <div class="relative z-10 max-w-2xl">
                 <h2 class="text-3xl md:text-5xl font-extrabold font-heading mb-6 leading-tight">
-                    Optimisez votre flux de travail avec la <span class="text-indigo-400">Communauté</span>.
+                    Votre Boîte à Outils <span class="text-indigo-400">Augmentée</span>.
                 </h2>
-                <p class="text-slate-400 text-lg mb-8">
-                    Sélection d'outils souverains, développés par des collègues pour des collègues. Accessibles sans inscription et respectueux de la vie privée.
+                <p class="text-slate-400 text-lg mb-8 leading-relaxed">
+                    Une sélection exhaustive d'applications souveraines et d'IA performantes pour la création, la différenciation et l'organisation pédagogique.
                 </p>
                 <div class="flex flex-wrap gap-4">
                     <div class="flex items-center gap-2 text-sm text-slate-300">
-                        <i class="fa-solid fa-check-circle text-emerald-400"></i> Sans Publicité
+                        <i class="fa-solid fa-check-circle text-emerald-400"></i> IA Souveraine
                     </div>
                     <div class="flex items-center gap-2 text-sm text-slate-300">
-                        <i class="fa-solid fa-check-circle text-emerald-400"></i> Open Source
-                    </div>
-                    <div class="flex items-center gap-2 text-sm text-slate-300">
-                        <i class="fa-solid fa-check-circle text-emerald-400"></i> Éducation Nationale
+                        <i class="fa-solid fa-check-circle text-emerald-400"></i> Accès Libre
                     </div>
                 </div>
             </div>
-            <div class="absolute -right-20 -bottom-20 w-96 h-96 bg-indigo-600/10 blur-[100px] rounded-full"></div>
-            <i class="fa-solid fa-code-merge absolute right-12 top-12 text-slate-800 text-[180px] opacity-10 float-animation"></i>
+            <i class="fa-solid fa-graduation-cap absolute right-12 top-12 text-slate-800 text-[180px] opacity-10 float-animation"></i>
         </div>
 
-        <!-- The Collection -->
+        <h2 class="text-xl font-extrabold uppercase tracking-widest text-slate-500 mb-8 ml-2">Section 1 — Outils Historiques & IA</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
+            
+            <!-- Link: NovaPeda -->
+            <div class="glass-card rounded-3xl p-8 group">
+                <div class="flex justify-between items-start mb-6">
+                    <div class="icon-box w-14 h-14 rounded-2xl flex items-center justify-center group-hover:bg-purple-600/20 transition-colors">
+                        <i class="fa-solid fa-wand-magic-sparkles text-xl text-purple-400"></i>
+                    </div>
+                    <span class="category-tag bg-purple-500/10 text-purple-400 border border-purple-500/20">Prompt Engine</span>
+                </div>
+                <h3 class="text-2xl font-bold mb-3">NovaPéda</h3>
+                <p class="text-slate-400 text-sm leading-relaxed mb-8 flex-grow">
+                    L'orchestrateur pédagogique. Idéal pour transformer vos clics en prompts structurés pour créer des séquences de cours, des évaluations et des assistants virtuels (Chatbots).
+                </p>
+                <a href="https://novapeda.eu" target="_blank" 
+                   class="w-full py-4 bg-slate-800 hover:bg-purple-600 text-white rounded-xl font-bold text-center transition-all flex items-center justify-center gap-3">
+                    Accéder à NovaPéda <i class="fa-solid fa-arrow-up-right-from-square text-xs"></i>
+                </a>
+            </div>
+
+            <!-- Link: DictIA -->
+            <div class="glass-card rounded-3xl p-8 group">
+                <div class="flex justify-between items-start mb-6">
+                    <div class="icon-box w-14 h-14 rounded-2xl flex items-center justify-center group-hover:bg-emerald-600/20 transition-colors">
+                        <i class="fa-solid fa-pen-nib text-xl text-emerald-400"></i>
+                    </div>
+                    <span class="category-tag bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Inclusion</span>
+                </div>
+                <h3 class="text-2xl font-bold mb-3">DictIA</h3>
+                <p class="text-slate-400 text-sm leading-relaxed mb-8 flex-grow">
+                    Le spécialiste de la différenciation. Génère des dictées et des textes adaptés (DYS, niveaux multiples) à partir de vos objectifs pédagogiques.
+                </p>
+                <a href="https://educajou.forge.apps.education.fr/dictia/" target="_blank" 
+                   class="w-full py-4 bg-slate-800 hover:bg-emerald-600 text-white rounded-xl font-bold text-center transition-all flex items-center justify-center gap-3">
+                    Ouvrir DictIA <i class="fa-solid fa-arrow-up-right-from-square text-xs"></i>
+                </a>
+            </div>
+
+            <!-- Link: Caramel -->
+            <div class="glass-card rounded-3xl p-8 group">
+                <div class="flex justify-between items-start mb-6">
+                    <div class="icon-box w-14 h-14 rounded-2xl flex items-center justify-center group-hover:bg-orange-600/20 transition-colors">
+                        <i class="fa-solid fa-cubes-stacked text-xl text-orange-400"></i>
+                    </div>
+                    <span class="category-tag bg-orange-500/10 text-orange-400 border border-orange-500/20">H5P / LMS</span>
+                </div>
+                <h3 class="text-2xl font-bold mb-3">Caramel</h3>
+                <p class="text-slate-400 text-sm leading-relaxed mb-8 flex-grow">
+                    L'usine à activités interactives. Transforme vos documents en modules H5P et en quiz pour Moodle ou Claroline de manière semi-automatique.
+                </p>
+                <a href="https://caramel.forge.apps.education.fr/" target="_blank" 
+                   class="w-full py-4 bg-slate-800 hover:bg-orange-600 text-white rounded-xl font-bold text-center transition-all flex items-center justify-center gap-3">
+                    Accéder à Caramel <i class="fa-solid fa-arrow-up-right-from-square text-xs"></i>
+                </a>
+            </div>
+
+            <!-- Link: Hub HAPI -->
+            <div class="glass-card rounded-3xl p-8 group">
+                <div class="flex justify-between items-start mb-6">
+                    <div class="icon-box w-14 h-14 rounded-2xl flex items-center justify-center group-hover:bg-blue-600/20 transition-colors">
+                        <i class="fa-solid fa-network-wired text-xl text-blue-400"></i>
+                    </div>
+                    <span class="category-tag bg-blue-500/10 text-blue-400 border border-blue-500/20">Studio</span>
+                </div>
+                <h3 class="text-2xl font-bold mb-3">Hub HAPI</h3>
+                <p class="text-slate-400 text-sm leading-relaxed mb-8 flex-grow">
+                    Créateur multimédia tout-en-un. Permet d'exporter des paquets SCORM légers pour vos ENT et de fusionner divers contenus interactifs.
+                </p>
+                <a href="https://drane-normandie.forge.apps.education.fr/hub-de-creation-pedagogique/" target="_blank" 
+                   class="w-full py-4 bg-slate-800 hover:bg-blue-600 text-white rounded-xl font-bold text-center transition-all flex items-center justify-center gap-3">
+                    Lancer le Hub <i class="fa-solid fa-arrow-up-right-from-square text-xs"></i>
+                </a>
+            </div>
+
+            <!-- Link: NotebookLM -->
+            <div class="glass-card rounded-3xl p-8 group border-teal-500/30">
+                <div class="flex justify-between items-start mb-6">
+                    <div class="icon-box w-14 h-14 rounded-2xl flex items-center justify-center group-hover:bg-teal-600/20 transition-colors">
+                        <i class="fa-solid fa-book-open-reader text-xl text-teal-400"></i>
+                    </div>
+                    <span class="category-tag bg-teal-500/10 text-teal-400 border border-teal-500/20">IA Documentaire</span>
+                </div>
+                <h3 class="text-2xl font-bold mb-3">NotebookLM</h3>
+                <p class="text-slate-400 text-sm leading-relaxed mb-8 flex-grow">
+                    L'assistant d'analyse de documents de Google. Importez vos PDF et laissez l'IA résumer et répondre à vos questions en citant ses sources.
+                </p>
+                <a href="https://notebooklm.google.com/" target="_blank" 
+                   class="w-full py-4 bg-slate-800 hover:bg-teal-600 text-white rounded-xl font-bold text-center transition-all flex items-center justify-center gap-3">
+                    Ouvrir NotebookLM <i class="fa-solid fa-arrow-up-right-from-square text-xs"></i>
+                </a>
+            </div>
+        </div>
+
+        <h2 class="text-xl font-extrabold uppercase tracking-widest text-indigo-400 mb-8 ml-2">Section 2 — Nouveaux Outils de la Forge</h2>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             
-            <!-- Link 1: Raccord Minute -->
-            <div class="glass-card rounded-3xl p-8 group flex flex-col h-full">
-                <div class="icon-box w-16 h-16 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-indigo-600/20 transition-colors">
-                    <i class="fa-solid fa-clock-rotate-left text-2xl text-indigo-400"></i>
+            <!-- Link 6: Raccord Minute -->
+            <div class="glass-card rounded-3xl p-8 group">
+                <div class="flex justify-between items-start mb-6">
+                    <div class="icon-box w-14 h-14 rounded-2xl flex items-center justify-center group-hover:bg-indigo-600/20 transition-colors">
+                        <i class="fa-solid fa-clock-rotate-left text-xl text-indigo-400"></i>
+                    </div>
+                    <span class="category-tag bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">Rapidité</span>
                 </div>
-                <h3 class="text-2xl font-bold mb-3 group-hover:text-indigo-300 transition-colors">Raccord Minute</h3>
+                <h3 class="text-2xl font-bold mb-3">Raccord Minute</h3>
                 <p class="text-slate-400 text-sm leading-relaxed mb-8 flex-grow">
-                    L'outil idéal pour la synchronisation rapide. Permet de raccorder des segments, d'ajuster des timings et de gérer des flux multimédias avec une simplicité déconcertante. 
-                    <span class="block mt-2 italic text-indigo-400/60 font-medium">Optimisé pour la rapidité d'exécution.</span>
+                    L'outil idéal pour la synchronisation rapide. Permet de raccorder des segments et de gérer des flux multimédias avec une simplicité déconcertante. 
                 </p>
                 <a href="https://raccord-minute.forge.apps.education.fr/" target="_blank" 
                    class="w-full py-4 bg-slate-800 hover:bg-indigo-600 text-white rounded-xl font-bold text-center transition-all flex items-center justify-center gap-3">
@@ -136,14 +238,17 @@
                 </a>
             </div>
 
-            <!-- Link 2: Live Quiz -->
-            <div class="glass-card rounded-3xl p-8 group flex flex-col h-full">
-                <div class="icon-box w-16 h-16 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-rose-600/20 transition-colors">
-                    <i class="fa-solid fa-bolt-lightning text-2xl text-rose-400"></i>
+            <!-- Link 7: Live Quiz -->
+            <div class="glass-card rounded-3xl p-8 group">
+                <div class="flex justify-between items-start mb-6">
+                    <div class="icon-box w-14 h-14 rounded-2xl flex items-center justify-center group-hover:bg-rose-600/20 transition-colors">
+                        <i class="fa-solid fa-bolt-lightning text-xl text-rose-400"></i>
+                    </div>
+                    <span class="category-tag bg-rose-500/10 text-rose-400 border border-rose-500/20">Interactif</span>
                 </div>
-                <h3 class="text-2xl font-bold mb-3 group-hover:text-rose-300 transition-colors">Live Quiz</h3>
+                <h3 class="text-2xl font-bold mb-3">Live Quiz</h3>
                 <p class="text-slate-400 text-sm leading-relaxed mb-8 flex-grow">
-                    Engagez vos élèves en temps réel. Créez des questionnaires interactifs, diffusez-les en direct et suivez les résultats instantanément. Une alternative libre et RGPD aux solutions propriétaires.
+                    Engagez vos élèves en temps réel. Créez des questionnaires interactifs, diffusez-les en direct et suivez les résultats instantanément.
                 </p>
                 <a href="https://live-quiz.forge.apps.education.fr/index.html" target="_blank" 
                    class="w-full py-4 bg-slate-800 hover:bg-rose-600 text-white rounded-xl font-bold text-center transition-all flex items-center justify-center gap-3">
@@ -151,14 +256,17 @@
                 </a>
             </div>
 
-            <!-- Link 3: Ressourcerie -->
-            <div class="glass-card rounded-3xl p-8 group flex flex-col h-full">
-                <div class="icon-box w-16 h-16 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-emerald-600/20 transition-colors">
-                    <i class="fa-solid fa-box-archive text-2xl text-emerald-400"></i>
+            <!-- Link 8: Ressourcerie -->
+            <div class="glass-card rounded-3xl p-8 group">
+                <div class="flex justify-between items-start mb-6">
+                    <div class="icon-box w-14 h-14 rounded-2xl flex items-center justify-center group-hover:bg-emerald-600/20 transition-colors">
+                        <i class="fa-solid fa-box-archive text-xl text-emerald-400"></i>
+                    </div>
+                    <span class="category-tag bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Banque</span>
                 </div>
-                <h3 class="text-2xl font-bold mb-3 group-hover:text-emerald-300 transition-colors">Ressourcerie Grenoble</h3>
+                <h3 class="text-2xl font-bold mb-3">Ressourcerie Grenoble</h3>
                 <p class="text-slate-400 text-sm leading-relaxed mb-8 flex-grow">
-                    Une banque de ressources mutualisées exceptionnelle de l'académie de Grenoble. Trouvez des scénarios, des documents et des supports prêts à l'emploi pour enrichir vos cours.
+                    Une banque de ressources mutualisées exceptionnelle. Trouvez des scénarios et des supports prêts à l'emploi.
                 </p>
                 <a href="https://ressourcerie.forge.apps.education.fr/?academie=grenoble" target="_blank" 
                    class="w-full py-4 bg-slate-800 hover:bg-emerald-600 text-white rounded-xl font-bold text-center transition-all flex items-center justify-center gap-3">
@@ -166,14 +274,17 @@
                 </a>
             </div>
 
-            <!-- Link 4: Ma Forge (Remandegauthier) -->
-            <div class="glass-card rounded-3xl p-8 group flex flex-col h-full">
-                <div class="icon-box w-16 h-16 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-amber-600/20 transition-colors">
-                    <i class="fa-solid fa-screwdriver-wrench text-2xl text-amber-400"></i>
+            <!-- Link 9: Ma Forge -->
+            <div class="glass-card rounded-3xl p-8 group">
+                <div class="flex justify-between items-start mb-6">
+                    <div class="icon-box w-14 h-14 rounded-2xl flex items-center justify-center group-hover:bg-amber-600/20 transition-colors">
+                        <i class="fa-solid fa-screwdriver-wrench text-xl text-amber-400"></i>
+                    </div>
+                    <span class="category-tag bg-amber-500/10 text-amber-400 border border-amber-500/20">Utilities</span>
                 </div>
-                <h3 class="text-2xl font-bold mb-3 group-hover:text-amber-300 transition-colors">Ma Forge Tools</h3>
+                <h3 class="text-2xl font-bold mb-3">Ma Forge Tools</h3>
                 <p class="text-slate-400 text-sm leading-relaxed mb-8 flex-grow">
-                    La fabrique à outils de Gauthier Remande. Scripts utiles, astuces d'intégration et utilitaires pour tirer le meilleur parti de l'écosystème Forge Apps Éducation.
+                    La fabrique à outils de Gauthier Remande. Scripts utiles et utilitaires pour l'écosystème Forge Apps.
                 </p>
                 <a href="https://remandegauthier.forge.apps.education.fr/ma-forge/" target="_blank" 
                    class="w-full py-4 bg-slate-800 hover:bg-amber-600 text-white rounded-xl font-bold text-center transition-all flex items-center justify-center gap-3">
@@ -181,28 +292,22 @@
                 </a>
             </div>
 
-            <!-- Link 5: Radiopad -->
-            <div class="glass-card rounded-3xl p-8 group flex flex-col h-full">
-                <div class="icon-box w-16 h-16 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-cyan-600/20 transition-colors">
-                    <i class="fa-solid fa-microphone-lines text-2xl text-cyan-400"></i>
+            <!-- Link 10: Radiopad -->
+            <div class="glass-card rounded-3xl p-8 group">
+                <div class="flex justify-between items-start mb-6">
+                    <div class="icon-box w-14 h-14 rounded-2xl flex items-center justify-center group-hover:bg-cyan-600/20 transition-colors">
+                        <i class="fa-solid fa-microphone-lines text-xl text-cyan-400"></i>
+                    </div>
+                    <span class="category-tag bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">Collaboratif</span>
                 </div>
-                <h3 class="text-2xl font-bold mb-3 group-hover:text-cyan-300 transition-colors">Radiopad</h3>
+                <h3 class="text-2xl font-bold mb-3">Radiopad</h3>
                 <p class="text-slate-400 text-sm leading-relaxed mb-8 flex-grow">
-                    L'éditeur collaboratif conçu pour l'audio. Idéal pour préparer des scripts de radio scolaire ou des podcasts à plusieurs mains, avec une interface simplifiée et efficace.
+                    L'éditeur collaboratif conçu pour l'audio. Idéal pour préparer des scripts de radio scolaire ou des podcasts à plusieurs.
                 </p>
                 <a href="https://troadec.forge.apps.education.fr/radiopad/index.html" target="_blank" 
                    class="w-full py-4 bg-slate-800 hover:bg-cyan-600 text-white rounded-xl font-bold text-center transition-all flex items-center justify-center gap-3">
                     Écrire à plusieurs <i class="fa-solid fa-arrow-up-right-from-square text-xs"></i>
                 </a>
-            </div>
-
-            <!-- Support Card -->
-            <div class="glass-card rounded-3xl p-8 border-dashed border-slate-700 bg-transparent flex flex-col items-center justify-center text-center">
-                <div class="w-16 h-16 rounded-full bg-slate-800 flex items-center justify-center mb-4">
-                    <i class="fa-solid fa-plus text-slate-500"></i>
-                </div>
-                <h4 class="text-lg font-bold text-slate-500">Une idée d'ajout ?</h4>
-                <p class="text-slate-600 text-xs mt-2">Partagez vos pépites de la Forge <br> pour enrichir cet explorer.</p>
             </div>
 
         </div>
@@ -211,7 +316,7 @@
     <!-- Footer -->
     <footer class="py-12 px-6 border-t border-slate-800 text-center">
         <p class="text-slate-500 text-xs font-bold uppercase tracking-widest leading-loose">
-            EduForge Explorer • Propulsé par la Forge Apps Éducation <br>
+            EduForge Explorer • Curations Historiques & Nouvelles Pépites <br>
             Design by Antigravity Studio © 2026
         </p>
     </footer>
