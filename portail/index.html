@@ -1559,11 +1559,14 @@
     <script>
         // Check unlock status immediately to prevent flash
         (function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const isGuest = urlParams.has('invit') || sessionStorage.getItem('portal_invitation_unlocked') === 'true';
             const isLocal = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:' || !window.location.hostname);
-            const unlocked = localStorage.getItem('portal_unlocked') === 'true' || isLocal;
+            const unlocked = localStorage.getItem('portal_unlocked') === 'true' || isLocal || isGuest;
             if (unlocked) {
                 document.documentElement.classList.add('portal-unlocked');
-                localStorage.setItem('portal_unlocked', 'true');
+                if (isGuest) sessionStorage.setItem('portal_invitation_unlocked', 'true');
+                else localStorage.setItem('portal_unlocked', 'true');
             }
         })();
     </script>
@@ -1606,7 +1609,9 @@
 
             // If already unlocked via localStorage or local dev, hide lock screen immediately
             const isLocal = (location.hostname === 'localhost' || location.hostname === '127.0.0.1' || location.protocol === 'file:' || !location.hostname);
-            if (localStorage.getItem('portal_unlocked') === 'true' || isLocal) {
+            const isGuest = new URLSearchParams(window.location.search).has('invit') || sessionStorage.getItem('portal_invitation_unlocked') === 'true';
+
+            if (localStorage.getItem('portal_unlocked') === 'true' || isLocal || isGuest) {
                 lockScreen.classList.add('hidden');
                 document.body.style.overflow = '';
             } else {
