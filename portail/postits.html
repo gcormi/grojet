@@ -588,18 +588,27 @@
             if (user) {
                 startApp(user);
             } else {
-                // Pas de session : attendre 2s, puis proposer Google ou Invité
-                // (ou connexion anonyme auto si tu préfères)
-                setTimeout(() => {
-                    if (!firebase.auth().currentUser) {
-                        // Connexion anonyme AUTOMATIQUE pour les invités
-                        firebase.auth().signInAnonymously().catch(() => {
-                            // Si échec anonyme, montrer les boutons
+                // Si on a un jeton dans l'URL mais pas encore en session, on le récupère
+                const urlParams = new URLSearchParams(window.location.search);
+                if (urlParams.has('invit')) {
+                    sessionStorage.setItem('guest_token', urlParams.get('invit'));
+                }
+
+                // Si on a un jeton (session ou URL), on tente l'anonyme direct
+                if (sessionStorage.getItem('guest_token') || urlParams.has('invit')) {
+                    firebase.auth().signInAnonymously().catch(() => {
+                        loading.classList.add('hidden');
+                        content.classList.remove('hidden');
+                    });
+                } else {
+                    // Sinon on attend un peu pour voir si une session Google revient
+                    setTimeout(() => {
+                        if (!firebase.auth().currentUser) {
                             loading.classList.add('hidden');
                             content.classList.remove('hidden');
-                        });
-                    }
-                }, 1500);
+                        }
+                    }, 1500);
+                }
             }
         });
 

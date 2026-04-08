@@ -495,14 +495,26 @@
         if (user) {
             startApp(user);
         } else {
-            setTimeout(() => {
-                if (!firebase.auth().currentUser) {
-                    firebase.auth().signInAnonymously().catch(() => {
-                        document.getElementById('auth-loading').classList.add('hidden');
-                        document.getElementById('auth-content').classList.remove('hidden');
-                    });
-                }
-            }, 1500);
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.has('invit')) {
+                sessionStorage.setItem('guest_token', urlParams.get('invit'));
+            }
+
+            if (sessionStorage.getItem('guest_token')) {
+                firebase.auth().signInAnonymously().catch(() => {
+                    document.getElementById('auth-loading').classList.add('hidden');
+                    document.getElementById('auth-content').classList.remove('hidden');
+                });
+            } else {
+                setTimeout(() => {
+                    if (!firebase.auth().currentUser) {
+                        firebase.auth().signInAnonymously().catch(() => {
+                            document.getElementById('auth-loading').classList.add('hidden');
+                            document.getElementById('auth-content').classList.remove('hidden');
+                        });
+                    }
+                }, 1500);
+            }
         }
     });
 
