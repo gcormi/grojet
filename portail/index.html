@@ -104,6 +104,47 @@
             background-image: none;
         }
 
+        /* ===================== SPOTLIGHT SEARCH (Ctrl + K) ===================== */
+        .spotlight-overlay {
+            position: fixed; inset: 0; background: rgba(15, 23, 42, 0.4);
+            backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+            z-index: 2000; display: none; align-items: start; justify-content: center;
+            padding-top: 15vh; opacity: 0; transition: opacity 0.2s ease;
+        }
+        .spotlight-overlay.active { display: flex; opacity: 1; }
+        .spotlight-card {
+            width: 90%; max-width: 650px; background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px; box-shadow: 0 30px 60px -12px rgba(0,0,0,0.25), 0 0 0 1px rgba(0,0,0,0.05);
+            overflow: hidden; transform: translateY(-20px); transition: transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+        html.dark-mode .spotlight-card { background: rgba(30, 41, 59, 0.95); border-color: rgba(255,255,255,0.1); }
+        .spotlight-overlay.active .spotlight-card { transform: translateY(0); }
+        .spotlight-input-wrapper { display: flex; items-center: center; padding: 20px 24px; border-bottom: 1px solid rgba(0,0,0,0.06); gap: 16px; }
+        html.dark-mode .spotlight-input-wrapper { border-color: rgba(255,255,255,0.1); }
+        #spotlight-input { 
+            background: transparent; border: none; flex-grow: 1; font-size: 1.25rem; 
+            font-weight: 500; color: var(--text-primary); outline: none; 
+        }
+        .spotlight-results { max-height: 400px; overflow-y: auto; padding: 12px; }
+        .spotlight-item {
+            display: flex; align-items: center; gap: 14px; padding: 12px 14px;
+            border-radius: 12px; cursor: pointer; transition: all 0.2s ease;
+            text-decoration: none; color: var(--text-primary);
+        }
+        .spotlight-item:hover, .spotlight-item.selected { background: var(--primary-light); }
+        html.dark-mode .spotlight-item:hover, html.dark-mode .spotlight-item.selected { background: rgba(79, 70, 229, 0.2); }
+        .spotlight-item-icon { width: 36px; height: 36px; border-radius: 8px; display: flex; items-center: center; justify-content: center; }
+        .spotlight-footer {
+            padding: 12px 24px; background: rgba(0,0,0,0.02); display: flex; 
+            justify-content: space-between; font-size: 0.75rem; color: #94a3b8;
+        }
+        .kbd-key {
+            padding: 2px 6px; background: white; border: 1px solid #e2e8f0;
+            border-radius: 4px; box-shadow: 0 1px 1px rgba(0,0,0,0.1);
+            font-family: inherit; font-weight: 700; color: #64748b; margin: 0 2px;
+        }
+        html.dark-mode .kbd-key { background: #334155; border-color: #475569; color: #cbd5e1; }
+        
         /* Modal Partage */
         .share-modal-overlay {
             position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6);
@@ -1727,13 +1768,6 @@
         const VALID_PASSWORD = "Brigitte*1963";
         
         document.addEventListener('DOMContentLoaded', () => {
-            initAuth();
-            
-            // TEST DE VERSION FORCÉ
-            setTimeout(() => {
-                showToast("Portail Synchronisé - V4.0.1", "success");
-            }, 1000);
-
             // Enregistrement Service Worker
             const lockScreen = document.getElementById('lock-screen');
             const passwordInput = document.getElementById('portal-password-input');
@@ -1973,13 +2007,13 @@
                         <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
                         <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-indigo-600"></span>
                     </span>
-                    <span class="text-[11px] font-black text-indigo-600 uppercase tracking-[0.2em]">Maintenance en cours - v4.0.1</span>
+                    <span class="text-[11px] font-black text-indigo-600 uppercase tracking-[0.2em]">Bienvenue sur le portail v4.0.0</span>
                 </div>
 
                 <!-- Titre Principal -->
                 <h1 class="text-5xl md:text-7xl font-extrabold text-slate-900 mb-8 leading-[1.1] tracking-tight">
-                    Portail <span class="text-indigo-600 relative inline-block">
-                        Propulsé
+                    Votre Écosystème de Travail <span class="text-indigo-600 relative inline-block">
+                        Augmenté
                         <svg class="absolute -bottom-2 left-0 w-full h-3 text-indigo-200/60" viewBox="0 0 100 10" preserveAspectRatio="none">
                             <path d="M0 5 Q 50 10 100 5" stroke="currentColor" stroke-width="8" fill="none" stroke-linecap="round"/>
                         </svg>
@@ -2044,9 +2078,13 @@
         <!-- Search & Filter Section -->
         <section class="mb-12 fade-in-up">
             <div class="mb-8">
-                <div class="search-container mb-6">
+                <div class="search-container mb-6 relative">
                     <i class="fas fa-search search-icon" aria-hidden="true"></i>
                     <input type="text" id="search-input" placeholder="Rechercher un outil..." aria-label="Rechercher un outil">
+                    <div class="absolute right-4 top-1/2 -translate-y-1/2 hidden md:flex items-center gap-1.5 pointer-events-none">
+                        <span class="kbd-key shadow-none border-slate-200 text-[10px] py-0.5 px-1.5 opacity-40">Ctrl</span>
+                        <span class="kbd-key shadow-none border-slate-200 text-[10px] py-0.5 px-1.5 opacity-40">K</span>
+                    </div>
                     <button class="clear-btn" id="clear-search" aria-label="Effacer la recherche"></button>
                 </div>
 
@@ -4001,5 +4039,98 @@
             </div>
         </div>
     </div>
+    <!-- ============================== MODAL: SPOTLIGHT SEARCH (Ctrl + K) ============================== -->
+    <div id="spotlight-overlay" class="spotlight-overlay">
+        <div class="spotlight-card">
+            <div class="spotlight-input-wrapper">
+                <i class="fas fa-search text-slate-400 text-xl"></i>
+                <input type="text" id="spotlight-input" placeholder="Que cherchez-vous ?" autocomplete="off">
+            </div>
+            <div id="spotlight-results" class="spotlight-results">
+                <!-- Résultats dynamiques -->
+                <div class="text-center py-8 text-slate-400">
+                    Tapez pour rechercher une application...
+                </div>
+            </div>
+            <div class="spotlight-footer">
+                <div class="flex gap-4">
+                    <span><span class="kbd-key">↑↓</span> Naviguer</span>
+                    <span><span class="kbd-key">Enter</span> Ouvrir</span>
+                </div>
+                <div><span class="kbd-key">ESC</span> Fermer</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- LOGIQUE SPOTLIGHT SEARCH ---
+        const spotlightOverlay = document.getElementById('spotlight-overlay');
+        const spotlightInput = document.getElementById('spotlight-input');
+        const spotlightResults = document.getElementById('spotlight-results');
+
+        function openSpotlight() {
+            spotlightOverlay.classList.add('active');
+            setTimeout(() => spotlightInput.focus(), 50);
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeSpotlight() {
+            spotlightOverlay.classList.remove('active');
+            document.body.style.overflow = '';
+            spotlightInput.value = '';
+        }
+
+        // Raccourci Clavier
+        document.addEventListener('keydown', (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+                e.preventDefault();
+                openSpotlight();
+            }
+            if (e.key === 'Escape') closeSpotlight();
+        });
+
+        spotlightOverlay.addEventListener('click', (e) => {
+            if (e.target === spotlightOverlay) closeSpotlight();
+        });
+
+        // Moteur de recherche Spotlight
+        spotlightInput.addEventListener('input', (e) => {
+            const query = e.target.value.toLowerCase().trim();
+            if (query.length < 2) {
+                spotlightResults.innerHTML = '<div class="text-center py-8 text-slate-400">Tapez au moins 2 caractères...</div>';
+                return;
+            }
+
+            const cards = Array.from(document.querySelectorAll('.card-wrapper'));
+            const results = cards.filter(card => {
+                const name = card.getAttribute('data-name')?.toLowerCase() || "";
+                const title = card.querySelector('h3')?.innerText.toLowerCase() || "";
+                return name.includes(query) || title.includes(query);
+            });
+
+            if (results.length === 0) {
+                spotlightResults.innerHTML = '<div class="text-center py-8 text-slate-400">Aucun outil trouvé pour "' + query + '"</div>';
+                return;
+            }
+
+            spotlightResults.innerHTML = results.map(card => {
+                const title = card.querySelector('h3').innerText;
+                const icon = card.querySelector('i').className;
+                const url = card.querySelector('a').href;
+                return `
+                    <a href="${url}" target="_blank" class="spotlight-item group">
+                        <div class="spotlight-item-icon bg-indigo-50 text-indigo-600 dark:bg-slate-800 dark:text-indigo-400 group-hover:bg-indigo-500 group-hover:text-white transition-colors">
+                            <i class="${icon}"></i>
+                        </div>
+                        <div class="flex-grow min-w-0">
+                            <div class="font-bold text-sm text-slate-800 dark:text-slate-100">${title}</div>
+                            <div class="text-[10px] text-slate-400 truncate">${url}</div>
+                        </div>
+                        <i class="fas fa-chevron-right text-[10px] text-slate-300"></i>
+                    </a>
+                `;
+            }).join('');
+        });
+    </script>
 </body>
 </html>
