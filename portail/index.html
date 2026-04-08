@@ -414,20 +414,58 @@
         }
 
         .card-soft:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 24px 48px -12px rgba(79, 70, 229, 0.15);
-            border-color: rgba(79, 70, 229, 0.2);
-            background: rgba(255, 255, 255, 0.95);
+            transform: translateY(-10px);
+            box-shadow: 0 40px 80px -15px rgba(79, 70, 229, 0.4);
+            border-color: rgba(79, 70, 229, 0.5);
+            background: rgba(255, 255, 255, 1);
         }
 
         html.dark-mode .card-soft:hover {
-            box-shadow: 0 24px 48px -12px rgba(79, 70, 229, 0.3);
+            box-shadow: 0 40px 80px -15px rgba(79, 70, 229, 0.6);
+            border-color: rgba(79, 70, 229, 0.7);
         }
 
-        .card-soft:focus-within {
-            outline: 3px solid var(--primary);
-            outline-offset: 2px;
+        /* ===================== FOOTER PREMIUM ===================== */
+        footer {
+            background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+            padding: 80px 0 40px 0;
+            border-top: 1px solid rgba(79, 70, 229, 0.05);
+            position: relative;
+            overflow: hidden;
         }
+        html.dark-mode footer {
+            background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
+            border-color: rgba(255, 255, 255, 0.05);
+        }
+        footer::before {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(79, 70, 229, 0.1), transparent);
+        }
+        .footer-title {
+            font-size: 0.75rem; font-weight: 800; text-transform: uppercase;
+            letter-spacing: 0.15em; color: var(--primary); margin-bottom: 24px;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .footer-link-item {
+            display: flex; align-items: center; gap: 10px; color: #64748b;
+            font-size: 0.9rem; font-weight: 500; transition: all 0.3s ease;
+            padding: 4px 0; text-decoration: none;
+        }
+        html.dark-mode .footer-link-item { color: #94a3b8; }
+        .footer-link-item:hover {
+            color: var(--primary); transform: translateX(6px);
+        }
+        .footer-link-item i { font-size: 0.8rem; opacity: 0.5; transition: transform 0.3s ease; }
+        .footer-link-item:hover i { transform: scale(1.2); opacity: 1; }
+        .footer-bottom {
+            border-top: 1px solid rgba(0,0,0,0.05); padding-top: 32px; margin-top: 60px;
+            display: flex; flex-direction: column; md-flex-direction: row;
+            justify-content: space-between; align-items: center; gap: 20px;
+        }
+        html.dark-mode .footer-bottom { border-color: rgba(255,255,255,0.05); }
+        .footer-logo-box { max-width: 320px; }
+        .footer-logo-box p { font-size: 0.875rem; line-height: 1.6; color: #64748b; margin-top: 16px; }
+        html.dark-mode .footer-logo-box p { color: #94a3b8; }
 
         /* Card hidden for filter */
         .card-wrapper.hidden-filter {
@@ -2778,75 +2816,68 @@
     </main>
     </div>
 
-    <!-- ============================== FOOTER ============================== -->
-    <footer class="footer-gradient border-t border-slate-100 mt-20">
-        <div class="container mx-auto max-w-7xl px-6 py-16">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-12 mb-12">
-
-                <!-- Brand -->
-                <div>
-                    <div class="flex items-center gap-3 mb-4">
-                        <div class="w-10 h-10 bg-gradient-to-br from-indigo-600 to-blue-500 rounded-xl flex items-center justify-center text-white">
-                            <i class="fas fa-graduation-cap text-sm" aria-hidden="true"></i>
+    <!-- ============================== FOOTER (RELOOKÉ PREMIUM) ============================== -->
+    <footer>
+        <div class="container mx-auto px-6">
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-12">
+                
+                <!-- Colonne Logo/Infos -->
+                <div class="md:col-span-5 footer-logo-box">
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="w-10 h-10 bg-indigo-600 text-white rounded-xl flex items-center justify-center text-xl shadow-lg shadow-indigo-200">
+                            <i class="fas fa-graduation-cap"></i>
                         </div>
-                        <span class="font-extrabold text-slate-900">Portail IA</span>
+                        <span class="text-xl font-black text-slate-800 dark:text-white tracking-tight">Portail IA</span>
                     </div>
-                    <p class="text-sm text-slate-500 leading-relaxed">Ingénierie pédagogique augmentée pour les enseignants. Suite d'outils libres et gratuits.</p>
+                    <p>Ingénierie pédagogique augmentée pour les enseignants. Une suite d'outils libres, gratuits et éthiques conçue pour transformer la préparation et l'animation de vos cours.</p>
                 </div>
 
-                <!-- Ressources -->
-                <div>
-                    <h3 class="text-xs font-extrabold uppercase tracking-widest text-slate-400 mb-5">Ressources</h3>
-                    <ul class="space-y-3">
-                        <li>
-                            <button id="footer-philosophy-btn" class="text-sm font-medium text-slate-500 hover:text-indigo-600 transition-colors flex items-center gap-2">
-                                <i class="fas fa-book-open text-xs text-slate-300" aria-hidden="true"></i> Philosophie du Projet
-                            </button>
-                        </li>
-                        <li>
-                            <a href="mailto:gilles@gcormi.fr" class="text-sm font-medium text-slate-500 hover:text-indigo-600 transition-colors flex items-center gap-2">
-                                <i class="fas fa-envelope text-xs text-slate-300" aria-hidden="true"></i> Contact
-                            </a>
-                        </li>
-                    </ul>
+                <!-- Colonne Ressources -->
+                <div class="md:col-span-3 md:ml-auto">
+                    <h3 class="footer-title">Ressources</h3>
+                    <nav class="flex flex-col gap-2">
+                        <button id="footer-philosophy-btn" class="footer-link-item">
+                            <i class="fas fa-book-open"></i> Philosophie du Projet
+                        </button>
+                        <a href="mailto:gilles@gcormi.fr" class="footer-link-item">
+                            <i class="fas fa-envelope"></i> Contact & Support
+                        </a>
+                        <a href="https://github.com/gcormi" target="_blank" class="footer-link-item">
+                            <i class="fab fa-github"></i> Code Source (GitHub)
+                        </a>
+                    </nav>
                 </div>
 
-                <!-- Outils vedettes -->
-                <div>
-                    <h3 class="text-xs font-extrabold uppercase tracking-widest text-slate-400 mb-5">Outils phares</h3>
-                    <ul class="space-y-3">
-                        <li>
-                            <a href="https://gcormi.forge.apps.education.fr/assistant-test/" target="_blank" rel="noopener" class="text-sm font-medium text-slate-500 hover:text-indigo-600 transition-colors flex items-center gap-2">
-                                <i class="fas fa-microchip text-xs text-indigo-300" aria-hidden="true"></i> Assistant de Conception
-                            </a>
-                        </li>
-                        <li>
-                            <a href="https://gcormi.forge.apps.education.fr/frojet/technologie_master.html" target="_blank" rel="noopener" class="text-sm font-medium text-slate-500 hover:text-indigo-600 transition-colors flex items-center gap-2">
-                                <i class="fas fa-laptop-code text-xs text-blue-300" aria-hidden="true"></i> Master Technologie
-                            </a>
-                        </li>
-                        <li>
-                            <a href="https://gcormi.forge.apps.education.fr/tas/" target="_blank" rel="noopener" class="text-sm font-medium text-slate-500 hover:text-indigo-600 transition-colors flex items-center gap-2">
-                                <i class="fas fa-universal-access text-xs text-emerald-300" aria-hidden="true"></i> Adaptation Inclusive
-                            </a>
-                        </li>
-                        <li>
-                            <a href="https://gcormi.forge.apps.education.fr/frojet/LudoTech/ludotech.html" target="_blank" rel="noopener" class="text-sm font-medium text-slate-500 hover:text-indigo-600 transition-colors flex items-center gap-2">
-                                <i class="fas fa-dice text-xs text-amber-300" aria-hidden="true"></i> LudoTech Engine
-                            </a>
-                        </li>
-                    </ul>
+                <!-- Colonne Outils Phares -->
+                <div class="md:col-span-4">
+                    <h3 class="footer-title">Outils Phares</h3>
+                    <nav class="grid grid-cols-1 gap-2">
+                        <a href="https://gcormi.forge.apps.education.fr/assistant-test/" target="_blank" class="footer-link-item">
+                            <div class="w-2 h-2 rounded-full bg-indigo-400"></div> Assistant de Conception
+                        </a>
+                        <a href="https://gcormi.forge.apps.education.fr/frojet/technologie_master.html" target="_blank" class="footer-link-item">
+                            <div class="w-2 h-2 rounded-full bg-blue-400"></div> Master Technologie
+                        </a>
+                        <a href="https://gcormi.forge.apps.education.fr/tas/" target="_blank" class="footer-link-item">
+                            <div class="w-2 h-2 rounded-full bg-emerald-400"></div> Adaptation Inclusive
+                        </a>
+                        <a href="https://gcormi.forge.apps.education.fr/frojet/LudoTech/ludotech.html" target="_blank" class="footer-link-item">
+                            <div class="w-2 h-2 rounded-full bg-amber-400"></div> LudoTech Engine
+                        </a>
+                    </nav>
                 </div>
 
             </div>
 
-            <!-- Bottom footer -->
-            <div class="border-t border-slate-100 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-slate-400">
-                <div class="text-xs font-bold tracking-tight">
+            <!-- Barre de Copyright -->
+            <div class="footer-bottom">
+                <div class="text-xs font-bold text-slate-400">
                     © 2026 Gilles Cormi · Ingénierie Pédagogique
                 </div>
-                <div class="text-[10px] font-bold uppercase tracking-widest">
-                    Sous licence <a href="https://creativecommons.org/licenses/by-nc-nd/4.0/deed.fr" target="_blank" rel="noopener" class="hover:text-indigo-500 transition-colors underline decoration-dotted">CC BY-NC-ND 4.0</a>
+                <div class="flex items-center gap-6">
+                    <div class="text-[10px] font-bold uppercase tracking-widest text-slate-400">
+                        Sous licence <a href="https://creativecommons.org/licenses/by-nc-nd/4.0/deed.fr" target="_blank" class="text-indigo-500 hover:underline">CC BY-NC-ND 4.0</a>
+                    </div>
                 </div>
             </div>
         </div>
