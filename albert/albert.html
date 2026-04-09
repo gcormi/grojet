@@ -91,20 +91,23 @@
                 : "https://albert.api.etalab.gouv.fr/v1/chat/completions";
             }
 
-            // MÉTHODE ULTIME : Paramètres dans l'URL (très efficace avec GAS)
-            let finalEndpoint = endpoint;
+            // NETTOYAGE ET CORRECTION D'URL
+            let finalEndpoint = endpoint.trim();
+            if (isRelay && finalEndpoint.includes("script.google.com") && !finalEndpoint.toLowerCase().endsWith("/exec")) {
+              finalEndpoint += "/exec";
+            }
             
             if (isRelay) {
-              // On construit l'URL avec paramètres pour maximiser la compatibilité
-              const urlWithParams = `${endpoint}${endpoint.includes('?') ? '&' : '?'}message=${encodeURIComponent(userPrompt)}&model=${encodeURIComponent(model)}`;
-              // On passe le TOUT dans le proxy
+              // Construction de l'URL avec paramètres pour GET
+              const urlWithParams = `${finalEndpoint}${finalEndpoint.includes('?') ? '&' : '?'}message=${encodeURIComponent(userPrompt)}&model=${encodeURIComponent(model)}`;
+              // Proxy pour le relais
               finalEndpoint = `https://corsproxy.io/?${encodeURIComponent(urlWithParams)}`;
             } else if (isLocal) {
-              finalEndpoint = `https://corsproxy.io/?${encodeURIComponent(endpoint)}`;
+              finalEndpoint = `https://corsproxy.io/?${encodeURIComponent(finalEndpoint)}`;
             }
 
             const fetchOptions = {
-              method: "POST",
+              method: isRelay ? "GET" : "POST",
               headers: isRelay ? {} : { 
                 "Content-Type": "application/json",
                 "Authorization": `Bearer ${cleanKey}`
@@ -112,7 +115,6 @@
               mode: 'cors'
             };
 
-            // On n'ajoute le body que si on n'est pas en mode paramètres URL (pour le mode direct)
             if (!isRelay) {
               fetchOptions.body = JSON.stringify({
                 model: model,
@@ -165,7 +167,7 @@
                     <i data-lucide="bot" className="w-6 h-6"></i>
                   </div>
                   <div>
-                    <h1 className="text-xl font-bold text-slate-900 leading-none">Chatbot Albert <span className="text-[10px] bg-blue-600 text-white px-2 py-0.5 rounded ml-2 shadow-sm font-bold">v6.4</span></h1>
+                    <h1 className="text-xl font-bold text-slate-900 leading-none">Chatbot Albert <span className="text-[10px] bg-blue-600 text-white px-2 py-0.5 rounded ml-2 shadow-sm font-bold">v6.5</span></h1>
                     <div className="flex items-center gap-2 mt-1">
                       <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
                         {config.provider === 'relais' ? 'Relais Google' : (config.provider === 'kit-albert' ? 'Kit Albert (Proxy)' : 'Mode Direct')}
