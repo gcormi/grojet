@@ -79,8 +79,8 @@
           const cleanKey = apiKey.trim();
           const isLocal = window.location.protocol === 'file:' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
 
+          let endpoint = "";
           try {
-            let endpoint = "";
             let isRelay = provider === 'relais' || cleanKey.startsWith('http');
             
             // Construction de l'URL cible
@@ -141,7 +141,7 @@
             if (error.name === "TypeError") errorType = "BLOCAGE (CORS/RÉSEAU)";
 
             // On affiche l'URL finale pour déboguer
-            const debugUrl = isLocal ? "via CORS-Proxy" : endpoint.substring(0, 30);
+            const debugUrl = isLocal ? "via CORS-Proxy" : (endpoint ? endpoint.substring(0, 30) : "URL indéfinie");
             return `❌ ${errorType}\n\n${error.message}\n\nCible: ${targetLabel}\nMode: ${isLocal ? 'Local (file://)' : 'Forge (https)'}\nNote: ${debugUrl}`;
           }
         }
@@ -171,7 +171,7 @@
                     <i data-lucide="bot" className="w-6 h-6"></i>
                   </div>
                   <div>
-                    <h1 className="text-xl font-bold text-slate-900 leading-none">Chatbot Albert <span className="text-[10px] bg-blue-600 text-white px-2 py-0.5 rounded ml-2 shadow-sm font-bold">v5.5</span></h1>
+                    <h1 className="text-xl font-bold text-slate-900 leading-none">Chatbot Albert <span className="text-[10px] bg-blue-600 text-white px-2 py-0.5 rounded ml-2 shadow-sm font-bold">v5.6</span></h1>
                     <div className="flex items-center gap-2 mt-1">
                       <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
                         {config.provider === 'relais' ? 'Relais Google' : (config.provider === 'kit-albert' ? 'Kit Albert (Proxy)' : 'Mode Direct')}
