@@ -109,9 +109,9 @@
               fetchOptions.headers["Authorization"] = `Bearer ${cleanKey}`;
             }
 
-            // Proxy uniquement en local pour le mode direct (pas pour le relais)
+            // Proxy uniquement pour Google Scripts ou en local pour le mode direct
             let finalEndpoint = endpoint;
-            if (!isRelay && isLocal) {
+            if (endpoint.includes("script.google.com") || (!isRelay && isLocal)) {
               finalEndpoint = `https://corsproxy.io/?${encodeURIComponent(endpoint)}`;
             }
 
@@ -159,7 +159,7 @@
                     <i data-lucide="bot" className="w-6 h-6"></i>
                   </div>
                   <div>
-                    <h1 className="text-xl font-bold text-slate-900 leading-none">Chatbot Albert <span className="text-[10px] bg-blue-600 text-white px-2 py-0.5 rounded ml-2 shadow-sm font-bold">v6.0</span></h1>
+                    <h1 className="text-xl font-bold text-slate-900 leading-none">Chatbot Albert <span className="text-[10px] bg-blue-600 text-white px-2 py-0.5 rounded ml-2 shadow-sm font-bold">v6.1</span></h1>
                     <div className="flex items-center gap-2 mt-1">
                       <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
                         {config.provider === 'relais' ? 'Relais Google' : (config.provider === 'kit-albert' ? 'Kit Albert (Proxy)' : 'Mode Direct')}
