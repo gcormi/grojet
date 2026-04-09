@@ -74,65 +74,72 @@
             setMessages(prev => [...prev, { role: 'bot', text: `✅ Configuration mise à jour avec le Kit Albert.` }]);
           };
 
-          const callAI = async (userPrompt) => {
-            const { provider, key, model } = config;
-            const cleanKey = key.trim();
-            if (!cleanKey) throw new Error(`Veuillez entrer votre clé API Albert.`);
+          async function callAI(userPrompt) {
+          const { key: apiKey, model, provider } = config;
+          const cleanKey = apiKey.trim();
+          const isLocal = window.location.protocol === 'file:' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
 
-            const isLocal = window.location.protocol === 'file:';
+          try {
             let endpoint = "";
             let isRelay = provider === 'relais' || cleanKey.startsWith('http');
-
+            
+            // Construction de l'URL cible
             if (isRelay) {
-              endpoint = cleanKey; // L'URL de votre Google Script ou Worker
+              endpoint = cleanKey;
             } else {
               endpoint = provider === 'kit-albert' 
                 ? "https://proxy.educ-ai.fr/v1/chat/completions"
                 : "https://albert.api.etalab.gouv.fr/v1/chat/completions";
-              
+            }
+
+            // Corps standard OpenAI (compatible Albert)
+            const requestBody = {
+              model: model,
+              messages: [{ role: "user", content: userPrompt }],
+              temperature: 0.7
+            };
+
+            const fetchOptions = {
+              method: "POST",
+              headers: { 
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+              },
+              mode: 'cors',
+              body: JSON.stringify(requestBody)
+            };
+
+            // Ajout de l'authentification si direct, sinon on considère que le relais gère tout
+            if (!isRelay) {
+              fetchOptions.headers["Authorization"] = `Bearer ${cleanKey}`;
               if (isLocal) {
                 endpoint = `https://corsproxy.io/?${encodeURIComponent(endpoint)}`;
               }
             }
 
-            try {
-              const fetchOptions = {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' }
-              };
-
-              if (isRelay) {
-                // Format attendu par votre Google Script / Worker
-                fetchOptions.body = JSON.stringify({ 
-                  message: userPrompt, 
-                  model: model,
-                  key: cleanKey // Au cas où le relais en a besoin
-                });
-              } else {
-                fetchOptions.headers['Authorization'] = `Bearer ${cleanKey}`;
-                fetchOptions.body = JSON.stringify({
-                  model: model,
-                  messages: [{ role: 'user', content: userPrompt }],
-                  max_tokens: 1000,
-                  temperature: 0.7
-                });
-              }
-
-              const response = await fetch(endpoint, fetchOptions);
-
-              if (!response.ok) {
-                const body = await response.text();
-                throw new Error(`Erreur ${response.status}: ${body.substring(0, 100)}`);
-              }
-
-              const data = await response.json();
-              return data.choices?.[0]?.message?.content || "Pas de réponse.";
-
-            } catch (error) {
-              console.error("Fetch Error:", error);
-              return `❌ ERREUR RÉSEAU\n\nSi vous êtes sur La Forge, vérifiez que votre clé API est valide.\nSi vous êtes en local, le navigateur bloque l'accès.\n\nType: ${error.name}\nCible: ${endpoint.includes('proxy') ? 'Proxy Kit Albert' : 'Direct Albert'}`;
+            const response = await fetch(endpoint, fetchOptions);
+            
+            if (!response.ok) {
+              const errorData = await response.json().catch(() => ({}));
+              throw new Error(errorData.error?.message || `Erreur serveur (${response.status})`);
             }
-          };
+
+            const data = await response.json();
+            return data.choices[0].message.content;
+
+          } catch (error) {
+            console.error("Fetch Error:", error);
+            
+            let errorType = "ERREUR CONNEXION";
+            let targetLabel = provider === 'relais' ? "Relais Google" : (provider === 'kit-albert' ? "Proxy Kit Albert" : "Direct Albert");
+            
+            if (error.message.includes("401")) errorType = "CLÉ INVALIDE";
+            if (error.message.includes("404")) errorType = "MODÈLE INTROUVABLE";
+            if (error.name === "TypeError") errorType = "BLOCAGE RÉSEAU (CORS)";
+
+            return `❌ ${errorType}\n\n${error.message}\n\nCible: ${targetLabel}\nURL: ${cleanKey.substring(0, 30)}...`;
+          }
+        }
 
           const handleSend = async (e) => {
             if (e) e.preventDefault();
