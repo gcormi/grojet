@@ -109,12 +109,14 @@
               body: JSON.stringify(requestBody)
             };
 
-            // Ajout de l'authentification si direct, sinon on considère que le relais gère tout
+            // Ajout de l'authentification si direct (le relais gère sa propre clé)
             if (!isRelay) {
               fetchOptions.headers["Authorization"] = `Bearer ${cleanKey}`;
-              if (isLocal) {
-                endpoint = `https://corsproxy.io/?${encodeURIComponent(endpoint)}`;
-              }
+            }
+
+            // Si on est en local, on passe TOUT par le proxy CORS pour éviter les blocages
+            if (isLocal) {
+              endpoint = `https://corsproxy.io/?${encodeURIComponent(endpoint)}`;
             }
 
             const response = await fetch(endpoint, fetchOptions);
