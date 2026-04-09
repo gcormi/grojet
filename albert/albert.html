@@ -114,12 +114,13 @@
               fetchOptions.headers["Authorization"] = `Bearer ${cleanKey}`;
             }
 
+            let finalEndpoint = endpoint;
             // Si on est en local, on passe TOUT par le proxy CORS pour éviter les blocages
             if (isLocal) {
-              endpoint = `https://corsproxy.io/?${encodeURIComponent(endpoint)}`;
+              finalEndpoint = `https://corsproxy.io/?${encodeURIComponent(endpoint)}`;
             }
 
-            const response = await fetch(endpoint, fetchOptions);
+            const response = await fetch(finalEndpoint, fetchOptions);
             
             if (!response.ok) {
               const errorData = await response.json().catch(() => ({}));
@@ -132,14 +133,16 @@
           } catch (error) {
             console.error("Fetch Error:", error);
             
-            let errorType = "ERREUR CONNEXION";
+            let errorType = "ERREUR RÉSEAU";
             let targetLabel = provider === 'relais' ? "Relais Google" : (provider === 'kit-albert' ? "Proxy Kit Albert" : "Direct Albert");
             
             if (error.message.includes("401")) errorType = "CLÉ INVALIDE";
             if (error.message.includes("404")) errorType = "MODÈLE INTROUVABLE";
-            if (error.name === "TypeError") errorType = "BLOCAGE RÉSEAU (CORS)";
+            if (error.name === "TypeError") errorType = "BLOCAGE (CORS/RÉSEAU)";
 
-            return `❌ ${errorType}\n\n${error.message}\n\nCible: ${targetLabel}\nURL: ${cleanKey.substring(0, 30)}...`;
+            // On affiche l'URL finale pour déboguer
+            const debugUrl = isLocal ? "via CORS-Proxy" : endpoint.substring(0, 30);
+            return `❌ ${errorType}\n\n${error.message}\n\nCible: ${targetLabel}\nMode: ${isLocal ? 'Local (file://)' : 'Forge (https)'}\nNote: ${debugUrl}`;
           }
         }
 
@@ -168,7 +171,7 @@
                     <i data-lucide="bot" className="w-6 h-6"></i>
                   </div>
                   <div>
-                    <h1 className="text-xl font-bold text-slate-900 leading-none">Chatbot Albert <span className="text-[10px] bg-blue-600 text-white px-2 py-0.5 rounded ml-2 shadow-sm font-bold">v5.4</span></h1>
+                    <h1 className="text-xl font-bold text-slate-900 leading-none">Chatbot Albert <span className="text-[10px] bg-blue-600 text-white px-2 py-0.5 rounded ml-2 shadow-sm font-bold">v5.5</span></h1>
                     <div className="flex items-center gap-2 mt-1">
                       <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
                         {config.provider === 'relais' ? 'Relais Google' : (config.provider === 'kit-albert' ? 'Kit Albert (Proxy)' : 'Mode Direct')}
