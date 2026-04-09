@@ -114,13 +114,15 @@
               fetchOptions.headers["Authorization"] = `Bearer ${cleanKey}`;
             }
 
-            let finalEndpoint = endpoint;
-            // Si on est en local, on passe TOUT par le proxy CORS pour éviter les blocages
-            if (isLocal) {
-              finalEndpoint = `https://corsproxy.io/?${encodeURIComponent(endpoint)}`;
+            // FORCE LE PROXY POUR LE RELAIS (Indispensable pour Google Scripts)
+            if (isRelay) {
+              endpoint = `https://corsproxy.io/?${encodeURIComponent(endpoint)}`;
+            } else if (isLocal) {
+              // Pour Albert direct en local
+              endpoint = `https://corsproxy.io/?${encodeURIComponent(endpoint)}`;
             }
 
-            const response = await fetch(finalEndpoint, fetchOptions);
+            const response = await fetch(endpoint, fetchOptions);
             
             if (!response.ok) {
               const errorData = await response.json().catch(() => ({}));
@@ -140,9 +142,7 @@
             if (error.message.includes("404")) errorType = "MODÈLE INTROUVABLE";
             if (error.name === "TypeError") errorType = "BLOCAGE (CORS/RÉSEAU)";
 
-            // On affiche l'URL finale pour déboguer
-            const debugUrl = isLocal ? "via CORS-Proxy" : (endpoint ? endpoint.substring(0, 30) : "URL indéfinie");
-            return `❌ ${errorType}\n\n${error.message}\n\nCible: ${targetLabel}\nMode: ${isLocal ? 'Local (file://)' : 'Forge (https)'}\nNote: ${debugUrl}`;
+            return `❌ ${errorType}\n\n${error.message}\n\nCible: ${targetLabel}\nURL: ${endpoint.substring(0, 50)}...`;
           }
         }
 
@@ -171,7 +171,7 @@
                     <i data-lucide="bot" className="w-6 h-6"></i>
                   </div>
                   <div>
-                    <h1 className="text-xl font-bold text-slate-900 leading-none">Chatbot Albert <span className="text-[10px] bg-blue-600 text-white px-2 py-0.5 rounded ml-2 shadow-sm font-bold">v5.6</span></h1>
+                    <h1 className="text-xl font-bold text-slate-900 leading-none">Chatbot Albert <span className="text-[10px] bg-blue-600 text-white px-2 py-0.5 rounded ml-2 shadow-sm font-bold">v5.7</span></h1>
                     <div className="flex items-center gap-2 mt-1">
                       <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
                         {config.provider === 'relais' ? 'Relais Google' : (config.provider === 'kit-albert' ? 'Kit Albert (Proxy)' : 'Mode Direct')}
