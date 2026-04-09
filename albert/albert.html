@@ -27,31 +27,31 @@
         } = lucide;
 
         const PREDEFINED_MODELS = [
-          { id: 'openai/gpt-oss-120b', name: 'Albert 120B (Souverain - Recommandé)' },
-          { id: 'mistralai/Mistral-Small-3.2-24B-Instruct-2506', name: 'Mistral Small (Équilibré)' },
-          { id: 'meta-llama/Llama-3.1-8B-Instruct', name: 'Llama 3.1 8B (Rapide)' },
-          { id: 'gemini-2.0-flash-lite', name: 'Gemini 2.0 Flash Lite (Google)' }
+          { id: 'AgentPublic/llama3-instruct-8b', name: 'Albert Llama 3 (Kit Officiel - Recommandé)' },
+          { id: 'openai/gpt-oss-120b', name: 'Albert 120B (Souverain)' },
+          { id: 'mistralai/Mistral-Small-3.2-24B-Instruct-2506', name: 'Mistral Small' },
+          { id: 'meta-llama/Llama-3.1-8B-Instruct', name: 'Llama 3.1 8B' }
         ];
 
         function App() {
           const [messages, setMessages] = React.useState([
-            { role: 'bot', text: 'Bonjour ! Je suis Albert, votre assistant IA souverain. Comment puis-je vous aider aujourd\'hui ?' }
+            { role: 'bot', text: 'Bonjour ! Je suis Albert, votre assistant IA souverain via le Kit Albert. Comment puis-je vous aider aujourd\'hui ?' }
           ]);
           const [input, setInput] = React.useState('');
           const [isLoading, setIsLoading] = React.useState(false);
           const [showSettings, setShowSettings] = React.useState(false);
           const [config, setConfig] = React.useState({
-            provider: 'albert',
+            provider: 'kit-albert',
             key: '',
-            model: 'openai/gpt-oss-120b'
+            model: 'AgentPublic/llama3-instruct-8b'
           });
 
           const messagesEndRef = React.useRef(null);
 
           React.useEffect(() => {
-            const savedProvider = localStorage.getItem('albert_provider') || 'albert';
+            const savedProvider = localStorage.getItem('albert_provider') || 'kit-albert';
             const savedKey = localStorage.getItem('albert_config_key') || '';
-            const savedModel = localStorage.getItem('albert_config_model') || 'openai/gpt-oss-120b';
+            const savedModel = localStorage.getItem('albert_config_model') || 'AgentPublic/llama3-instruct-8b';
             setConfig({ provider: savedProvider, key: savedKey, model: savedModel });
 
             const params = new URLSearchParams(window.location.search);
@@ -69,73 +69,63 @@
             localStorage.setItem('albert_config_key', config.key);
             localStorage.setItem('albert_config_model', config.model);
             setShowSettings(false);
-            setMessages(prev => [...prev, { role: 'bot', text: `✅ Paramètres mis à jour.` }]);
+            setMessages(prev => [...prev, { role: 'bot', text: `✅ Configuration mise à jour avec le Kit Albert.` }]);
           };
 
           const callAI = async (userPrompt) => {
             const { provider, key, model } = config;
-            if (!key) throw new Error(`Veuillez configurer votre ${provider === 'relais' ? 'URL de Relais' : 'Clé API'}.`);
+            if (!key) throw new Error(`Veuillez entrer votre clé API Albert dans les paramètres.`);
 
-            // --- LISTE DES CHEMINS POSSIBLES (STEALTH FALLBACK) ---
-            const endpoint = "https://albert.api.gouv.fr/v1/chat/completions";
-            let targets = [];
+            // Configuration selon le kit Albert
+            const endpoint = provider === 'kit-albert' 
+              ? "https://proxy.educ-ai.fr/v1/chat/completions"
+              : "https://albert.api.gouv.fr/v1/chat/completions";
 
-            if (provider === 'relais' || key.startsWith('http')) {
-              targets.push({ id: 'Worker Personnel', url: key, isRelay: true });
-              targets.push({ id: 'Secours (AllOrigins)', url: `https://api.allorigins.win/raw?url=${encodeURIComponent(endpoint)}`, isRelay: false });
-            } else {
-              targets.push({ id: 'Direct Albert', url: endpoint });
-              targets.push({ id: 'Tunnel 1 (AllOrigins)', url: `https://api.allorigins.win/raw?url=${encodeURIComponent(endpoint)}` });
-              targets.push({ id: 'Tunnel 2 (Corsproxy)', url: `https://corsproxy.io/?${encodeURIComponent(endpoint)}` });
-              targets.push({ id: 'Tunnel 3 (Codetabs)', url: `https://api.codetabs.com/v1/proxy?url=${encodeURIComponent(endpoint)}` });
-            }
+            try {
+              const response = await fetch(endpoint, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': `Bearer ${key}`
+                },
+                body: JSON.stringify({
+                  model: model,
+                  messages: [{ role: 'user', content: userPrompt }],
+                  temperature: 0.7
+                })
+              });
 
-            let logs = [];
-            for (let target of targets) {
-              try {
-                const isWorker = target.isRelay;
-                const isGAS = (target.url && target.url.includes('script.google.com'));
-                
-                // Pour Google Apps Script, on met tout dans le body car GAS ne voit pas bien les en-têtes Authorization
-                const fetchOptions = {
-                  method: 'POST',
-                  mode: 'cors', // Crucial pour La Forge
-                  headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // On utilise plain pour éviter les pré-requêtes OPTIONS complexes
-                  body: JSON.stringify({
-                    key: key,
-                    message: userPrompt,
-                    model: model
-                  })
-                };
-
-                // Si c'est Google, on doit suivre les redirections
-                if (isGAS) {
-                  fetchOptions.redirect = 'follow';
-                }
-
-                // Pour les autres cibles (non-GAS)
-                if (!isGAS) {
-                  fetchOptions.headers = { 'Content-Type': 'application/json' };
-                  if (!isWorker) fetchOptions.headers['Authorization'] = `Bearer ${key}`;
-                  fetchOptions.body = isWorker 
-                    ? JSON.stringify({ message: userPrompt, model: model }) 
-                    : JSON.stringify({ model, messages: [{ role: 'user', content: userPrompt }] });
-                }
-
-                const response = await fetch(target.url, fetchOptions);
-
-                if (response.ok) {
-                  const data = await response.json();
-                  return data.choices?.[0]?.message?.content || data.response || "Réponse reçue !";
-                }
-                
-                logs.push(`${target.id}: HTTP ${response.status}`);
-              } catch (e) {
-                logs.push(`${target.id}: ${e.message}`);
-                continue;
+              if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.error?.message || `Erreur API: ${response.status}`);
               }
+
+              const data = await response.json();
+              return data.choices?.[0]?.message?.content || "Désolé, je n'ai pas pu générer de réponse.";
+
+            } catch (error) {
+              console.error("Erreur appel Albert:", error);
+              
+              // Fallback automatique vers le proxy de secours AllOrigins si le proxy de base échoue
+              if (provider === 'kit-albert') {
+                try {
+                  const fallbackUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(endpoint)}`;
+                  const fallbackRes = await fetch(fallbackUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${key}` },
+                    body: JSON.stringify({ model: model, messages: [{ role: 'user', content: userPrompt }] })
+                  });
+                  if (fallbackRes.ok) {
+                    const data = await fallbackRes.json();
+                    return data.choices?.[0]?.message?.content;
+                  }
+                } catch (fallbackErr) {
+                  console.error("Échec du fallback:", fallbackErr);
+                }
+              }
+              
+              throw error;
             }
-            throw new Error(`Tous les relais ont échoué :\n${logs.join('\n')}`);
           };
 
           const handleSend = async (e) => {
@@ -236,20 +226,23 @@
                       <section>
                         <label className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Mode de connexion</label>
                         <div className="grid grid-cols-2 gap-2">
-                          <button onClick={() => setConfig({...config, provider: 'relais'})} className={`p-3 rounded-xl border-2 flex flex-col items-center gap-1 transition-all ${config.provider === 'relais' ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-slate-100 italic opacity-60'}`}>
+                          <button onClick={() => setConfig({...config, provider: 'kit-albert'})} className={`p-3 rounded-xl border-2 flex flex-col items-center gap-1 transition-all ${config.provider === 'kit-albert' ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-slate-100 opacity-60'}`}>
                             <i data-lucide="shield-check" className="w-5 h-5"></i>
-                            <span className="font-bold">Relais</span>
+                            <span className="font-[900]">Kit Albert</span>
                           </button>
                           <button onClick={() => setConfig({...config, provider: 'albert'})} className={`p-3 rounded-xl border-2 flex flex-col items-center gap-1 transition-all ${config.provider === 'albert' ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-slate-100 opacity-60'}`}>
                             <i data-lucide="zap" className="w-5 h-5"></i>
-                            <span className="font-bold">Direct</span>
+                            <span className="font-[900]">Direct</span>
                           </button>
                         </div>
+                        <p className="text-[10px] text-slate-400 mt-2 italic px-1">
+                          Le mode Kit Albert utilise le proxy educ-ai.fr pour éviter les blocages CORS.
+                        </p>
                       </section>
 
                       <section>
                         <label className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">
-                          {config.provider === 'relais' ? 'URL du Worker Cloudflare' : 'Clé API Albert'}
+                          Clé API Albert
                         </label>
                         <input 
                           type="text" 
