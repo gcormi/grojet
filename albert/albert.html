@@ -27,9 +27,8 @@
         } = lucide;
 
         const PREDEFINED_MODELS = [
-          { id: 'albert-base-1', name: 'Albert Base (Recommandé)' },
-          { id: 'albert-large-1', name: 'Albert Large' },
-          { id: 'albert-small-1', name: 'Albert Small' }
+          { id: 'openai/gpt-oss-120b', name: 'Albert 120B (Souverain)' },
+          { id: 'mistralai/Mistral-Small-3.2-24B-Instruct-2506', name: 'Mistral Small' }
         ];
 
         function App() {
@@ -53,7 +52,7 @@
             const initialProvider = (savedProvider === 'albert' || !savedProvider) ? 'kit-albert' : savedProvider;
             
             const savedKey = localStorage.getItem('albert_config_key') || '';
-            const savedModel = localStorage.getItem('albert_config_model') || 'albert-base-1';
+            const savedModel = localStorage.getItem('albert_config_model') || 'openai/gpt-oss-120b';
             setConfig({ provider: initialProvider, key: savedKey, model: savedModel });
 
             const params = new URLSearchParams(window.location.search);
@@ -92,56 +91,46 @@
                 : "https://albert.api.etalab.gouv.fr/v1/chat/completions";
             }
 
-            // Corps standard OpenAI (compatible Albert)
-            const requestBody = {
-              model: model,
-              messages: [{ role: "user", content: userPrompt }],
-              temperature: 0.7
-            };
+            // FORMAT SPÉCIAL RELAIS (Détecté dans api.html)
+            const requestBody = isRelay 
+              ? { message: userPrompt, model: model, temperature: 0.7 }
+              : { messages: [{ role: "user", content: userPrompt }], model: model, temperature: 0.7 };
 
             const fetchOptions = {
               method: "POST",
               headers: { 
-                "Content-Type": "text/plain" // Crucial pour éviter le preflight OPTIONS (erreur 404 sur Google Script)
+                "Content-Type": "application/json"
               },
               mode: 'cors',
               body: JSON.stringify(requestBody)
             };
 
-            // Ajout de l'authentification si direct (le relais gère sa propre clé)
             if (!isRelay) {
               fetchOptions.headers["Authorization"] = `Bearer ${cleanKey}`;
             }
 
-            // FORCE LE PROXY POUR LE RELAIS (Indispensable pour Google Scripts)
-            if (isRelay) {
-              endpoint = `https://corsproxy.io/?${encodeURIComponent(endpoint)}`;
-            } else if (isLocal) {
-              // Pour Albert direct en local
-              endpoint = `https://corsproxy.io/?${encodeURIComponent(endpoint)}`;
+            // Proxy uniquement en local pour le mode direct (pas pour le relais)
+            let finalEndpoint = endpoint;
+            if (!isRelay && isLocal) {
+              finalEndpoint = `https://corsproxy.io/?${encodeURIComponent(endpoint)}`;
             }
 
-            const response = await fetch(endpoint, fetchOptions);
+            const response = await fetch(finalEndpoint, fetchOptions);
             
             if (!response.ok) {
               const errorData = await response.json().catch(() => ({}));
-              throw new Error(errorData.error?.message || `Erreur serveur (${response.status})`);
+              throw new Error(errorData.error?.message || errorData.error || `Erreur serveur (${response.status})`);
             }
 
             const data = await response.json();
-            return data.choices[0].message.content;
+            // Gestion intelligente du format de réponse (OpenAI ou direct)
+            if (data.choices && data.choices[0]) return data.choices[0].message.content;
+            if (data.response) return data.response;
+            return typeof data === 'string' ? data : JSON.stringify(data);
 
           } catch (error) {
             console.error("Fetch Error:", error);
-            
-            let errorType = "ERREUR RÉSEAU";
-            let targetLabel = provider === 'relais' ? "Relais Google" : (provider === 'kit-albert' ? "Proxy Kit Albert" : "Direct Albert");
-            
-            if (error.message.includes("401")) errorType = "CLÉ INVALIDE";
-            if (error.message.includes("404")) errorType = "MODÈLE INTROUVABLE";
-            if (error.name === "TypeError") errorType = "BLOCAGE (CORS/RÉSEAU)";
-
-            return `❌ ${errorType}\n\n${error.message}\n\nCible: ${targetLabel}\nURL: ${endpoint.substring(0, 50)}...`;
+            return `❌ ERREUR\n\n${error.message}\n\nCible: ${provider}\nURL: ${endpoint.substring(0, 50)}...`;
           }
         }
 
@@ -170,7 +159,7 @@
                     <i data-lucide="bot" className="w-6 h-6"></i>
                   </div>
                   <div>
-                    <h1 className="text-xl font-bold text-slate-900 leading-none">Chatbot Albert <span className="text-[10px] bg-blue-600 text-white px-2 py-0.5 rounded ml-2 shadow-sm font-bold">v5.9</span></h1>
+                    <h1 className="text-xl font-bold text-slate-900 leading-none">Chatbot Albert <span className="text-[10px] bg-blue-600 text-white px-2 py-0.5 rounded ml-2 shadow-sm font-bold">v6.0</span></h1>
                     <div className="flex items-center gap-2 mt-1">
                       <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
                         {config.provider === 'relais' ? 'Relais Google' : (config.provider === 'kit-albert' ? 'Kit Albert (Proxy)' : 'Mode Direct')}
