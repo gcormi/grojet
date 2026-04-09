@@ -76,47 +76,46 @@
             const { provider, key, model } = config;
             if (!key) throw new Error(`Veuillez configurer votre ${provider === 'relais' ? 'URL de Relais' : 'Clé API'}.`);
 
-            // --- LISTE DES CHEMINS POSSIBLES ---
+            // --- LISTE DES CHEMINS POSSIBLES (STEALTH FALLBACK) ---
             const endpoint = "https://albert.api.gouv.fr/v1/chat/completions";
             let targets = [];
 
             if (provider === 'relais' || key.startsWith('http')) {
-              // On tente le Worker en premier
               targets.push({ id: 'Worker Personnel', url: key, isRelay: true });
-              // Fallback au cas où le worker est HS (si l'utilisateur a aussi une clé, mais ici on reste sur le flux relais)
-              targets.push({ id: 'Proxy Secours (Corsproxy)', url: `https://corsproxy.io/?${encodeURIComponent(endpoint)}`, isRelay: false });
+              targets.push({ id: 'Secours (AllOrigins)', url: `https://api.allorigins.win/raw?url=${encodeURIComponent(endpoint)}`, isRelay: false });
             } else {
-              // Mode Direct avec plusieurs Proxys
-              targets.push({ id: 'Albert Direct', url: endpoint });
-              targets.push({ id: 'Tunnel 1 (Corsproxy)', url: `https://corsproxy.io/?${encodeURIComponent(endpoint)}` });
-              targets.push({ id: 'Tunnel 2 (Codetabs)', url: `https://api.codetabs.com/v1/proxy?url=${encodeURIComponent(endpoint)}` });
-              targets.push({ id: 'Tunnel 3 (Thingproxy)', url: `https://thingproxy.freeboard.io/fetch/${endpoint}` });
+              targets.push({ id: 'Direct Albert', url: endpoint });
+              targets.push({ id: 'Tunnel 1 (AllOrigins)', url: `https://api.allorigins.win/raw?url=${encodeURIComponent(endpoint)}` });
+              targets.push({ id: 'Tunnel 2 (Corsproxy)', url: `https://corsproxy.io/?${encodeURIComponent(endpoint)}` });
+              targets.push({ id: 'Tunnel 3 (Codetabs)', url: `https://api.codetabs.com/v1/proxy?url=${encodeURIComponent(endpoint)}` });
             }
 
             let logs = [];
             for (let target of targets) {
               try {
                 const isWorker = target.isRelay;
-                const body = isWorker 
-                  ? JSON.stringify({ message: userPrompt, model: model }) 
-                  : JSON.stringify({ model, messages: [{ role: 'user', content: userPrompt }] });
-
-                const res = await fetch(target.url, {
+                const isAO = target.id.includes('AllOrigins');
+                
+                const response = await fetch(target.url, {
                   method: 'POST',
                   headers: { 
                     'Content-Type': 'application/json',
-                    ...(isWorker ? {} : { 'Authorization': `Bearer ${key}` }) 
+                    ...((!isWorker && !isAO) ? { 'Authorization': `Bearer ${key}` } : {}),
+                    // AllOrigins /raw ne gère pas l'Auth en entête, on doit parfois ruser,
+                    // mais tentons d'abord en l'ajoutant classiquement s'il n'est pas utilisé via worker.
+                    ...((isAO && !isWorker) ? { 'Authorization': `Bearer ${key}` } : {})
                   },
-                  body: body
+                  body: isWorker 
+                    ? JSON.stringify({ message: userPrompt, model: model }) 
+                    : JSON.stringify({ model, messages: [{ role: 'user', content: userPrompt }] })
                 });
 
-                if (res.ok) {
-                  const data = await res.json();
-                  return data.choices?.[0]?.message?.content || data.response || data.text || "Réponse vide.";
+                if (response.ok) {
+                  const data = await response.json();
+                  return data.choices?.[0]?.message?.content || data.response || "Réponse reçue !";
                 }
                 
-                const errText = await res.text().catch(() => "Erreur");
-                logs.push(`${target.id}: HTTP ${res.status}`);
+                logs.push(`${target.id}: HTTP ${response.status}`);
               } catch (e) {
                 logs.push(`${target.id}: ${e.message}`);
                 continue;
