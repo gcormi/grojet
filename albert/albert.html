@@ -48,10 +48,13 @@
           const messagesEndRef = React.useRef(null);
 
           React.useEffect(() => {
-            const savedProvider = localStorage.getItem('albert_provider') || 'kit-albert';
+            const savedProvider = localStorage.getItem('albert_provider');
+            // Force kit-albert si c'est une ancienne version ou si c'est vide
+            const initialProvider = (savedProvider === 'albert' || !savedProvider) ? 'kit-albert' : savedProvider;
+            
             const savedKey = localStorage.getItem('albert_config_key') || '';
-            const savedModel = localStorage.getItem('albert_config_model') || 'AgentPublic/llama3-instruct-8b';
-            setConfig({ provider: savedProvider, key: savedKey, model: savedModel });
+            const savedModel = localStorage.getItem('albert_config_model') || 'albert-llama-3-8b';
+            setConfig({ provider: initialProvider, key: savedKey, model: savedModel });
 
             const params = new URLSearchParams(window.location.search);
             const externalPrompt = params.get('prompt');
@@ -145,7 +148,7 @@
                     <i data-lucide="bot" className="w-6 h-6"></i>
                   </div>
                   <div>
-                    <h1 className="text-xl font-bold text-slate-900 leading-none">Chatbot Albert <span className="text-[10px] bg-green-100 text-green-600 px-2 py-0.5 rounded ml-2">v4.1 (Stable)</span></h1>
+                    <h1 className="text-xl font-bold text-slate-900 leading-none">Chatbot Albert <span className="text-[10px] bg-blue-600 text-white px-2 py-0.5 rounded ml-2 shadow-sm font-bold">v5.1 (Kit-Albert-Edition)</span></h1>
                     <div className="flex items-center gap-2 mt-1">
                       <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
                         {config.provider === 'kit-albert' ? 'Kit Albert (Proxy)' : 'Mode Direct'}
