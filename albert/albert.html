@@ -155,9 +155,8 @@
                   <div>
                     <h1 className="text-xl font-bold text-slate-900 leading-none">Chatbot Albert <span className="text-[10px] bg-green-100 text-green-600 px-2 py-0.5 rounded ml-2">v4.1 (Stable)</span></h1>
                     <div className="flex items-center gap-2 mt-1">
-                      <span className={`w-2 h-2 rounded-full ${config.key ? 'bg-green-500' : 'bg-red-500'}`}></span>
                       <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                        {config.provider === 'relais' ? 'Relais Sécurisé' : `Mode Direct : ${config.provider}`}
+                        {config.provider === 'kit-albert' ? 'Kit Albert (Proxy)' : 'Mode Direct'}
                       </p>
                     </div>
                   </div>
@@ -247,7 +246,7 @@
                         <input 
                           type="text" 
                           className="w-full border-2 border-slate-100 p-3 rounded-xl focus:border-blue-500 focus:outline-none transition-all font-mono text-sm" 
-                          placeholder={config.provider === 'relais' ? "https://..." : "votre clé ici..."}
+                          placeholder="votre clé ici..."
                           value={config.key} 
                           onChange={e => setConfig({...config, key: e.target.value})} 
                         />
