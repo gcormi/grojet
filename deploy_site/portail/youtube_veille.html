@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube EduSync | Veille Pédagogique</title>
+    
+    <!-- Scripts & Styles externes -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <!-- Script Google Identity Services pour l'authentification OAuth 2.0 -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Outfit', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#fef2f2',
+                            100: '#fee2e2',
+                            500: '#ef4444',
+                            600: '#dc2626',
+                            900: '#7f1d1d',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; color: #0f172a; }
+        .dark-mode { background-color: #0f172a; color: #f1f5f9; }
+        
+        .glass-header { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(0,0,0,0.05); }
+        .dark-mode .glass-header { background: rgba(15, 23, 42, 0.85); border-bottom: 1px solid rgba(255,255,255,0.05); }
+        
+        .video-card { transition: transform 0.2s, box-shadow 0.2s; }
+        .video-card:hover { transform: translateY(-4px); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); }
+        
+        /* Modale pour lecteur vidéo */
+        #player-modal { display: none; background: rgba(0,0,0,0.85); backdrop-filter: blur(5px); }
+        #player-modal.active { display: flex; }
+        .iframe-container { position: relative; width: 100%; padding-bottom: 56.25%; /* Ratio 16:9 */ }
+        .iframe-container iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 12px; }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        .dark-mode ::-webkit-scrollbar-thumb { background: #475569; }
+    </style>
+</head>
+<body class="antialiased h-screen flex flex-col overflow-hidden">
+
+    <!-- Navbar -->
+    <header class="glass-header z-50 py-4 px-6 flex justify-between items-center flex-shrink-0">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 bg-brand-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-brand-500/30">
+                <i class="fab fa-youtube text-lg"></i>
+            </div>
+            <div>
+                <h1 class="font-display font-bold text-slate-900 dark:text-white leading-tight">YouTube EduSync</h1>
+                <p class="text-[10px] uppercase tracking-widest text-slate-400 font-bold">Zéro Distraction • Abonnements Pédagogiques</p>
+            </div>
+        </div>
+        
+        <div class="flex items-center gap-4">
+            <button id="theme-toggle" class="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-brand-500 transition-colors flex items-center justify-center">
+                <i class="fas fa-moon"></i>
+            </button>
+            
+            <button id="btn-login" onclick="handleAuthClick()" class="bg-brand-600 hover:bg-brand-500 text-white px-5 py-2.5 rounded-xl font-bold text-sm shadow-md transition-all flex items-center gap-2">
+                <i class="fas fa-sign-in-alt"></i> Connexion Google
+            </button>
+            <div id="user-profile" class="hidden items-center gap-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-4 py-2 rounded-xl">
+                <div class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
+                <span class="text-xs font-bold text-slate-600 dark:text-slate-300">Connecté</span>
+                <button onclick="handleSignoutClick()" class="ml-2 text-slate-400 hover:text-red-500" title="Déconnexion"><i class="fas fa-power-off"></i></button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Layout Principal -->
+    <main class="flex-grow flex overflow-hidden">
+        
+        <!-- Sidebar : Liste des abonnements -->
+        <aside id="sidebar" class="w-72 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col h-full transition-transform transform -translate-x-full lg:translate-x-0 absolute lg:relative z-40 shadow-2xl lg:shadow-none">
+            <div class="p-4 border-b border-slate-100 dark:border-slate-800">
+                <h2 class="font-display font-bold text-sm text-slate-500 uppercase tracking-wider mb-3">Mes Chaînes (<span id="subs-count">0</span>)</h2>
+                <div class="relative">
+                    <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 text-xs"></i>
+                    <input type="text" id="search-channel" placeholder="Filtrer..." class="w-full bg-slate-50 dark:bg-slate-800 text-sm py-2 pl-9 pr-3 rounded-lg border border-slate-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-brand-500/20">
+                </div>
+            </div>
+            <div id="subs-list" class="flex-grow overflow-y-auto p-2 space-y-1">
+                <!-- Les abonnements s'afficheront ici -->
+                <div class="p-4 text-center text-slate-400 text-xs mt-10">
+                    <i class="fas fa-lock text-3xl mb-3 opacity-50 block"></i>
+                    Connectez-vous pour voir vos abonnements.
+                </div>
+            </div>
+        </aside>
+
+        <!-- Contenu Central : Vidéos -->
+        <section class="flex-grow bg-slate-50 dark:bg-slate-900/50 flex flex-col h-full relative">
+            <div class="p-6 md:p-8 flex-grow overflow-y-auto" id="videos-scroll-area">
+                
+                <div class="flex justify-between items-end mb-8">
+                    <div>
+                        <h2 id="feed-title" class="font-display text-2xl font-bold mb-1">Dernières vidéos</h2>
+                        <p id="feed-subtitle" class="text-slate-500 text-sm">Sélectionnez une chaîne ou actualisez pour afficher les nouveautés.</p>
+                    </div>
+                    <button id="btn-refresh-feed" class="hidden bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-brand-500 hover:text-brand-500 px-4 py-2 rounded-lg text-xs font-bold transition-all items-center gap-2">
+                        <i class="fas fa-sync-alt"></i> Actualiser
+                    </button>
+                    <!-- Loading Spinner -->
+                    <div id="loading-spinner" class="hidden items-center gap-2 text-brand-500 font-bold text-xs">
+                        <i class="fas fa-circle-notch fa-spin text-lg"></i> Chargement...
+                    </div>
+                </div>
+
+                <!-- Grille de vidéos -->
+                <div id="videos-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 pb-20">
+                    <!-- Placeholder de bienvenue -->
+                    <div class="col-span-full flex flex-col items-center justify-center p-20 text-center border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-3xl">
+                        <div class="w-20 h-20 bg-brand-50 dark:bg-brand-900/30 text-brand-500 rounded-full flex items-center justify-center text-3xl mb-4">
+                            <i class="fas fa-play"></i>
+                        </div>
+                        <h3 class="font-display text-xl font-bold mb-2">Flux Zéro Distraction</h3>
+                        <p class="text-slate-500 max-w-sm mb-6">Connectez votre compte pour récupérer automatiquement les dernières vidéos éducatives de vos propres abonnements, sans recommandations indésirables.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Bouton flottant pour afficher la sidebar sur mobile -->
+            <button id="btn-mobile-sidebar" class="lg:hidden absolute bottom-6 right-6 w-14 h-14 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-full shadow-2xl flex items-center justify-center text-xl z-50">
+                <i class="fas fa-list-ul"></i>
+            </button>
+        </section>
+
+    </main>
+
+    <!-- Modale Lecteur Vidéo Zéro Distraction -->
+    <div id="player-modal" class="fixed top-0 left-0 w-full h-full z-[3000] items-center justify-center p-4 md:p-10">
+        <div class="w-full max-w-5xl bg-black rounded-2xl shadow-2xl overflow-hidden flex flex-col">
+            <div class="flex justify-between items-center p-4 border-b border-gray-800 bg-gray-900">
+                <h3 id="player-title" class="font-bold text-white text-sm truncate pr-4">Titre vidéo</h3>
+                <button onclick="closePlayer()" class="text-gray-400 hover:text-white bg-gray-800 hover:bg-gray-700 w-8 h-8 rounded-lg flex items-center justify-center transition-colors">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="bg-black w-full" id="player-container">
+                <!-- L'iframe sera injectée ici -->
+            </div>
+        </div>
+    </div>
+
+    <!-- =============== SCRIPT D'APPLICATION =============== -->
+    <script>
+        // --- 🔴 CONFIGURATION GOOGLE API 🔴 ---
+        const CLIENT_ID = '1029639826210-2oe36o0dd9105eahmnoirbmu9dcoof4p.apps.googleusercontent.com';
+        
+        // --- CONSTANTES ---
+        const SCOPES = 'https://www.googleapis.com/auth/youtube.readonly';
+        
+        // --- VARIABLES GLOBALES ---
+        let tokenClient;
+        let accessToken = null;
+        let subscriptions = [];
+        let currentChannelId = null;
+
+        /**
+         * INITIALISATION : Appelé au chargement de la page pour préparer le bouton de connexion OAuth 2.0
+         */
+        window.onload = function () {
+            // --- 🛡️ PROTECTION DU PORTAIL ---
+            if (localStorage.getItem('portal_unlocked') !== 'true') {
+                window.location.href = 'index.html';
+                return;
+            }
+
+            // Initialisation de la librairie Identity Services
+            if (window.google && window.google.accounts) {
+                tokenClient = google.accounts.oauth2.initTokenClient({
+                    client_id: CLIENT_ID,
+                    scope: SCOPES,
+                    callback: (tokenResponse) => {
+                        if (tokenResponse && tokenResponse.access_token) {
+                            accessToken = tokenResponse.access_token;
+                            updateUIForLogin();
+                            loadSubscriptions();
+                        }
+                    },
+                });
+            } else {
+                console.error("L'API Google Identity n'a pas pu se charger.");
+            }
+        };
+
+        /**
+         * ACTION : Clic sur le bouton de connexion
+         */
+        function handleAuthClick() {
+            // Demande le token (Ouvrira le popup Google)
+            tokenClient.requestAccessToken();
+        }
+
+        /**
+         * ACTION : Déconnexion
+         */
+        function handleSignoutClick() {
+            if (accessToken) {
+                google.accounts.oauth2.revoke(accessToken, () => {
+                    accessToken = null;
+                    subscriptions = [];
+                    updateUIForLogout();
+                });
+            }
+        }
+
+        /**
+         * MISE À JOUR UI : Quand l'utilisateur se connecte
+         */
+        function updateUIForLogin() {
+            document.getElementById('btn-login').classList.add('hidden');
+            document.getElementById('user-profile').classList.remove('hidden');
+            document.getElementById('btn-refresh-feed').classList.remove('hidden');
+            document.getElementById('subs-list').innerHTML = `
+                <div class="p-4 text-center text-sm text-slate-500">
+                    <i class="fas fa-circle-notch fa-spin text-brand-500 mb-2 text-xl"></i><br>
+                    Récupération de vos abonnements...
+                </div>
+            `;
+        }
+
+        /**
+         * MISE À JOUR UI : Quand l'utilisateur se déconnecte
+         */
+        function updateUIForLogout() {
+            document.getElementById('btn-login').classList.remove('hidden');
+            document.getElementById('user-profile').classList.add('hidden');
+            document.getElementById('btn-refresh-feed').classList.add('hidden');
+            document.getElementById('subs-list').innerHTML = `
+                <div class="p-4 text-center text-slate-400 text-xs mt-10">
+                    <i class="fas fa-lock text-3xl mb-3 opacity-50 block"></i>
+                    Connectez-vous pour voir vos abonnements.
+                </div>
+            `;
+            document.getElementById('subs-count').textContent = '0';
+            document.getElementById('videos-grid').innerHTML = `
+                <div class="col-span-full flex flex-col items-center justify-center p-20 text-center border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-3xl">
+                    <i class="fas fa-sign-out-alt text-4xl text-slate-300 mb-4"></i>
+                    <h3 class="font-display text-xl font-bold mb-2">Déconnecté</h3>
+                    <p class="text-slate-500 max-w-sm mb-6">Vos données sécurisées ont été effacées de la vue.</p>
+                </div>
+            `;
+            document.getElementById('feed-title').textContent = "Dernières vidéos";
+            currentChannelId = null;
+        }
+
+        /**
+         * REQUÊTE API : Charger tous les abonnements de l'utilisateur
+         */
+        async function loadSubscriptions() {
+            try {
+                let nextPageToken = '';
+                subscriptions = [];
+                
+                // On boucle pour récupérer *tous* les abonnements (par pages de 50)
+                do {
+                    const url = `https://www.googleapis.com/youtube/v3/subscriptions?part=snippet&mine=true&maxResults=50&pageToken=${nextPageToken}`;
+                    const response = await fetch(url, { headers: { 'Authorization': `Bearer ${accessToken}` } });
+                    const data = await response.json();
+                    
+                    if (data.error) {
+                        throw new Error(data.error.message);
+                    }
+                    
+                    if (data.items) {
+                        subscriptions = subscriptions.concat(data.items);
+                    }
+                    nextPageToken = data.nextPageToken || '';
+                } while (nextPageToken);
+
+                // Trier alphabétiquement
+                subscriptions.sort((a, b) => a.snippet.title.localeCompare(b.snippet.title));
+                
+                document.getElementById('subs-count').textContent = subscriptions.length;
+                renderSubscriptions(subscriptions);
+                
+                // Charger automatiquement le flux "Général" ou de la 1ere chaîne au choix
+                fetchLatestVideosFromAll();
+
+            } catch (err) {
+                console.error("Erreur chargement abonnements: ", err);
+                document.getElementById('subs-list').innerHTML = `<div class="p-4 text-xs text-red-500"><i class="fas fa-exclamation-triangle"></i> Erreur lors de la lecture des abonnements. Vérifiez que l'API YouTube Data v3 est activée sur votre Console Google Cloud.</div>`;
+            }
+        }
+
+        /**
+         * RENDU UI : Afficher la liste des chaînes dans la Sidebar
+         */
+        function renderSubscriptions(subsArray) {
+            const listEl = document.getElementById('subs-list');
+            listEl.innerHTML = '';
+            
+            // Bouton "Toutes les chaînes"
+            const btnAll = document.createElement('button');
+            btnAll.className = "w-full text-left p-3 rounded-xl flex items-center gap-3 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors group";
+            btnAll.innerHTML = `
+                <div class="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-slate-500 group-hover:text-brand-500 group-hover:bg-brand-50 transition-colors">
+                    <i class="fas fa-globe"></i>
+                </div>
+                <span class="text-sm font-bold truncate">Flux Global (Top)</span>
+            `;
+            btnAll.onclick = () => { 
+                currentChannelId = null; 
+                document.getElementById('feed-title').textContent = "Flux Global";
+                fetchLatestVideosFromAll(); 
+            };
+            listEl.appendChild(btnAll);
+
+            // Liste des chaînes
+            subsArray.forEach(sub => {
+                const btn = document.createElement('button');
+                btn.className = "w-full text-left p-2 rounded-xl flex items-center gap-3 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors group";
+                btn.innerHTML = `
+                    <img src="${sub.snippet.thumbnails.default.url}" class="w-8 h-8 rounded-full object-cover border border-slate-200 dark:border-slate-700">
+                    <span class="text-sm font-medium text-slate-700 dark:text-slate-300 truncate transition-colors group-hover:text-brand-500 group-hover:font-bold">${sub.snippet.title}</span>
+                `;
+                btn.onclick = () => {
+                    currentChannelId = sub.snippet.resourceId.channelId;
+                    document.getElementById('feed-title').textContent = sub.snippet.title;
+                    fetchLatestVideosFromChannel(currentChannelId, sub.snippet.title);
+                };
+                listEl.appendChild(btn);
+            });
+        }
+
+        /**
+         * FILTRE : Barre de recherche de la sidebar
+         */
+        document.getElementById('search-channel').addEventListener('input', (e) => {
+            const term = e.target.value.toLowerCase();
+            const filtered = subscriptions.filter(s => s.snippet.title.toLowerCase().includes(term));
+            renderSubscriptions(filtered);
+        });
+
+        // ---------------------------------------------------------
+        // GESTION DES VIDÉOS
+        // ---------------------------------------------------------
+
+        function showLoading() {
+            document.getElementById('loading-spinner').classList.remove('hidden');
+            document.getElementById('videos-grid').innerHTML = ''; // Clear prior content
+        }
+
+        function hideLoading() {
+            document.getElementById('loading-spinner').classList.add('hidden');
+        }
+
+        /**
+         * REQUÊTE API : Charger les vidéos d'une chaîne précise (les 10 dernières) via Search
+         */
+        async function fetchLatestVideosFromChannel(channelId, channelTitle) {
+            showLoading();
+            try {
+                // Utilisation de l'endpoint Search pour obtenir les vidéos récentes d'une chaîne
+                const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&channelId=${channelId}&order=date&type=video&maxResults=12`;
+                const response = await fetch(url, { headers: { 'Authorization': `Bearer ${accessToken}` } });
+                const data = await response.json();
+                
+                if (data.error) throw new Error(data.error.message);
+                
+                renderVideos(data.items);
+            } catch (err) {
+                console.error("Erreur vidéos:", err);
+                renderError(err.message);
+            } finally {
+                hideLoading();
+            }
+        }
+
+        /**
+         * REQUÊTE API : Flux Global (Astuce pour éviter de taper l'API 500 fois)
+         * Récupère juste les X vidéos récentes des premières chaînes de la liste.
+         * Note : YouTube Data API n'a plus de point de terminaison "Activity" global fiable gratuit.
+         */
+        async function fetchLatestVideosFromAll() {
+            showLoading();
+            try {
+                // Pour ne pas dépasser les quotas rapidement, on prend un échantillon aléatoire de 10 abonnements pour le panorama global
+                const shuffledSubs = [...subscriptions].sort(() => 0.5 - Math.random());
+                const sampleSubs = shuffledSubs.slice(0, 8);
+                
+                let allVids = [];
+                for(let sub of sampleSubs) {
+                    const cid = sub.snippet.resourceId.channelId;
+                    const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&channelId=${cid}&order=date&type=video&maxResults=2`;
+                    const res = await fetch(url, { headers: { 'Authorization': `Bearer ${accessToken}` } });
+                    const dat = await res.json();
+                    if(dat.items) {
+                        allVids = allVids.concat(dat.items);
+                    }
+                }
+                
+                // Trier l'intégralité du sample par date exacte de publication !
+                allVids.sort((a,b) => new Date(b.snippet.publishedAt) - new Date(a.snippet.publishedAt));
+                renderVideos(allVids);
+            } catch (err) {
+                console.error("Erreur Flux Global:", err);
+                renderError("Impossible de charger le flux global massif. Sélectionnez une chaîne.");
+            } finally {
+                hideLoading();
+            }
+        }
+
+        document.getElementById('btn-refresh-feed').addEventListener('click', () => {
+            if (currentChannelId) fetchLatestVideosFromChannel(currentChannelId, "Chaîne");
+            else fetchLatestVideosFromAll();
+        });
+
+        function renderError(msg) {
+            document.getElementById('videos-grid').innerHTML = `
+                <div class="col-span-full p-6 bg-red-50 dark:bg-red-900/20 text-red-600 border border-red-200 dark:border-red-900 rounded-xl text-sm font-bold">
+                    <i class="fas fa-exclamation-triangle"></i> Erreur YouTube API : ${msg}
+                </div>
+            `;
+        }
+
+        function formatTimeAgo(dateString) {
+            const date = new Date(dateString);
+            const seconds = Math.floor((new Date() - date) / 1000);
+            let interval = seconds / 31536000;
+            if (interval > 1) return Math.floor(interval) + " ans";
+            interval = seconds / 2592000;
+            if (interval > 1) return Math.floor(interval) + " mois";
+            interval = seconds / 86400;
+            if (interval > 1) return Math.floor(interval) + " jours";
+            interval = seconds / 3600;
+            if (interval > 1) return Math.floor(interval) + " heures";
+            interval = seconds / 60;
+            if (interval > 1) return Math.floor(interval) + " minutes";
+            return "À l'instant";
+        }
+
+        /**
+         * RENDU UI : Afficher les cartes de vidéos
+         */
+        function renderVideos(videos) {
+            const grid = document.getElementById('videos-grid');
+            grid.innerHTML = '';
+            
+            if (videos.length === 0) {
+                grid.innerHTML = '<div class="col-span-full text-center text-slate-400 py-10">Aucune vidéo récente trouvée.</div>';
+                return;
+            }
+
+            videos.forEach(item => {
+                const vidId = item.id.videoId;
+                if(!vidId) return; // Parfois c'est une playlist ou channel, on ignore
+                const s = item.snippet;
+
+                // Décoder les entités HTML dans les titres (ex: &#39;)
+                const txt = document.createElement("textarea");
+                txt.innerHTML = s.title;
+                const cleanTitle = txt.value;
+
+                const card = document.createElement('div');
+                card.className = "video-card bg-white dark:bg-slate-800 rounded-2xl overflow-hidden border border-slate-100 dark:border-slate-700 flex flex-col cursor-pointer group";
+                card.onclick = () => openPlayer(vidId, cleanTitle);
+                
+                card.innerHTML = `
+                    <div class="relative w-full aspect-video overflow-hidden">
+                        <img src="${s.thumbnails.medium ? s.thumbnails.medium.url : s.thumbnails.default.url}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                        <div class="absolute inset-0 bg-black/10 group-hover:bg-black/30 transition-colors flex items-center justify-center">
+                            <div class="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity transform scale-75 group-hover:scale-100 duration-300">
+                                <i class="fas fa-play text-xl ml-1"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="p-4 flex flex-col flex-grow">
+                        <h3 class="font-bold text-sm text-slate-900 dark:text-white line-clamp-2 mb-2 leading-snug group-hover:text-brand-500 transition-colors">${cleanTitle}</h3>
+                        <div class="mt-auto space-y-1">
+                            <p class="text-[11px] font-bold text-slate-500 flex items-center gap-1.5 truncate">
+                                <i class="fas fa-tv text-[9px] text-slate-300"></i> ${s.channelTitle}
+                            </p>
+                            <p class="text-[10px] text-slate-400 font-medium">Il y a ${formatTimeAgo(s.publishedAt)}</p>
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        // ---------------------------------------------------------
+        // LECTEUR VIDÉO INTERNE (Iframe)
+        // ---------------------------------------------------------
+        
+        function openPlayer(videoId, title) {
+            document.getElementById('player-title').textContent = title;
+            document.getElementById('player-container').innerHTML = `
+                <div class="iframe-container">
+                    <iframe src="https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&rel=0&modestbranding=1" title="${title}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+                </div>
+            `;
+            document.getElementById('player-modal').classList.add('active');
+            document.body.style.overflow = "hidden"; // Prevents background scroll
+        }
+
+        function closePlayer() {
+            document.getElementById('player-modal').classList.remove('active');
+            document.getElementById('player-container').innerHTML = ''; // Stops the video by nuking iframe
+            document.body.style.overflow = "";
+        }
+
+        // ---------------------------------------------------------
+        // UI HELPERS (Mode sombre, Menu mobile)
+        // ---------------------------------------------------------
+        
+        document.getElementById('theme-toggle').addEventListener('click', () => {
+            document.documentElement.classList.toggle('dark-mode');
+        });
+
+        document.getElementById('btn-mobile-sidebar').addEventListener('click', () => {
+            const sidebar = document.getElementById('sidebar');
+            if(sidebar.classList.contains('-translate-x-full')) {
+                sidebar.classList.remove('-translate-x-full');
+            } else {
+                sidebar.classList.add('-translate-x-full');
+            }
+        });
+
+    </script>
+</body>
+</html>

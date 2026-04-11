@@ -1,1 +1,1 @@
-{"hosting": {"public": "portail", "ignore": ["firebase.json", "**/.*", "**/node_modules/**"]}}
+{"hosting": {"public": "deploy_site", "redirects": [{"source": "/", "destination": "/portail/index.html", "type": 301}]}}

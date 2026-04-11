@@ -1,0 +1,7 @@
+.firebase/
+.firebaserc
+node_modules/
+*.bat
+*.ps1
+.DS_Store
+Thumbs.db

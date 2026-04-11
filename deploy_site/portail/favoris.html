@@ -1,0 +1,971 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Favoris IA | Portail</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyBGxXTvy8thfYJZTP-QbWrV-2euTmj4NPY",
+            authDomain: "portail-postits.firebaseapp.com",
+            projectId: "portail-postits",
+            storageBucket: "portail-postits.firebasestorage.app",
+            messagingSenderId: "494625342197",
+            appId: "1:494625342197:web:9cc573fda25019e57ebbbc"
+        };
+        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+
+        window.login = function() {
+            const provider = new firebase.auth.GoogleAuthProvider();
+            firebase.auth().signInWithPopup(provider).catch(err => {
+                if(err.code === 'auth/popup-blocked') firebase.auth().signInWithRedirect(provider);
+                else alert("Google Auth Fail: " + err.message);
+            });
+        };
+
+        firebase.auth().onAuthStateChanged(user => {
+            const overlay = document.getElementById('auth-overlay');
+            if (user) {
+                if(overlay) overlay.style.display = 'none';
+            } else {
+                if(overlay) overlay.style.display = 'flex';
+            }
+        });
+    </script>
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Inter', sans-serif; background: #f1f5f9; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+
+        header { flex-shrink:0; background:white; border-bottom:1px solid #e2e8f0; padding:12px 20px; display:flex; justify-content:space-between; align-items:center; box-shadow:0 2px 8px rgba(0,0,0,.05); z-index:100; }
+        .h-left { display:flex; align-items:center; gap:12px; }
+        .back-btn { width:36px; height:36px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; display:flex; align-items:center; justify-content:center; color:#6366f1; text-decoration:none; transition:.2s; }
+        .back-btn:hover { background:#eef2ff; }
+        .app-icon { width:40px; height:40px; border-radius:12px; background:linear-gradient(135deg,#6366f1,#8b5cf6); display:flex; align-items:center; justify-content:center; color:white; font-size:1.1rem; box-shadow:0 4px 12px rgba(99,102,241,.3); }
+        .app-title { font-family:'Outfit',sans-serif; font-weight:800; font-size:1rem; color:#0f172a; }
+        .sync-line { display:flex; align-items:center; gap:6px; font-size:.7rem; font-weight:600; color:#94a3b8; margin-top:2px; }
+        .sdot { width:8px; height:8px; border-radius:50%; background:#fbbf24; transition:.3s; }
+        .sdot.online { background:#22c55e; box-shadow:0 0 6px #22c55e; }
+        .sdot.error { background:#ef4444; }
+        .h-right { display:flex; gap:10px; }
+        .btn-icon { display:flex; align-items:center; gap:7px; padding:8px 14px; background:white; border:1.5px solid #e2e8f0; border-radius:10px; font-size:.82rem; font-weight:700; color:#64748b; cursor:pointer; transition:.2s; font-family:inherit; }
+        .btn-icon:hover { border-color:#6366f1; color:#6366f1; }
+        .ai-dot { width:7px; height:7px; border-radius:50%; background:#ef4444; }
+        .ai-dot.on { background:#22c55e; }
+
+        .layout { flex:1; display:flex; overflow:hidden; }
+        .sidebar { width:230px; background:white; border-right:1px solid #e2e8f0; padding:18px 14px; display:flex; flex-direction:column; overflow-y:auto; gap:2px; }
+        .sb-title { font-size:.65rem; font-weight:800; text-transform:uppercase; color:#cbd5e1; letter-spacing:.1em; padding:4px 8px 10px; }
+        .sb-btn { width:100%; padding:9px 12px; border-radius:10px; border:none; background:none; text-align:left; font-size:.82rem; font-weight:600; color:#64748b; cursor:pointer; display:flex; align-items:center; gap:8px; transition:.18s; }
+        .sb-btn:hover { background:#f8fafc; color:#6366f1; }
+        .sb-btn.active { background:#eef2ff; color:#6366f1; }
+        .sb-count { margin-left:auto; background:#f1f5f9; color:#94a3b8; font-size:.65rem; font-weight:800; padding:2px 7px; border-radius:20px; }
+        .fold-row { display:flex; align-items:center; gap:2px; border-radius:10px; transition:.18s; }
+        .fold-row:hover { background:#f8fafc; }
+        .fold-row.active-row .fold-btn { color:#6366f1; }
+        .fold-btn { flex:1; padding:9px 12px; border:none; background:none; text-align:left; font-size:.82rem; font-weight:600; color:#64748b; cursor:pointer; display:flex; align-items:center; gap:8px; }
+        .fold-del { flex-shrink:0; border:none; background:none; color:#fca5a5; cursor:pointer; padding:4px 7px; border-radius:7px; font-size:.7rem; transition:.2s; }
+        .fold-del:hover { color:#ef4444; background:#fef2f2; }
+        /* Zone de dépôt active */
+        .fold-row.drag-over { background:#eef2ff; outline:2px dashed #6366f1; }
+        .sb-btn.drag-over { background:#eef2ff; outline:2px dashed #6366f1; }
+
+        .content { flex:1; padding:24px; overflow-y:auto; display:flex; flex-direction:column; gap:20px; }
+        .add-bar { background:white; padding:8px; border-radius:16px; display:flex; gap:8px; border:1.5px solid #e2e8f0; box-shadow:0 4px 16px rgba(0,0,0,.04); }
+        .add-bar input { flex:1; border:none; outline:none; padding:10px 18px; font-size:.9rem; font-family:inherit; }
+        .btn-add { background:linear-gradient(135deg,#6366f1,#8b5cf6); color:white; border:none; border-radius:11px; padding:10px 22px; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:8px; transition:.2s; font-family:inherit; white-space:nowrap; }
+        .btn-add:hover { transform:translateY(-1px); }
+        .btn-add:disabled { opacity:.6; cursor:wait; }
+
+        .grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(280px,1fr)); gap:18px; }
+        .card { background:white; border-radius:18px; padding:18px; border:1.5px solid #f1f5f9; display:flex; flex-direction:column; gap:10px; transition:.25s; animation:pop .3s ease; cursor:grab; }
+        .card:active { cursor:grabbing; }
+        @keyframes pop { from { opacity:0; transform:scale(.95); } to { opacity:1; transform:scale(1); } }
+        .card:hover { border-color:#6366f1; box-shadow:0 8px 28px -8px rgba(99,102,241,.12); transform:translateY(-2px); }
+        .card.dragging { opacity:.4; transform:scale(.97); border-style:dashed; }
+        .c-head { display:flex; justify-content:space-between; align-items:flex-start; }
+        .c-tag { font-size:.62rem; font-weight:800; text-transform:uppercase; background:#eef2ff; color:#6366f1; padding:3px 9px; border-radius:20px; }
+        .c-del { background:none; border:none; color:#e2e8f0; cursor:pointer; transition:.2s; font-size:.9rem; }
+        .c-del:hover { color:#ef4444; }
+        .c-drag { color:#e2e8f0; font-size:.75rem; cursor:grab; }
+        .c-title { font-family:'Outfit',sans-serif; font-weight:750; font-size:.98rem; color:#1e293b; line-height:1.3; }
+        .c-desc { font-size:.78rem; color:#64748b; line-height:1.55; flex:1; display:-webkit-box; -webkit-line-clamp:3; line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
+        .c-foot { padding-top:12px; border-top:1px solid #f8fafc; display:flex; align-items:center; justify-content:space-between; }
+        .c-link { font-size:.8rem; font-weight:700; color:#6366f1; text-decoration:none; display:flex; align-items:center; gap:5px; }
+        .c-link:hover { text-decoration:underline; }
+        .c-folder { font-size:.65rem; color:#94a3b8; display:flex; align-items:center; gap:4px; }
+        .empty { text-align:center; padding:80px 20px; color:#94a3b8; grid-column:1/-1; }
+        .empty .ei { font-size:4rem; opacity:.2; margin-bottom:16px; }
+        .empty h2 { font-family:'Outfit',sans-serif; font-size:1.1rem; margin-bottom:8px; color:#64748b; }
+
+        /* COULEURS DOSSIERS */
+        .color-picker { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:18px; }
+        .cir { width:28px; height:28px; border-radius:50%; cursor:pointer; border:3px solid transparent; transition:.2s; outline:3px solid transparent; outline-offset:2px; }
+        .cir:hover { transform:scale(1.12); }
+        .cir.selected { outline-color:#1e293b; transform:scale(1.15); }
+        .folder-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; display:inline-block; }
+
+        .overlay { position:fixed; inset:0; background:rgba(15,23,42,.55); backdrop-filter:blur(4px); z-index:1000; display:flex; align-items:center; justify-content:center; opacity:0; visibility:hidden; transition:.3s; }
+        .overlay.open { opacity:1; visibility:visible; }
+        .modal-box { background:white; border-radius:22px; padding:28px; width:400px; max-width:92vw; transform:scale(.95); transition:transform .3s; box-shadow:0 25px 60px rgba(0,0,0,.18); }
+        .overlay.open .modal-box { transform:scale(1); }
+        .m-title { font-family:'Outfit',sans-serif; font-weight:800; font-size:1.1rem; margin-bottom:20px; }
+        .m-label { font-size:.7rem; font-weight:700; text-transform:uppercase; color:#94a3b8; display:block; margin-bottom:6px; }
+        .m-input { width:100%; padding:11px 14px; border:1.5px solid #e2e8f0; border-radius:11px; outline:none; margin-bottom:16px; font-family:inherit; font-size:.9rem; transition:.2s; }
+        .m-input:focus { border-color:#6366f1; }
+        .m-btn { width:100%; padding:12px; border:none; border-radius:12px; font-weight:700; cursor:pointer; font-family:inherit; transition:.2s; font-size:.9rem; }
+        .m-btn-primary { background:#6366f1; color:white; }
+        .m-btn-primary:hover { background:#4f46e5; }
+        .m-btn-ghost { background:none; color:#94a3b8; margin-top:8px; }
+
+        .toast { position:fixed; bottom:28px; left:50%; transform:translateX(-50%); background:#1e293b; color:white; padding:12px 24px; border-radius:40px; font-size:.85rem; font-weight:600; opacity:0; transition:.3s; pointer-events:none; z-index:9999; white-space:nowrap; }
+        .toast.show { opacity:1; transform:translateX(-50%) translateY(-10px); }
+
+        /* ===== AUTH OVERLAY (Glassmorphism) ===== */
+        .auth-overlay {
+            position: fixed; inset: 0;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(25px) saturate(180%);
+            -webkit-backdrop-filter: blur(25px) saturate(180%);
+            z-index: 10000;
+            display: flex; align-items: center; justify-content: center;
+            opacity: 1; visibility: visible;
+            transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .auth-overlay.hidden {
+            opacity: 0; visibility: hidden; pointer-events: none;
+            transform: scale(1.1);
+        }
+        .auth-card {
+            background: rgba(255, 255, 255, 0.85);
+            padding: 2.5rem; border-radius: 2rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+            text-align: center; max-width: 400px; width: 90%;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+        .login-btn {
+            background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+            color: white; padding: 1rem 2rem; border-radius: 1rem;
+            font-weight: 700; display: flex; align-items: center; gap: 0.75rem;
+            margin: 1.5rem auto 0; transition: all 0.3s; box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.3);
+        }
+        .login-btn:hover { transform: translateY(-2px); box-shadow: 0 20px 25px -5px rgba(99, 102, 241, 0.4); }
+    </style>
+</head>
+<body>
+    <!-- Overlay de Sécurité Google -->
+    <div id="auth-overlay" class="auth-overlay">
+        <div class="auth-card">
+            <div class="w-16 h-16 bg-indigo-100 text-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-6 text-2xl">
+                <i class="fas fa-lock"></i>
+            </div>
+            <h2 class="text-2xl font-black text-slate-900 mb-2">Accès Sécurisé</h2>
+            <p class="text-slate-500 mb-8 font-medium">Veuillez vous identifier avec votre compte Google pour accéder à vos favoris.</p>
+            <button onclick="window.login()" class="login-btn">
+                <i class="fab fa-google"></i> Se connecter avec Google
+            </button>
+        </div>
+    </div>
+
+<header>
+    <div class="h-left">
+        <a href="index.html" class="back-btn"><i class="fas fa-arrow-left"></i></a>
+        <div class="app-icon"><i class="fas fa-bookmark"></i></div>
+        <div>
+            <div style="display:flex; align-items:center; gap:8px">
+                <div class="app-title">Favoris IA</div>
+                <span style="font-size:.6rem; font-weight:800; background:#f1f5f9; color:#94a3b8; padding:2px 8px; border-radius:20px; letter-spacing:.05em">V3.9.5</span>
+            </div>
+            <div class="sync-line"><div class="sdot" id="sdot"></div><span id="slabel">Connexion...</span></div>
+        </div>
+    </div>
+    <div class="h-right">
+        <button class="btn-icon" onclick="openAI()"><i class="fas fa-robot"></i> IA <div class="ai-dot" id="ai-dot"></div></button>
+        <button class="btn-icon" onclick="openFolderModal()"><i class="fas fa-folder-plus"></i> Dossier</button>
+        <button class="btn-icon" onclick="document.getElementById('file-import').click()"><i class="fas fa-file-import"></i> Importer</button>
+        <input type="file" id="file-import" accept=".html" style="display:none" onchange="importBookmarks(event)">
+    </div>
+</header>
+
+<div class="layout">
+    <aside class="sidebar" id="sidebar">
+        <div class="sb-title">Ma Collection</div>
+        <button class="sb-btn active" id="btn-all"
+            ondragover="event.preventDefault(); this.classList.add('drag-over')"
+            ondragleave="this.classList.remove('drag-over')"
+            ondrop="dropToFolder(event, null)"
+            onclick="filterBy('all', this)">
+            <i class="fas fa-layer-group"></i> Tout voir
+            <span class="sb-count" id="total-count">0</span>
+        </button>
+        <button class="sb-btn" id="btn-none"
+            ondragover="event.preventDefault(); this.classList.add('drag-over')"
+            ondragleave="this.classList.remove('drag-over')"
+            ondrop="dropToFolder(event, 'none')"
+            onclick="filterBy('none', this)">
+            <i class="fas fa-inbox"></i> Non classés
+        </button>
+        <div style="border-top:1px solid #f1f5f9; margin:10px 0; padding-top:10px">
+            <div class="sb-title">Dossiers</div>
+            <div id="folder-list"></div>
+            <button class="sb-btn" style="color:#94a3b8; font-style:italic; margin-top:4px" onclick="openFolderModal()">
+                <i class="fas fa-plus"></i> Nouveau dossier
+            </button>
+        </div>
+    </aside>
+
+    <main class="content">
+        <form class="add-bar" onsubmit="handleAdd(event)">
+            <input type="url" id="url-field" placeholder="Collez l'URL d'un article ou site web..." required>
+            <button type="submit" class="btn-add" id="btn-submit">
+                <i class="fas fa-wand-sparkles"></i> Analyser &amp; Ajouter
+            </button>
+        </form>
+        <div style="display:flex; justify-content:flex-end; margin-bottom:14px" id="grid-header-tools"></div>
+        <div class="grid" id="grid"></div>
+    </main>
+</div>
+
+<!-- Modal IA -->
+<div class="overlay" id="overlay-ai">
+    <div class="modal-box">
+        <div class="m-title">🤖 Enrichissement IA</div>
+        <p style="font-size:.8rem; color:#64748b; margin-bottom:18px; line-height:1.5">
+            Sans clé IA : le titre et la description sont extraits automatiquement du site.<br>
+            Avec une clé : l'IA génère une vraie <strong>explication du site</strong> en français.
+        </p>
+        <span class="m-label">Clé Google Gemini</span>
+        <input type="password" id="k-gemini" class="m-input" placeholder="AIzaSy...">
+        <span class="m-label">Clé Albert AI ou URL Worker Cloudflare</span>
+        <input type="password" id="k-albert" class="m-input" placeholder="sk-... ou https://...workers.dev">
+        <div id="ai-test-result" style="font-size:.78rem; margin-bottom:14px; min-height:20px; display:none; padding:10px 14px; border-radius:10px;"></div>
+        <div style="display:flex; gap:8px">
+            <button class="m-btn" style="background:#f1f5f9; color:#64748b; flex:1" onclick="testAIKey()">🔍 Tester la clé</button>
+            <button class="m-btn m-btn-primary" style="flex:2" onclick="saveAI()">Enregistrer</button>
+        </div>
+        <button class="m-btn m-btn-ghost" onclick="closeOverlay()">Fermer</button>
+    </div>
+</div>
+
+<!-- Modal Dossier -->
+<div class="overlay" id="overlay-folder">
+    <div class="modal-box">
+        <div class="m-title" id="modal-folder-title">📁 Nouveau dossier</div>
+        <span class="m-label">Nom</span>
+        <input type="text" id="folder-name-in" class="m-input" placeholder="ex: Pédagogie, IA, Veille...">
+        <span class="m-label">Couleur</span>
+        <div class="color-picker" id="color-picker">
+            <div class="cir selected" data-color="#6366f1" style="background:#6366f1"></div>
+            <div class="cir" data-color="#8b5cf6" style="background:#8b5cf6"></div>
+            <div class="cir" data-color="#ec4899" style="background:#ec4899"></div>
+            <div class="cir" data-color="#ef4444" style="background:#ef4444"></div>
+            <div class="cir" data-color="#f59e0b" style="background:#f59e0b"></div>
+            <div class="cir" data-color="#22c55e" style="background:#22c55e"></div>
+            <div class="cir" data-color="#06b6d4" style="background:#06b6d4"></div>
+            <div class="cir" data-color="#64748b" style="background:#64748b"></div>
+        </div>
+        <button class="m-btn m-btn-primary" id="modal-folder-btn" onclick="saveFolder()">Créer le dossier</button>
+        <button class="m-btn m-btn-ghost" onclick="closeOverlay()">Annuler</button>
+    </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+    // ── FIREBASE DATABASE (V3.8.1) ─────────────
+    const db     = firebase.firestore();
+    const favRef = db.collection('favoris');
+    const fldRef = db.collection('favoris_folders');
+
+    let allFavs=[], allFolders=[], activeFilter='all', selectedColor='#6366f1', draggingId=null, editingFolderId=null;
+
+    // ── STATUT ────────────────────────────────────────────────────────
+    const setSync = (cls,msg) => {
+        document.getElementById('sdot').className = 'sdot ' + cls;
+        document.getElementById('slabel').textContent = msg;
+    };
+    const toast = msg => {
+        const t = document.getElementById('toast');
+        t.textContent=msg; t.classList.add('show');
+        setTimeout(()=>t.classList.remove('show'),3000);
+    };
+
+    // ── LISTENERS FIREBASE ────────────────────────────────────────────
+    favRef.onSnapshot(snap => {
+        allFavs = snap.docs.map(d=>({id:d.id,...d.data()}));
+        setSync('online','Synchronisé en temps réel');
+        renderCards();
+    }, err => { setSync('error','Erreur: '+err.code); });
+
+    fldRef.orderBy('name').onSnapshot(snap => {
+        allFolders = snap.docs.map(d=>({id:d.id,...d.data()}));
+        renderFolders();
+    }, ()=>{});
+
+    // ── RENDU DOSSIERS ────────────────────────────────────────────────
+    function renderFolders() {
+        document.getElementById('folder-list').innerHTML = allFolders.map(f => {
+            const c = f.color || '#6366f1';
+            const isActive = activeFilter === f.id;
+            return `<div class="fold-row${isActive?' active-row':''}" id="frow-${f.id}"
+                ondragover="event.preventDefault(); document.getElementById('frow-${f.id}').classList.add('drag-over')"
+                ondragleave="document.getElementById('frow-${f.id}').classList.remove('drag-over')"
+                ondrop="dropToFolder(event,'${f.id}')">
+                <button class="fold-btn" onclick="filterByFolder('${f.id}')" style="color:${isActive?c:''}">
+                    <div class="folder-dot" style="background:${c}"></div> ${f.name}
+                </button>
+                <div style="display:flex;">
+                    <button class="fold-del" style="color:#94a3b8" onclick="openFolderModal('${f.id}')"><i class="fas fa-pen"></i></button>
+                    <button class="fold-del" onclick="delFolder('${f.id}')"><i class="fas fa-trash"></i></button>
+                </div>
+            </div>`;
+        }).join('');
+    }
+
+    // ── RENDU CARTES ──────────────────────────────────────────────────
+    function renderCards() {
+        const grid = document.getElementById('grid');
+        const tools = document.getElementById('grid-header-tools');
+        
+        document.getElementById('total-count').textContent = allFavs.length;
+        let data = [...allFavs].sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
+        
+        if      (activeFilter==='none') data = data.filter(f=>!f.folderId);
+        else if (activeFilter!=='all')  data = data.filter(f=>f.folderId===activeFilter);
+
+        const missingDesc = data.filter(f => !f.desc);
+        if (missingDesc.length > 0 && (localStorage.getItem('fav_albert')||localStorage.getItem('fav_gemini'))) {
+            tools.innerHTML = `<button onclick="autoRefreshAll()" style="font-size:12px; padding:6px 14px; border-radius:12px; border:none; background:linear-gradient(135deg, #8b5cf6, #6366f1); color:white; cursor:pointer; font-weight:bold; box-shadow:0 4px 6px -1px rgba(99,102,241,0.2), 0 2px 4px -1px rgba(99,102,241,0.1); transition:transform 0.2s"><i class="fas fa-wand-magic-sparkles"></i> Enrichir automatiquement ${missingDesc.length} favoris manquants</button>`;
+        } else {
+            tools.innerHTML = '';
+        }
+
+        if (!data.length) {
+            grid.innerHTML=`<div class="empty"><div class="ei"><i class="fas fa-bookmark"></i></div>
+                <h2>Aucun favori ici</h2><p style="font-size:.85rem">Collez une URL ci-dessus pour commencer.</p></div>`;
+            return;
+        }
+        grid.innerHTML = data.map(f => {
+            const folder = allFolders.find(d=>d.id===f.folderId);
+            const folderColor = folder ? (folder.color || '#6366f1') : null;
+            
+            const cardStyle  = folderColor ? `border-left: 5px solid ${folderColor};` : '';
+            const tagStyle   = folderColor ? `background: ${folderColor}1A; color: ${folderColor};` : '';
+            const linkStyle  = folderColor ? `color: ${folderColor};` : '';
+            
+            const folderHtml = folder
+                ? `<span class="c-folder"><div class="folder-dot" style="background:${folderColor}"></div><span style="color:${folderColor};font-weight:600">${folder.name}</span></span>`
+                : '';
+            
+            const descHtml = f.desc
+                ? `<div class="c-desc">${f.desc}</div>`
+                : `<div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:#f8fafc;border-radius:8px;border:1px dashed #e2e8f0">
+                    <span style="font-size:.75rem;color:#cbd5e1;font-style:italic;flex:1">Pas encore de description</span>
+                    <button class="refresh-btn" data-id="${f.id}" data-url="${f.url}" style="border:none;background:#eef2ff;color:#6366f1;border-radius:6px;padding:3px 8px;font-size:.7rem;cursor:pointer;white-space:nowrap">
+                        <i class="fas fa-rotate-right"></i> Récupérer
+                    </button></div>`;
+            
+            return `<div class="card" style="${cardStyle}" draggable="true" ondragstart="dragStart(event,'${f.id}')" ondragend="dragEnd(event)">
+                <div class="c-head">
+                    <span class="c-tag" style="${tagStyle}">${f.tag||'Lien'}</span>
+                    <div style="display:flex;gap:8px;align-items:center">
+                        <span class="c-drag"><i class="fas fa-grip-vertical"></i></span>
+                        <button class="c-del" onclick="delFav('${f.id}')"><i class="fas fa-times"></i></button>
+                    </div>
+                </div>
+                <div class="c-title">${(f.title||f.url).substring(0,70)}</div>
+                ${descHtml}
+                <div class="c-foot">
+                    <a href="${f.url}" target="_blank" rel="noopener" class="c-link" style="${linkStyle}">Consulter <i class="fas fa-arrow-up-right-from-square"></i></a>
+                    ${folderHtml}
+                </div>
+            </div>`;
+        }).join('');
+        document.querySelectorAll('.refresh-btn').forEach(btn => {
+            btn.addEventListener('click', () => refreshDesc(btn.dataset.id, btn.dataset.url));
+        });
+    }
+
+    // ── FILTRES ───────────────────────────────────────────────────────
+    function filterBy(id, el) {
+        activeFilter=id;
+        document.querySelectorAll('.sb-btn').forEach(b=>b.classList.remove('active'));
+        if(el) el.classList.add('active');
+        renderFolders(); renderCards();
+    }
+    function filterByFolder(id) {
+        activeFilter=id;
+        renderFolders(); renderCards();
+    }
+
+    // ── DRAG & DROP ───────────────────────────────────────────────────
+    function dragStart(e, id) {
+        draggingId = id;
+        e.dataTransfer.effectAllowed = 'move';
+        setTimeout(()=>e.target.classList.add('dragging'), 0);
+    }
+    function dragEnd(e) {
+        e.target.classList.remove('dragging');
+        document.querySelectorAll('.drag-over').forEach(el=>el.classList.remove('drag-over'));
+        draggingId = null;
+    }
+    async function dropToFolder(e, folderId) {
+        e.preventDefault();
+        document.querySelectorAll('.drag-over').forEach(el=>el.classList.remove('drag-over'));
+        if (!draggingId) return;
+        const newId = (folderId==='none' || !folderId) ? null : folderId;
+        try {
+            await favRef.doc(draggingId).update({folderId: newId});
+            toast('Favori déplacé ✓');
+        } catch(err) { toast('Erreur déplacement'); }
+    }
+
+    // ── REFRESH DESCRIPTION (Microlink + IA à la demande) ──────────────
+    async function refreshDesc(id, url) {
+        toast('⏳ Analyse en cours...');
+        const update = {};
+        
+        // 1. Microlink en base
+        try {
+            const ml = await fetch('https://api.microlink.io/?url=' + encodeURIComponent(url));
+            const mj = await ml.json();
+            if(mj.status==='success' && mj.data) {
+                if(mj.data.title)       update.title = mj.data.title;
+                if(mj.data.description) update.desc  = mj.data.description;
+            }
+        } catch(err) { console.warn('Microlink erreur', err); }
+
+        // 2. IA Si clé présente
+        const alk = localStorage.getItem('fav_albert');
+        const gek = localStorage.getItem('fav_gemini');
+        
+        if(alk || gek) {
+            toast('⏳ IA en cours de réflexion...');
+            const prompt = `Tu es un assistant de veille documentaire. Donne une explication claire et informative de ce site web en 2 phrases maximum, en français. Retourne UNIQUEMENT ce JSON sur une ligne : {"title":"nom du site","desc":"Explication en 2 phrases","tag":"Catégorie"}. URL : ${url}`;
+            let raw = '';
+            
+            try {
+                if(alk) {
+                    const r = await fetchAlbert(alk, prompt, 300);
+                    if(r.ok) raw = r.text;
+                } else if(gek) {
+                    const r = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key='+gek, {
+                        method:'POST', headers:{'Content-Type':'application/json'},
+                        body: JSON.stringify({contents:[{parts:[{text:prompt}]}], generationConfig:{maxOutputTokens:300, temperature:0.2}})
+                    });
+                    if(r.ok) raw=(await r.json()).candidates?.[0]?.content?.parts?.[0]?.text||'';
+                }
+
+                if(raw) {
+                    const cleanText = raw.replace(/```json/gi, '').replace(/```/g, '').trim();
+                    const iStart = cleanText.indexOf('{');
+                    const iEnd   = cleanText.lastIndexOf('}');
+                    if(iStart !== -1 && iEnd !== -1) {
+                        const parsed = JSON.parse(cleanText.substring(iStart, iEnd + 1));
+                        if(parsed.desc || parsed.title) {
+                            if(parsed.title) update.title = parsed.title;
+                            if(parsed.desc) update.desc = parsed.desc;
+                            if(parsed.tag) update.tag = parsed.tag; // Optionnel
+                            toast('🪄 Description IA générée !');
+                        }
+                    }
+                }
+            } catch(e) { console.warn('Erreur IA au refresh', e); }
+        }
+
+        if(Object.keys(update).length) {
+            try {
+                await favRef.doc(id).update(update);
+                // Le toast est suffisant
+            } catch(e) { toast('❌ Erreur écriture BDD'); }
+        } else {
+            toast('⚠️ Impossible de récupérer les infos de ce site.');
+        }
+    }
+
+    // ── AUTO-REFRESH MASSIF ───────────────────────────────────────────
+    async function autoRefreshAll() {
+        const missing = allFavs.filter(f => !f.desc);
+        if(!missing.length) return;
+        if(!confirm(`Lancer l'analyse IA automatique pour combler les ${missing.length} descriptions manquantes ? (Ne quittez pas la page)`)) return;
+        
+        const tools = document.getElementById('grid-header-tools');
+        tools.innerHTML = `<span style="font-size:12px; color:#6366f1; font-weight:bold"><i class="fas fa-spinner fa-spin"></i> Enrichissement en cours...</span>`;
+        
+        for(let i=0; i<missing.length; i++) {
+            const f = missing[i];
+            toast(`⏳ Analyse IA progress : ${i+1} / ${missing.length} (${f.title || f.url.substring(0,30)})`);
+            await refreshDesc(f.id, f.url);
+            // Attente de sécurité (3s) pour éviter de saturer/être bloqué par le proxy ou l'IA Gouv
+            await new Promise(r => setTimeout(r, 2000));
+        }
+        toast('✅ Enrichissement automatique de masse terminé !');
+        renderCards(); // Forcer une mise à jour d'UI propre
+    }
+
+    // ── SUPPRESSION ───────────────────────────────────────────────────
+    async function delFav(id) {
+        if(!confirm('Supprimer ce favori ?')) return;
+        await favRef.doc(id).delete(); toast('Supprimé');
+    }
+    async function delFolder(id) {
+        if(!confirm('Supprimer ce dossier ? Les favoris resteront.')) return;
+        const batch = db.batch();
+        allFavs.filter(f=>f.folderId===id).forEach(f=>batch.update(favRef.doc(f.id),{folderId:null}));
+        batch.delete(fldRef.doc(id));
+        await batch.commit();
+        if(activeFilter===id) filterBy('all', document.getElementById('btn-all'));
+        toast('Dossier supprimé');
+    }
+
+    // ── COULEUR PICKER ────────────────────────────────────────────────
+    document.querySelectorAll('.cir').forEach(c => {
+        c.addEventListener('click', ()=>{
+            document.querySelectorAll('.cir').forEach(x=>{
+                x.classList.remove('selected');
+                x.style.outlineColor = 'transparent';
+            });
+            c.classList.add('selected');
+            c.style.outlineColor = '#1e293b';
+            selectedColor = c.dataset.color;
+        });
+    });
+    // Init outline du cercle sélectionné par défaut
+    document.querySelector('.cir.selected').style.outlineColor = '#1e293b';
+
+    // ── DOSSIERS ─────────────────────────────────────────────────────
+    function openFolderModal(id = null) {
+        editingFolderId = id;
+        const mt = document.getElementById('modal-folder-title');
+        const mb = document.getElementById('modal-folder-btn');
+        
+        if(id) {
+            const f = allFolders.find(x=>x.id===id);
+            document.getElementById('folder-name-in').value = f.name;
+            mt.innerHTML = '📁 Modifier le dossier';
+            mb.textContent = 'Enregistrer';
+            // Set picker color
+            document.querySelectorAll('.cir').forEach(c => {
+                c.classList.remove('selected'); c.style.outlineColor = 'transparent';
+                if(c.dataset.color === f.color || (!f.color && c.dataset.color==='#6366f1')) {
+                    c.classList.add('selected'); c.style.outlineColor = '#1e293b';
+                }
+            });
+            selectedColor = f.color || '#6366f1';
+        } else {
+            document.getElementById('folder-name-in').value='';
+            mt.innerHTML = '📁 Nouveau dossier';
+            mb.textContent = 'Créer le dossier';
+            // Reset picker color
+            document.querySelectorAll('.cir').forEach(c => {
+                c.classList.remove('selected'); c.style.outlineColor = 'transparent';
+                if(c.dataset.color === '#6366f1') {
+                    c.classList.add('selected'); c.style.outlineColor = '#1e293b';
+                }
+            });
+            selectedColor = '#6366f1';
+        }
+
+        document.getElementById('overlay-folder').classList.add('open');
+        setTimeout(()=>document.getElementById('folder-name-in').focus(),300);
+    }
+
+    async function saveFolder() {
+        const name = document.getElementById('folder-name-in').value.trim();
+        if(!name) return;
+        
+        if(editingFolderId) {
+            await fldRef.doc(editingFolderId).update({name, color:selectedColor});
+            toast('Dossier modifié !');
+        } else {
+            await fldRef.add({name, color:selectedColor, createdAt:firebase.firestore.FieldValue.serverTimestamp()});
+            toast('Dossier créé !');
+        }
+        closeOverlay();
+    }
+
+    function openAI() {
+        document.getElementById('k-albert').value=localStorage.getItem('fav_albert')||'';
+        document.getElementById('k-gemini').value=localStorage.getItem('fav_gemini')||'';
+        const res = document.getElementById('ai-test-result');
+        res.style.display='none';
+        document.getElementById('overlay-ai').classList.add('open');
+    }
+    function saveAI() {
+        localStorage.setItem('fav_albert', document.getElementById('k-albert').value.trim());
+        localStorage.setItem('fav_gemini', document.getElementById('k-gemini').value.trim());
+        const has = localStorage.getItem('fav_albert')||localStorage.getItem('fav_gemini');
+        document.getElementById('ai-dot').className='ai-dot'+(has?' on':'');
+        closeOverlay(); toast('Clés IA sauvegardées ✅');
+    }
+    async function testAIKey() {
+        const res = document.getElementById('ai-test-result');
+        const gek = document.getElementById('k-gemini').value.trim();
+        const alk = document.getElementById('k-albert').value.trim();
+        if(!gek && !alk) {
+            res.style.cssText='display:block;background:#fef2f2;color:#ef4444;padding:10px 14px;border-radius:10px;font-size:.78rem;margin-bottom:14px';
+            res.textContent='❌ Aucune clé renseignée.'; return;
+        }
+        res.style.cssText='display:block;background:#f8fafc;color:#64748b;padding:10px 14px;border-radius:10px;font-size:.78rem;margin-bottom:14px';
+        res.textContent='⏳ Test en cours...';
+        try {
+            // Tester Albert en PRIORITÉ (Fonctionne en EU, gratuit)
+            if(alk) {
+                res.textContent='⏳ Test de connexion Albert en cours (5 relais)...';
+                try {
+                    const r = await fetchAlbert(alk, 'Réponds juste: OK', 5);
+                    if(r.ok) {
+                        res.style.cssText='display:block;background:#f0fdf4;color:#16a34a;padding:10px 14px;border-radius:10px;font-size:.78rem;margin-bottom:14px';
+                        res.textContent='✅ [v2.8] Connexion réussie ! (Clé auto-sauvegardée via ' + r.methodUsed + ')';
+                        // AUTO-SAVE immédiate (évite l'oubli du bouton enregistrer)
+                        localStorage.setItem('fav_albert', alk);
+                        if(gek) localStorage.setItem('fav_gemini', gek);
+                        document.getElementById('ai-dot').className='ai-dot on';
+                    } else {
+                        res.style.cssText='display:block;background:#fef2f2;color:#ef4444;padding:10px 14px;border-radius:10px;font-size:.78rem;margin-bottom:14px';
+                        res.textContent='❌ [v2.8] Albert a refusé l\'accès (Erreur '+r.status+')';
+                    }
+                } catch(err) {
+                    res.style.cssText='display:block;background:#fffbeb;color:#92400e;padding:10px 14px;border-radius:10px;font-size:.7rem;margin-bottom:14px;line-height:1.4;white-space:pre-wrap;overflow-x:auto';
+                    res.innerHTML='⚠️ <b>Impossible de joindre Albert (Forge) [V3.9.5]. Rapport :</b>\n' + err.message;
+                }
+                return;
+            }
+            // Tester Gemini seulement si pas de clé Albert
+            if(gek) {
+                const r = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key='+gek, {
+                    method:'POST', headers:{'Content-Type':'application/json'},
+                    body: JSON.stringify({contents:[{parts:[{text:'Réponds juste: OK'}]}]})
+                });
+                if(r.ok) {
+                    res.style.cssText='display:block;background:#f0fdf4;color:#16a34a;padding:10px 14px;border-radius:10px;font-size:.78rem;margin-bottom:14px';
+                    res.textContent='✅ Clé Gemini valide !';
+                } else {
+                    const j = await r.json();
+                    if(r.status===429) {
+                        res.style.cssText='display:block;background:#fffbeb;color:#92400e;padding:10px 14px;border-radius:10px;font-size:.78rem;margin-bottom:14px;line-height:1.5';
+                        res.innerHTML='⚠️ Gemini bloqué en UE (quota=0 obligatoire en Europe).<br>👉 Utilisez plutôt <strong>Albert AI</strong> — clé gratuite sur <a href="https://albert.api.gouv.fr" target="_blank" style="color:#d97706">albert.api.gouv.fr</a>';
+                    } else {
+                        res.style.cssText='display:block;background:#fef2f2;color:#ef4444;padding:10px 14px;border-radius:10px;font-size:.78rem;margin-bottom:14px';
+                        res.textContent='❌ Gemini erreur '+r.status+': '+(j.error?.message||'Clé invalide');
+                    }
+                }
+            }
+        } catch(err) {
+            res.style.cssText='display:block;background:#fef2f2;color:#ef4444;padding:10px 14px;border-radius:10px;font-size:.78rem;margin-bottom:14px';
+            res.textContent='❌ Erreur réseau : '+err.message;
+        }
+    }
+    function closeOverlay() { document.querySelectorAll('.overlay').forEach(o=>o.classList.remove('open')); }
+
+    // ── MOTEUR MULTI-RELAIS ALBERT ET SUPPORT WORKER ──────────────────
+    async function fetchAlbert(keyOrUrl, promptText, tokens=300) {
+        
+        // 1. SI C'EST UN WORKER CLOUDFLARE (Solution ultime anti-CORS)
+        if(keyOrUrl.startsWith('http://') || keyOrUrl.startsWith('https://')) {
+            try {
+                const response = await fetch(keyOrUrl, {
+                    method: 'POST',
+                    mode: 'cors',
+                    credentials: 'omit',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: promptText, model: 'openai/gpt-oss-120b', temperature: 0.7, max_tokens: tokens })
+                });
+                if(response.ok) {
+                    const data = await response.json();
+                    if(data.error) throw new Error(data.error);
+                    // Supporte à la fois le format OpenAI et le format simplifié
+                    const text = data.choices?.[0]?.message?.content || data.response || data.text || '';
+                    return { ok: true, text, methodUsed: 'Worker Cloudflare' };
+                }
+                return { ok: false, status: response.status, methodUsed: 'Worker Cloudflare' };
+            } catch(e) {
+                throw new Error("Échec du Worker : " + e.message);
+            }
+        }
+
+        // 2. SINON C'EST UNE CLÉ DIRECTE sk-...
+        // L'API publique Étalab (albert.api.etalab.gouv.fr) supporte CORS depuis le navigateur.
+        // La Forge MEN (api.albert.apps.education.fr) BLOQUE les appels navigateur (CSP/CORS).
+        let logs = [];
+        
+        const albertEndpoint = "https://albert.api.gouv.fr/v1/chat/completions";
+        const model = 'openai/gpt-oss-120b';
+        
+        const endpoints = [
+            // API Albert officielle (gouv.fr) — supporte CORS, c'est l'URL qui fonctionne
+            { id: "Albert Direct (gouv.fr)", url: albertEndpoint },
+            // Proxys CORS en fallback (réseau scolaire filtrant)
+            { id: "Proxy Corsproxy",  url: `https://corsproxy.io/?${encodeURIComponent(albertEndpoint)}` },
+            { id: "Proxy Thingproxy", url: `https://thingproxy.freeboard.io/fetch/${albertEndpoint}` },
+            { id: "Proxy Codetabs",   url: `https://api.codetabs.com/v1/proxy?url=${encodeURIComponent(albertEndpoint)}` }
+        ];
+        
+        const bodyStr = JSON.stringify({model, messages:[{role:'user',content:promptText}], max_tokens:tokens});
+
+        for(let ep of endpoints) {
+            try {
+                const response = await fetch(ep.url, {
+                    method: 'POST',
+                    mode: 'cors',
+                    credentials: 'omit',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + keyOrUrl },
+                    body: bodyStr
+                });
+                
+                if(response.status === 401 || response.status === 403) {
+                    return { ok: false, status: response.status, methodUsed: ep.id };
+                }
+
+                if(response.ok) {
+                    const data = await response.json();
+                    return { ok: true, text: data.choices?.[0]?.message?.content || '', methodUsed: ep.id };
+                }
+                
+                logs.push(`- ${ep.id} : HTTP ${response.status}`);
+            } catch(e) {
+                logs.push(`- ${ep.id} : ${e.message}`);
+                continue;
+            }
+        }
+        
+        // Rien n'a marché → guider l'utilisateur
+        const isForgeKey = keyOrUrl.startsWith('sk-');
+        logs.push(isForgeKey
+            ? `\n👉 Votre clé 'sk-...' semble être une clé Forge MEN (non compatible navigateur).\n   ➡ Utilisez une clé obtenue sur https://albert.api.gouv.fr (API Étalab publique)\n   ➡ Ou collez l'URL de votre Worker Cloudflare à la place de la clé.`
+            : `\n👉 Vérifiez que votre clé est valide sur https://albert.api.gouv.fr\n   ➡ Ou utilisez l'URL de votre Worker Cloudflare.`);
+        throw new Error(logs.join('\n'));
+    }
+
+    // ── AJOUT ─────────────────────────────────────────────────────────
+    async function handleAdd(e) {
+        e.preventDefault();
+        const input = document.getElementById('url-field');
+        const btn   = document.getElementById('btn-submit');
+        const url   = input.value.trim();
+        if(!url) return;
+
+        btn.disabled=true;
+        btn.innerHTML='<i class="fas fa-spinner fa-spin"></i> Lecture du site...';
+
+        // ── ÉTAPE 1 : Extraction automatique via Microlink (gratuit, sans clé) ──
+        let hostname='';
+        try { hostname = new URL(url).hostname.replace('www.',''); } catch(err){}
+        let data = { title: hostname||url, desc:'', tag:'Lien' };
+
+        try {
+            const ml = await fetch('https://api.microlink.io/?url=' + encodeURIComponent(url));
+            const mj = await ml.json();
+            if(mj.status==='success' && mj.data) {
+                data.title = mj.data.title || data.title;
+                data.desc  = mj.data.description || '';
+                data.tag   = 'Site web';
+            }
+        } catch(err) { console.warn('Microlink ignoré:', err.message); }
+
+        btn.innerHTML='<i class="fas fa-spinner fa-spin"></i> Analyse IA...';
+
+        const alk = localStorage.getItem('fav_albert');
+        const gek = localStorage.getItem('fav_gemini');
+
+        if(alk||gek) {
+            const prompt = `Tu es un assistant de veille documentaire. Donne une explication claire et informative de ce site web en 2 phrases maximum, en français. Retourne UNIQUEMENT ce JSON sur une ligne : {"title":"nom du site","desc":"Explication en 2 phrases : à quoi sert ce site, qui l'utilise, quel est son contenu principal.","tag":"catégorie en 1 mot ex: Éducation/Technologie/Actualités/Finance"}. URL : ${url}`;
+            try {
+                let raw='';
+                // Albert EN PRIORITÉ
+                if(alk) {
+                    try {
+                        const r = await fetchAlbert(alk, prompt, 300);
+                        if(r.ok) {
+                            raw = r.text;
+                        } else {
+                            toast('❌ Albert a refusé la connexion ('+r.status+')');
+                        }
+                    } catch(err) { 
+                        console.warn('Tous les relais Albert ont échoué', err); 
+                        toast('❌ Échec de tous les relais Albert');
+                    }
+                } else if(gek) {
+                    // Gemini si pas d'Albert (attention : bloqué en EU)
+                    const r = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key='+gek, {
+                        method:'POST', headers:{'Content-Type':'application/json'},
+                        body: JSON.stringify({contents:[{parts:[{text:prompt}]}], generationConfig:{maxOutputTokens:300, temperature:0.2}})
+                    });
+                    if(r.ok) raw=(await r.json()).candidates?.[0]?.content?.parts?.[0]?.text||'';
+                    else { const j=await r.json(); toast('❌ Gemini bloqué ('+r.status+')'); }
+                }
+                
+                // ── Extraction JSON ultra-robuste ──
+                if(raw) {
+                    // Nettoyer les balises Markdown éventuelles renvoyées par l'IA
+                    const cleanText = raw.replace(/```json/gi, '').replace(/```/g, '').trim();
+                    const iStart = cleanText.indexOf('{');
+                    const iEnd   = cleanText.lastIndexOf('}');
+                    
+                    if(iStart !== -1 && iEnd !== -1) {
+                        const jsonStr = cleanText.substring(iStart, iEnd + 1);
+                        try {
+                            const parsed = JSON.parse(jsonStr);
+                            if(parsed.desc || parsed.title) {
+                                data = { ...data, ...parsed }; // Fusion avec l'extraction Microlink
+                                toast('🪄 Description IA générée !');
+                            } else {
+                                toast('⚠️ L\'IA n\'a pas renvoyé la description.');
+                            }
+                        } catch(e) {
+                            console.warn("JSON IA invalide:", jsonStr);
+                            toast('❌ Format de réponse IA illisible');
+                        }
+                    } else {
+                        console.warn("Pas d'objet JSON trouvé dans:", raw);
+                        toast('❌ L\'IA n\'a pas respecté le format JSON.');
+                    }
+                }
+            } catch(err) { 
+                console.warn('IA ignorée:', err.message); 
+                toast('❌ Erreur technique IA');
+            }
+        }
+
+        try {
+            await favRef.add({
+                ...data, url,
+                folderId: (activeFilter!=='all'&&activeFilter!=='none') ? activeFilter : null,
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+            input.value='';
+            toast('✅ Favori ajouté !');
+        } catch(err) {
+            toast('❌ Firebase: '+err.code);
+        } finally {
+            btn.disabled=false;
+            btn.innerHTML='<i class="fas fa-wand-sparkles"></i> Analyser &amp; Ajouter';
+        }
+    }
+
+    // Init badge IA
+    if(localStorage.getItem('fav_albert')||localStorage.getItem('fav_gemini'))
+        document.getElementById('ai-dot').className='ai-dot on';
+
+    // ── IMPORT DE FAVORIS BROWSER (Chrome, Firefox, Opera) ───────────
+    async function importBookmarks(e) {
+        const file = e.target.files[0];
+        if(!file) return;
+
+        toast('📂 Lecture du fichier (Cela peut prendre qq secondes)...');
+        const text = await file.text();
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(text, 'text/html');
+
+        let importedCount = 0;
+        let duplicateCount = 0;
+        let foldersCreated = 0;
+        
+        let toInsert = [];
+        let existingUrls = new Set(allFavs.map(f => f.url));
+
+        async function parseDL(dlNode, currentFolderId) {
+            const children = dlNode.children;
+            let tempFolderId = currentFolderId;
+
+            for(let i=0; i<children.length; i++) {
+                const child = children[i];
+                if(child.tagName === 'DT') {
+                    const a = child.querySelector('A');
+                    const h3 = child.querySelector('H3');
+
+                    if(h3) {
+                        const folderName = h3.textContent.trim();
+                        let fId = null;
+                        const existingF = allFolders.find(f => f.name.toLowerCase() === folderName.toLowerCase());
+                        if(existingF) {
+                            fId = existingF.id;
+                        } else {
+                            // Assigner une couleur vibrante aléatoire
+                            const pal = ['#6366f1','#8b5cf6','#ec4899','#ef4444','#f59e0b','#22c55e','#06b6d4'];
+                            const rc = pal[Math.floor(Math.random()*pal.length)];
+                            
+                            // On crée le dossier en base et on attend pour récupérer son ID
+                            const res = await fldRef.add({name: folderName, color: rc, createdAt: firebase.firestore.FieldValue.serverTimestamp()});
+                            fId = res.id;
+                            foldersCreated++;
+                            allFolders.push({id: fId, name: folderName, color: rc});
+                        }
+                        tempFolderId = fId;
+
+                        const innerDL = child.querySelector('DL');
+                        if(innerDL) await parseDL(innerDL, fId);
+                        
+                    } else if(a) {
+                        const url = a.href;
+                        const title = a.textContent.trim() || url;
+                        if(url.startsWith('http')) {
+                            if(existingUrls.has(url)) {
+                                duplicateCount++;
+                            } else {
+                                toInsert.push({
+                                    url: url, title: title, desc: '', tag: 'Import',
+                                    folderId: currentFolderId,
+                                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                                });
+                                existingUrls.add(url);
+                                importedCount++;
+                            }
+                        }
+                    }
+                } else if(child.tagName === 'DL') {
+                    await parseDL(child, tempFolderId);
+                }
+            }
+        }
+
+        const rootDL = doc.querySelector('DL');
+        if(!rootDL) {
+            alert('❌ Fichier ignoré. Seuls les fichiers .html exportés depuis Chrome/Firefox sont gérés.');
+            e.target.value = '';
+            return;
+        }
+
+        try {
+            await parseDL(rootDL, null);
+
+            if(toInsert.length > 0) {
+                toast(`🚀 Sauvegarde de ${toInsert.length} favoris vers Firebase...`);
+                // Envoi par lots (Firebase batch) pour gérer des milliers de favoris rapidement sans faire crasher la base
+                let batches = [];
+                let curBatch = db.batch();
+                let ops = 0;
+
+                for (let data of toInsert) {
+                    curBatch.set(favRef.doc(), data);
+                    ops++;
+                    if (ops === 450) {
+                        batches.push(curBatch.commit());
+                        curBatch = db.batch();
+                        ops = 0;
+                    }
+                }
+                if (ops > 0) batches.push(curBatch.commit());
+                await Promise.all(batches);
+            }
+
+            let msg = `✅ Import terminé avec succès :\n`;
+            msg += `• ${importedCount} nouveaux favoris ajoutés.\n`;
+            if(foldersCreated > 0) msg += `• ${foldersCreated} nouveaux dossiers créés.\n`;
+            if(duplicateCount > 0) msg += `• ⚠️ ${duplicateCount} doublons ont été ignorés.`;
+            alert(msg);
+
+        } catch(err) {
+            console.error(err);
+            alert("❌ Une erreur est survenue pendant l'importation : " + err.message);
+        }
+
+        e.target.value = '';
+    }
+</script>
+</body>
+</html>

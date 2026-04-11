@@ -1,0 +1,921 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Firebase SDK (Compat) -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #d6dde6;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ===== HEADER ===== */
+        header {
+            flex-shrink: 0;
+            background: rgba(255,255,255,0.92);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(0,0,0,0.07);
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            z-index: 200;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+        }
+
+        .header-left { display: flex; align-items: center; gap: 12px; }
+
+        .back-btn {
+            width: 38px; height: 38px;
+            background: white; border: 1.5px solid #e2e8f0;
+            border-radius: 10px; display: flex; align-items: center; justify-content: center;
+            text-decoration: none; color: #6366f1;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+        .back-btn:hover { background: #f5f3ff; border-color: #6366f1; }
+
+        .app-icon {
+            width: 40px; height: 40px;
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            border-radius: 12px; display: flex; align-items: center; justify-content: center;
+            color: white; font-size: 1.1rem;
+            box-shadow: 0 4px 12px rgba(245,158,11,0.3);
+            flex-shrink: 0;
+        }
+
+        .app-title { font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 1.1rem; color: #0f172a; line-height: 1.2; }
+        .sync-line { display: flex; align-items: center; font-size: 0.7rem; color: #94a3b8; font-weight: 500; margin-top: 2px; }
+        .sync-dot { width: 8px; height: 8px; border-radius: 50%; margin-right: 5px; flex-shrink: 0; }
+        .sync-dot.online  { background: #22c55e; animation: pulse-dot 2s infinite; }
+        .sync-dot.offline { background: #ef4444; }
+        .sync-dot.syncing { background: #f59e0b; animation: spin-dot 1s linear infinite; }
+        @keyframes pulse-dot { 0%,100%{ opacity:1; } 50%{ opacity:0.4; } }
+        @keyframes spin-dot  { to { transform: rotate(360deg); } }
+
+        .header-right { display: flex; align-items: center; gap: 10px; }
+
+        .search-wrap { position: relative; }
+        .search-wrap i { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); color: #94a3b8; font-size: 0.8rem; pointer-events: none; }
+        .search-input {
+            background: #f8fafc; border: 1.5px solid #e2e8f0;
+            border-radius: 10px; padding: 8px 12px 8px 34px;
+            font-size: 0.82rem; outline: none;
+            transition: all 0.2s; width: 200px;
+        }
+        .search-input:focus { border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,0.1); }
+
+        .counter-badge {
+            background: #f1f5f9; border: 1.5px solid #e2e8f0;
+            border-radius: 10px; padding: 6px 14px; text-align: center;
+        }
+        .counter-badge .num { font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 1.1rem; color: #6366f1; line-height: 1; }
+        .counter-badge .lbl { font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.08em; color: #94a3b8; font-weight: 700; }
+
+        .add-btn {
+            display: flex; align-items: center; gap: 8px;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: white; border: none; border-radius: 12px;
+            padding: 9px 18px; font-size: 0.85rem; font-weight: 700;
+            cursor: pointer; box-shadow: 0 4px 14px rgba(99,102,241,0.35);
+            transition: all 0.25s cubic-bezier(0.34,1.56,0.64,1);
+        }
+        .add-btn:hover { transform: translateY(-2px) scale(1.04); box-shadow: 0 8px 24px rgba(99,102,241,0.45); }
+
+        /* ===== BOARD ===== */
+        #board {
+            flex: 1;
+            position: relative;
+            overflow: auto;
+            background-color: #c8d0da;
+            background-image:
+                radial-gradient(circle at 15% 15%, rgba(99,102,241,0.06) 0%, transparent 55%),
+                radial-gradient(circle at 85% 85%, rgba(236,72,153,0.05) 0%, transparent 55%),
+                linear-gradient(rgba(100,116,139,0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(100,116,139,0.1) 1px, transparent 1px);
+            background-size: 100% 100%, 100% 100%, 28px 28px, 28px 28px;
+            cursor: default;
+        }
+
+        /* Board inner (large canvas for post-its) */
+        #board-inner {
+            position: relative;
+            width: 3000px;
+            height: 2000px;
+            min-width: 100%;
+            min-height: 100%;
+        }
+
+        /* ===== POST-IT ===== */
+        .postit {
+            position: absolute;
+            width: 220px;
+            min-height: 160px;
+            padding: 32px 14px 16px 14px;
+            font-family: 'Patrick Hand', cursive;
+            font-size: 1rem;
+            line-height: 1.65;
+            letter-spacing: 0.01em;
+            border-radius: 2px;
+            box-shadow: 3px 4px 14px -2px rgba(0,0,0,0.22), 1px 1px 2px rgba(0,0,0,0.06);
+            cursor: grab;
+            user-select: none;
+            transition: box-shadow 0.2s, transform 0.15s;
+            animation: popIn 0.35s cubic-bezier(0.34,1.56,0.64,1) forwards;
+            z-index: 5;
+            overflow: hidden;
+        }
+
+        @keyframes popIn {
+            from { opacity: 0; transform: scale(0.75) rotate(var(--rot,0deg)); }
+            to   { opacity: 1; transform: scale(1) rotate(var(--rot,0deg)); }
+        }
+
+        .postit:active, .postit.dragging {
+            cursor: grabbing;
+            box-shadow: 6px 12px 30px -4px rgba(0,0,0,0.32), 3px 4px 8px rgba(0,0,0,0.1);
+            z-index: 999;
+            animation: none;
+            transform: scale(1.06) rotate(0deg) !important;
+        }
+
+        /* Tape effect */
+        .postit::before {
+            content: '';
+            position: absolute;
+            top: -3px; left: 50%; transform: translateX(-50%);
+            width: 54px; height: 16px;
+            background: rgba(255,255,255,0.5);
+            border-radius: 0 0 3px 3px;
+            backdrop-filter: blur(2px);
+            box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+            pointer-events: none;
+        }
+
+        /* Corner fold */
+        .postit::after {
+            content: '';
+            position: absolute;
+            bottom: 0; right: 0;
+            width: 0; height: 0;
+            border-style: solid;
+            border-width: 0 0 20px 20px;
+            border-color: transparent transparent rgba(0,0,0,0.1) transparent;
+            pointer-events: none;
+        }
+
+        /* Colors */
+        .pi-yellow { background: #fff9c4; }
+        .pi-orange { background: #ffe0b2; }
+        .pi-pink   { background: #f8bbd0; }
+        .pi-blue   { background: #bbdefb; }
+        .pi-green  { background: #c8e6c9; }
+        .pi-purple { background: #e1bee7; }
+        .pi-cyan   { background: #b2ebf2; }
+        .pi-red    { background: #ffcdd2; }
+
+        .postit-title {
+            font-weight: 700; font-size: 1.05rem;
+            color: rgba(0,0,0,0.8);
+            margin-bottom: 5px;
+            word-break: break-word;
+        }
+
+        .postit-content {
+            color: rgba(0,0,0,0.7);
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        .postit-date {
+            font-size: 0.65rem;
+            color: rgba(0,0,0,0.35);
+            margin-top: 10px;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .postit-delete, .postit-edit {
+            position: absolute;
+            width: 22px; height: 22px;
+            background: none; border: none; border-radius: 50%;
+            cursor: pointer;
+            font-size: 0.7rem; display: flex; align-items: center; justify-content: center;
+            transition: all 0.2s; opacity: 0;
+            z-index: 10;
+        }
+        .postit-delete { top: 8px; right: 8px; color: rgba(0,0,0,0.22); }
+        .postit-edit   { top: 8px; right: 34px; color: rgba(0,0,0,0.22); }
+        .postit:hover .postit-delete,
+        .postit:hover .postit-edit { opacity: 1; }
+        .postit-delete:hover { background: rgba(220,38,38,0.15); color: #dc2626; transform: scale(1.2); }
+        .postit-edit:hover   { background: rgba(99,102,241,0.15); color: #6366f1; transform: scale(1.2); }
+
+        /* ===== EMPTY STATE ===== */
+        #empty-state {
+            position: absolute; inset: 0;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            pointer-events: none;
+            opacity: 0; transition: opacity 0.3s;
+        }
+        #empty-state.visible { opacity: 1; pointer-events: auto; }
+        #empty-state .emoji { font-size: 4rem; margin-bottom: 16px; }
+        #empty-state h2 { font-family: 'Outfit', sans-serif; font-size: 1.4rem; font-weight: 800; color: #64748b; margin-bottom: 8px; }
+        #empty-state p { font-size: 0.9rem; color: #94a3b8; text-align: center; max-width: 300px; }
+
+        /* ===== MODAL ===== */
+        .modal-overlay {
+            position: fixed; inset: 0;
+            background: rgba(15,23,42,0.55);
+            backdrop-filter: blur(6px);
+            z-index: 1000;
+            display: flex; align-items: center; justify-content: center;
+            opacity: 0; visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        .modal-overlay.active { opacity: 1; visibility: visible; }
+
+        .modal-box {
+            background: white; border-radius: 22px;
+            padding: 28px; width: 90%; max-width: 460px;
+            box-shadow: 0 24px 60px rgba(0,0,0,0.25);
+            transform: scale(0.9) translateY(16px);
+            transition: transform 0.35s cubic-bezier(0.34,1.56,0.64,1);
+        }
+        .modal-overlay.active .modal-box { transform: scale(1) translateY(0); }
+
+        .modal-header {
+            display: flex; align-items: center; justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        .modal-header h2 {
+            font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 1.1rem; color: #0f172a;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .modal-edit-badge {
+            font-size: 0.65rem; background: #e0e7ff; color: #6366f1; border-radius: 6px;
+            padding: 2px 7px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em;
+        }
+        .modal-close {
+            width: 34px; height: 34px; border-radius: 10px;
+            background: #f1f5f9; border: none; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            color: #64748b; font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+        .modal-close:hover { background: #fee2e2; color: #dc2626; }
+
+        .modal-label {
+            font-size: 0.7rem; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 0.08em; color: #94a3b8; display: block; margin-bottom: 7px;
+        }
+
+        .modal-input {
+            font-family: 'Patrick Hand', cursive; font-size: 1.1rem;
+            width: 100%; border: 2px solid #e2e8f0; border-radius: 11px;
+            padding: 10px 13px; outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .modal-input:focus { border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,0.12); }
+
+        .modal-textarea {
+            font-family: 'Patrick Hand', cursive; font-size: 1.1rem;
+            width: 100%; border: 2px solid #e2e8f0; border-radius: 11px;
+            padding: 10px 13px; outline: none; resize: none; min-height: 110px;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .modal-textarea:focus { border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,0.12); }
+
+        .color-row { display: flex; flex-wrap: wrap; gap: 10px; }
+        .color-dot {
+            width: 30px; height: 30px; border-radius: 50%;
+            border: 3px solid transparent; cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.14);
+            transition: all 0.2s; flex-shrink: 0;
+        }
+        .color-dot:hover { transform: scale(1.18); }
+        .color-dot.selected { border-color: #1e293b; transform: scale(1.22); box-shadow: 0 0 0 2px white, 0 0 0 4px #1e293b; }
+
+        .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 4px; }
+
+        .btn-cancel {
+            padding: 9px 18px; border-radius: 10px; border: none;
+            background: #f1f5f9; color: #64748b; font-weight: 700;
+            cursor: pointer; font-size: 0.875rem; transition: background 0.2s;
+        }
+        .btn-cancel:hover { background: #e2e8f0; }
+
+        .btn-save {
+            padding: 9px 22px; border-radius: 10px; border: none;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: white; font-weight: 800; cursor: pointer; font-size: 0.875rem;
+            box-shadow: 0 4px 14px rgba(99,102,241,0.3);
+            transition: all 0.2s;
+        }
+        .btn-save:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(99,102,241,0.4); }
+        .btn-save:disabled { opacity: 0.6; pointer-events: none; }
+
+        /* Scrollbars */
+        #board::-webkit-scrollbar { width: 8px; height: 8px; }
+        #board::-webkit-scrollbar-track { background: transparent; }
+        #board::-webkit-scrollbar-thumb { background: rgba(100,116,139,0.3); border-radius: 8px; }
+        #board::-webkit-scrollbar-thumb:hover { background: rgba(100,116,139,0.5); }
+
+        /* Hint */
+        .drag-hint {
+            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+            background: rgba(15,23,42,0.75); color: white; font-size: 0.72rem; font-weight: 600;
+            padding: 7px 14px; border-radius: 20px; backdrop-filter: blur(6px);
+            pointer-events: none; opacity: 0; transition: opacity 0.5s;
+            white-space: nowrap; z-index: 100;
+        }
+        /* ===== AUTH OVERLAY (Glassmorphism) ===== */
+        .auth-overlay {
+            position: fixed; inset: 0;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(25px) saturate(180%);
+            -webkit-backdrop-filter: blur(25px) saturate(180%);
+            z-index: 10000;
+            display: flex; align-items: center; justify-content: center;
+            opacity: 1; visibility: visible;
+            transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .auth-overlay.hidden {
+            opacity: 0; visibility: hidden; pointer-events: none;
+            transform: scale(1.1);
+        }
+        .auth-card {
+            background: rgba(255, 255, 255, 0.85);
+            padding: 2.5rem; border-radius: 2rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+            text-align: center; max-width: 400px; width: 90%;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+        .login-btn {
+            background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+            color: white; padding: 1rem 2rem; border-radius: 1rem;
+            font-weight: 700; display: flex; align-items: center; gap: 0.75rem;
+            margin: 1.5rem auto 0; transition: all 0.3s; box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.3);
+        }
+        .login-btn:hover { transform: translateY(-2px); box-shadow: 0 20px 25px -5px rgba(99, 102, 241, 0.4); }
+    </style>
+</head>
+
+    <!-- Overlay de connexion -->
+    <div id="auth-overlay" class="auth-overlay">
+        <div class="auth-card" id="auth-card">
+            <div id="auth-loading" class="mb-6">
+                <div class="w-12 h-12 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin mx-auto"></div>
+                <p class="text-slate-500 mt-4 font-bold text-sm" id="auth-loading-msg">Vérification de session...</p>
+            </div>
+            <div id="auth-content" class="hidden">
+                <div class="w-16 h-16 bg-indigo-100 text-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-6 text-2xl">
+                    <i class="fas fa-lock"></i>
+                </div>
+                <h2 class="text-2xl font-black text-slate-900 mb-2">Accès Sécurisé</h2>
+                <p class="text-slate-500 mb-4 font-medium">Connectez-vous pour retrouver vos post-its.</p>
+                <button onclick="window.login()" class="login-btn">
+                    <i class="fab fa-google"></i> Se connecter avec Google
+                </button>
+                <div style="margin-top:1rem; border-top:1px solid #e2e8f0; padding-top:1rem;">
+                    <button onclick="window.loginAnonymous()" style="background:none;border:none;color:#6366f1;font-weight:700;cursor:pointer;font-size:0.85rem;">
+                        <i class="fas fa-user-secret" style="margin-right:5px;"></i> Continuer en mode invité
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- HEADER -->
+    <header>
+        <div class="header-left">
+            <a href="index.html" class="back-btn" title="Retour au portail">
+                <i class="fas fa-arrow-left"></i>
+            </a>
+            <div class="app-icon"><i class="fas fa-sticky-note"></i></div>
+            <div>
+                <div class="app-title">Mes Post-its <span id="guest-badge" style="display:none;font-size:0.6rem;background:#f1f5f9;color:#64748b;border:1px solid #e2e8f0;border-radius:6px;padding:2px 7px;font-weight:700;vertical-align:middle;">👤 Invité</span></div>
+                <div class="sync-line">
+                    <span class="sync-dot online" id="sync-dot"></span>
+                    <span id="sync-status">Synchronisé en temps réel</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="header-right">
+            <div class="search-wrap">
+                <i class="fas fa-search"></i>
+                <input type="text" id="search-input" class="search-input" placeholder="Rechercher...">
+            </div>
+            <div class="counter-badge">
+                <div class="num" id="count-display">0</div>
+                <div class="lbl">Post-its</div>
+            </div>
+            <button class="add-btn" onclick="openModal()">
+                <i class="fas fa-plus"></i> Nouveau post-it
+            </button>
+        </div>
+    </header>
+
+    <!-- BOARD -->
+    <div id="board">
+        <div id="board-inner">
+            <!-- Post-its are injected here -->
+            <div id="empty-state">
+                <div class="emoji">📝</div>
+                <h2>Tableau vierge</h2>
+                <p>Cliquez sur <strong>"Nouveau post-it"</strong> pour créer votre première note. Vous pourrez ensuite la déplacer librement !</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- DRAG HINT -->
+    <div class="drag-hint" id="drag-hint">💡 Glissez les post-its pour les repositionner</div>
+
+    <!-- MODAL -->
+    <div class="modal-overlay" id="modal">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h2><i class="fas fa-sticky-note" style="color:#fbbf24"></i> <span id="modal-title-label">Nouveau post-it</span> <span class="modal-edit-badge" id="edit-badge" style="display:none">Édition</span></h2>
+                <button class="modal-close" onclick="closeModal()"><i class="fas fa-times"></i></button>
+            </div>
+
+            <div style="margin-bottom:14px;">
+                <label class="modal-label">Titre (optionnel)</label>
+                <input type="text" id="modal-title" class="modal-input" placeholder="Ex: À faire, Idée, Important...">
+            </div>
+
+            <div style="margin-bottom:16px;">
+                <label class="modal-label">Contenu *</label>
+                <textarea id="modal-content" class="modal-textarea" placeholder="Écrivez votre note ici..."></textarea>
+            </div>
+
+            <div style="margin-bottom:20px;">
+                <label class="modal-label">Couleur</label>
+                <div class="color-row" id="color-picker">
+                    <button class="color-dot selected" data-color="pi-yellow" style="background:#fff9c4" title="Jaune"></button>
+                    <button class="color-dot" data-color="pi-orange" style="background:#ffe0b2" title="Orange"></button>
+                    <button class="color-dot" data-color="pi-pink"   style="background:#f8bbd0" title="Rose"></button>
+                    <button class="color-dot" data-color="pi-blue"   style="background:#bbdefb" title="Bleu"></button>
+                    <button class="color-dot" data-color="pi-green"  style="background:#c8e6c9" title="Vert"></button>
+                    <button class="color-dot" data-color="pi-purple" style="background:#e1bee7" title="Violet"></button>
+                    <button class="color-dot" data-color="pi-cyan"   style="background:#b2ebf2" title="Cyan"></button>
+                    <button class="color-dot" data-color="pi-red"    style="background:#ffcdd2" title="Rouge"></button>
+                </div>
+            </div>
+
+            <div class="modal-actions">
+                <button class="btn-cancel" onclick="closeModal()">Annuler</button>
+                <button class="btn-save" id="save-btn" onclick="savePostit()">
+                    <i class="fas fa-save" style="margin-right:6px"></i>Enregistrer
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCRIPT -->
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyBGxXTvy8thfYJZTP-QbWrV-2euTmj4NPY",
+            authDomain: "portail-postits.firebaseapp.com",
+            projectId: "portail-postits",
+            storageBucket: "portail-postits.firebasestorage.app",
+            messagingSenderId: "494625342197",
+            appId: "1:494625342197:web:9cc573fda25019e57ebbbc"
+        };
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+        const db = firebase.firestore();
+
+        // postitsRef est défini après l'auth (scopé par utilisateur)
+        let postitsRef = null;
+        let unsubscribeSnapshot = null;
+
+        window.login = function() {
+            const provider = new firebase.auth.GoogleAuthProvider();
+            firebase.auth().signInWithPopup(provider).catch(err => {
+                if(err.code === 'auth/popup-blocked' || err.code === 'auth/cancelled-popup-request') {
+                    firebase.auth().signInWithRedirect(provider);
+                } else {
+                    alert("Erreur d'authentification : " + err.message);
+                }
+            });
+        };
+
+        // Connexion anonyme (mode invité)
+        window.loginAnonymous = function() {
+            document.getElementById('auth-content').classList.add('hidden');
+            document.getElementById('auth-loading').classList.remove('hidden');
+            document.getElementById('auth-loading-msg').textContent = 'Connexion en mode invité...';
+            firebase.auth().signInAnonymously().catch(err => {
+                alert("Erreur : " + err.message);
+            });
+        };
+
+        async function startApp(user) {
+            const overlay = document.getElementById('auth-overlay');
+            
+            // --- VERIFICATION TOKEN INVITE ---
+            if (user.isAnonymous) {
+                const token = sessionStorage.getItem('guest_token');
+                if (!token) {
+                    alert("Accès refusé : Aucun jeton d'invitation trouvé.");
+                    window.location.href = "index.html";
+                    return;
+                }
+                const snap = await db.collection('invitations').where('token', '==', token).get();
+                if (snap.empty || snap.docs[0].data().expiresAt.toDate() < new Date()) {
+                    alert("Votre accès invité a été révoqué ou a expiré.");
+                    window.location.href = "index.html";
+                    return;
+                }
+                document.getElementById('guest-badge').style.display = 'inline';
+            }
+
+            overlay.classList.add('hidden');
+
+            // Collection scopée par utilisateur : chaque user voit UNIQUEMENT ses données
+            postitsRef = db.collection('users').doc(user.uid).collection('postits');
+
+            // --- MIGRATION AUTOMATIQUE (Temporaire) ---
+            // Si c'est TOI (admin Google), on récupère les anciens post-its globaux
+            if (!user.isAnonymous) {
+                db.collection('postits').get().then(snapshot => {
+                    if (!snapshot.empty) {
+                        console.log("Migration des anciens post-its en cours...");
+                        snapshot.forEach(oldDoc => {
+                            postitsRef.doc(oldDoc.id).set(oldDoc.data(), {merge: true});
+                            // Optionnel: supprimer l'ancien après copie
+                            // db.collection('postits').doc(oldDoc.id).delete();
+                        });
+                    }
+                });
+            }
+            // ------------------------------------------
+
+            // Démarrer l'écoute en temps réel
+            if (unsubscribeSnapshot) unsubscribeSnapshot();
+            unsubscribeSnapshot = postitsRef.onSnapshot(snapshot => {
+                allPostits = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+                setSyncStatus('online');
+                renderBoard();
+            }, err => {
+                console.error(err);
+                setSyncStatus('offline');
+                document.getElementById('sync-status').textContent = 'Erreur: ' + err.code;
+            });
+        }
+
+        firebase.auth().onAuthStateChanged(user => {
+            const overlay = document.getElementById('auth-overlay');
+            const loading = document.getElementById('auth-loading');
+            const content = document.getElementById('auth-content');
+
+            if (user) {
+                startApp(user);
+            } else {
+                // Si on a un jeton dans l'URL mais pas encore en session, on le récupère
+                const urlParams = new URLSearchParams(window.location.search);
+                if (urlParams.has('invit')) {
+                    sessionStorage.setItem('guest_token', urlParams.get('invit'));
+                }
+
+                // Si on a un jeton (session ou URL), on tente l'anonyme direct
+                if (sessionStorage.getItem('guest_token') || urlParams.has('invit')) {
+                    firebase.auth().signInAnonymously().catch(() => {
+                        loading.classList.add('hidden');
+                        content.classList.remove('hidden');
+                    });
+                } else {
+                    // Sinon on attend un peu pour voir si une session Google revient
+                    setTimeout(() => {
+                        if (!firebase.auth().currentUser) {
+                            loading.classList.add('hidden');
+                            content.classList.remove('hidden');
+                        }
+                    }, 1500);
+                }
+            }
+        });
+
+        // ====== STATE ======
+        let selectedColor = 'pi-yellow';
+        let currentSearch = '';
+        let allPostits = [];
+        let hintShown = false;
+        let editingId = null; // null = create mode, string = edit mode
+
+        // Subtle random rotation pool
+        const ROTS = [-2.5, -1.8, -1.2, -0.5, 0, 0.3, 0.9, 1.6, 2.2];
+        function getRot(id) {
+            // Deterministic based on id so it doesn't jump on re-render
+            let hash = 0;
+            for(let c of id) hash = (hash * 31 + c.charCodeAt(0)) & 0xffffff;
+            return ROTS[hash % ROTS.length];
+        }
+
+        // ====== SYNC STATUS ======
+        function setSyncStatus(state) {
+            const dot = document.getElementById('sync-dot');
+            const lbl = document.getElementById('sync-status');
+            dot.className = 'sync-dot ' + state;
+            lbl.textContent = state === 'online' ? 'Synchronisé en temps réel' : state === 'syncing' ? 'Synchronisation...' : 'Hors ligne';
+        }
+
+        // (Le listener temps réel est maintenant démarré dans startApp() après l'auth)
+
+        // ====== RENDER BOARD ======
+        function renderBoard() {
+            const board = document.getElementById('board-inner');
+            const emptyState = document.getElementById('empty-state');
+            document.getElementById('count-display').textContent = allPostits.length;
+
+            const q = currentSearch.toLowerCase();
+            const filtered = currentSearch
+                ? allPostits.filter(p => (p.title||'').toLowerCase().includes(q) || (p.content||'').toLowerCase().includes(q))
+                : allPostits;
+
+            // Remove old post-it elements (keep empty-state)
+            Array.from(board.querySelectorAll('.postit')).forEach(el => el.remove());
+
+            if(filtered.length === 0) {
+                emptyState.classList.add('visible');
+            } else {
+                emptyState.classList.remove('visible');
+
+                // Show drag hint only first time
+                if(!hintShown && allPostits.length > 0) {
+                    hintShown = true;
+                    const hint = document.getElementById('drag-hint');
+                    hint.classList.add('visible');
+                    setTimeout(() => hint.classList.remove('visible'), 3500);
+                }
+
+                filtered.forEach(p => {
+                    // Default random placement if no saved position
+                    const boardEl = document.getElementById('board');
+                    const vw = boardEl.clientWidth;
+                    const vh = boardEl.clientHeight;
+                    const defaultX = 40 + Math.floor(Math.random() * Math.max(vw - 280, 200));
+                    const defaultY = 40 + Math.floor(Math.random() * Math.max(vh - 280, 200));
+
+                    const x = typeof p.x === 'number' ? p.x : defaultX;
+                    const y = typeof p.y === 'number' ? p.y : defaultY;
+                    const rot = getRot(p.id);
+
+                    const card = document.createElement('div');
+                    card.className = `postit ${p.color || 'pi-yellow'}`;
+                    card.dataset.id = p.id;
+                    card.style.left = x + 'px';
+                    card.style.top  = y + 'px';
+                    card.style.setProperty('--rot', rot + 'deg');
+                    card.style.transform = `rotate(${rot}deg)`;
+
+                    const titleHtml = p.title ? `<div class="postit-title">${esc(p.title)}</div>` : '';
+                    const dateStr = p.createdAt?.toDate?.()
+                        ? new Intl.DateTimeFormat('fr-FR', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' }).format(p.createdAt.toDate())
+                        : '';
+
+                    card.innerHTML = `
+                        <button class="postit-edit"   onclick="editPostit('${p.id}')" title="Modifier"><i class="fas fa-pen"></i></button>
+                        <button class="postit-delete" onclick="deletePostit('${p.id}')" title="Supprimer"><i class="fas fa-times"></i></button>
+                        ${titleHtml}
+                        <div class="postit-content">${esc(p.content)}</div>
+                        ${dateStr ? `<div class="postit-date">${dateStr}</div>` : ''}
+                    `;
+                    // Double-click to edit
+                    card.addEventListener('dblclick', (e) => {
+                        if(!e.target.closest('.postit-delete') && !e.target.closest('.postit-edit')) editPostit(p.id);
+                    });
+
+                    makeDraggable(card, p.id);
+                    board.appendChild(card);
+                });
+            }
+        }
+
+        function esc(s) {
+            return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+        }
+
+        // ====== DRAG & DROP ======
+        let saveTimer = null;
+
+        function makeDraggable(el, docId) {
+            let startMouseX, startMouseY, startElX, startElY, isDragging = false;
+
+            function getPos(e) {
+                return e.touches ? { x: e.touches[0].clientX, y: e.touches[0].clientY }
+                                 : { x: e.clientX, y: e.clientY };
+            }
+
+            function onStart(e) {
+                // Don't drag if clicking delete button
+                if(e.target.closest('.postit-delete')) return;
+                e.preventDefault();
+
+                const pos = getPos(e);
+                startMouseX = pos.x;
+                startMouseY = pos.y;
+                startElX = parseInt(el.style.left) || 0;
+                startElY = parseInt(el.style.top)  || 0;
+                isDragging = false;
+
+                // Bring to front
+                el.style.zIndex = 999;
+
+                document.addEventListener('mousemove', onMove);
+                document.addEventListener('mouseup',   onEnd);
+                document.addEventListener('touchmove', onMove, { passive: false });
+                document.addEventListener('touchend',  onEnd);
+            }
+
+            function onMove(e) {
+                e.preventDefault();
+                const pos = getPos(e);
+                const dx = pos.x - startMouseX;
+                const dy = pos.y - startMouseY;
+
+                if(!isDragging && (Math.abs(dx) > 4 || Math.abs(dy) > 4)) {
+                    isDragging = true;
+                    el.classList.add('dragging');
+                }
+
+                if(isDragging) {
+                    const board = document.getElementById('board');
+                    const newX = Math.max(0, startElX + dx + board.scrollLeft - (isDragging ? board.getBoundingClientRect().left - document.getElementById('board').getBoundingClientRect().left : 0));
+                    const newY = Math.max(0, startElY + dy + board.scrollTop - (isDragging ? board.getBoundingClientRect().top - document.getElementById('board').getBoundingClientRect().top : 0));
+
+                    el.style.left = (startElX + dx + board.scrollLeft - board.getBoundingClientRect().left + document.getElementById('board').getBoundingClientRect().left) + 'px';
+                    // Simpler: just offset from start
+                    const newLeft = Math.max(0, startElX + dx);
+                    const newTop  = Math.max(0, startElY + dy);
+                    el.style.left = newLeft + 'px';
+                    el.style.top  = newTop  + 'px';
+                }
+            }
+
+            function onEnd() {
+                document.removeEventListener('mousemove', onMove);
+                document.removeEventListener('mouseup',   onEnd);
+                document.removeEventListener('touchmove', onMove);
+                document.removeEventListener('touchend',  onEnd);
+
+                el.style.zIndex = 5;
+
+                if(isDragging) {
+                    el.classList.remove('dragging');
+                    // Restore rotation
+                    const rot = getRot(docId);
+                    el.style.transform = `rotate(${rot}deg)`;
+                    isDragging = false;
+
+                    // Save position to Firebase (debounced)
+                    const newX = parseInt(el.style.left) || 0;
+                    const newY = parseInt(el.style.top)  || 0;
+                    clearTimeout(saveTimer);
+                    saveTimer = setTimeout(() => {
+                        setSyncStatus('syncing');
+                        postitsRef.doc(docId).update({ x: newX, y: newY })
+                            .then(() => setSyncStatus('online'))
+                            .catch(() => setSyncStatus('offline'));
+                    }, 400);
+                }
+            }
+
+            el.addEventListener('mousedown', onStart);
+            el.addEventListener('touchstart', onStart, { passive: false });
+        }
+
+        // ====== EDIT POSTIT ======
+        function editPostit(id) {
+            const p = allPostits.find(x => x.id === id);
+            if(!p) return;
+            editingId = id;
+            document.getElementById('modal-title').value   = p.title   || '';
+            document.getElementById('modal-content').value = p.content || '';
+            // Set color
+            selectedColor = p.color || 'pi-yellow';
+            document.querySelectorAll('.color-dot').forEach(d => d.classList.toggle('selected', d.dataset.color === selectedColor));
+            document.getElementById('modal-content').style.background = colorBgMap[selectedColor] || 'white';
+            // Update modal labels
+            document.getElementById('modal-title-label').textContent = 'Modifier le post-it';
+            document.getElementById('edit-badge').style.display = 'inline';
+            document.getElementById('save-btn').innerHTML = '<i class="fas fa-check" style="margin-right:6px"></i>Mettre à jour';
+            document.getElementById('modal').classList.add('active');
+            setTimeout(() => document.getElementById('modal-content').focus(), 100);
+        }
+
+        // ====== SAVE / UPDATE POSTIT ======
+        async function savePostit() {
+            const title   = document.getElementById('modal-title').value.trim();
+            const content = document.getElementById('modal-content').value.trim();
+            if(!content) {
+                const ta = document.getElementById('modal-content');
+                ta.style.borderColor = '#ef4444';
+                ta.focus();
+                setTimeout(() => ta.style.borderColor = '#e2e8f0', 1500);
+                return;
+            }
+
+            const btn = document.getElementById('save-btn');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin" style="margin-right:6px"></i>Sauvegarde...';
+            setSyncStatus('syncing');
+
+            try {
+                if(editingId) {
+                    // UPDATE existing
+                    await postitsRef.doc(editingId).update({ title, content, color: selectedColor });
+                } else {
+                    // CREATE new
+                    const board = document.getElementById('board');
+                    const x = board.scrollLeft + board.clientWidth  / 2 - 110;
+                    const y = board.scrollTop  + board.clientHeight / 2 - 80;
+                    await postitsRef.add({
+                        title, content,
+                        color: selectedColor,
+                        x: Math.max(0, x),
+                        y: Math.max(0, y),
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                }
+                closeModal();
+            } catch(e) {
+                alert('Erreur Firebase : ' + e.message);
+                setSyncStatus('offline');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-save" style="margin-right:6px"></i>Enregistrer';
+            }
+        }
+
+        // ====== DELETE ======
+        async function deletePostit(id) {
+            if(!confirm('Supprimer ce post-it définitivement ?')) return;
+            setSyncStatus('syncing');
+            await postitsRef.doc(id).delete().catch(() => setSyncStatus('offline'));
+        }
+
+        // ====== MODAL ======
+        function openModal() {
+            editingId = null;
+            document.getElementById('modal-title').value = '';
+            document.getElementById('modal-content').value = '';
+            document.getElementById('modal-content').style.background = '#fff9c4';
+            selectedColor = 'pi-yellow';
+            document.querySelectorAll('.color-dot').forEach(d => d.classList.toggle('selected', d.dataset.color === 'pi-yellow'));
+            // Reset modal labels to "create" mode
+            document.getElementById('modal-title-label').textContent = 'Nouveau post-it';
+            document.getElementById('edit-badge').style.display = 'none';
+            document.getElementById('save-btn').innerHTML = '<i class="fas fa-save" style="margin-right:6px"></i>Enregistrer';
+            document.getElementById('modal').classList.add('active');
+            setTimeout(() => document.getElementById('modal-title').focus(), 100);
+        }
+
+        function closeModal() {
+            document.getElementById('modal').classList.remove('active');
+            editingId = null;
+        }
+
+        // Overlay click / Escape
+        document.getElementById('modal').addEventListener('click', e => { if(e.target === document.getElementById('modal')) closeModal(); });
+        document.addEventListener('keydown', e => {
+            if(e.key === 'Escape') closeModal();
+            if((e.ctrlKey||e.metaKey) && e.key === 'Enter' && document.getElementById('modal').classList.contains('active')) savePostit();
+        });
+
+        // Color picker
+        const colorBgMap = { 'pi-yellow':'#fff9c4','pi-orange':'#ffe0b2','pi-pink':'#f8bbd0','pi-blue':'#bbdefb','pi-green':'#c8e6c9','pi-purple':'#e1bee7','pi-cyan':'#b2ebf2','pi-red':'#ffcdd2' };
+        document.querySelectorAll('.color-dot').forEach(dot => {
+            dot.addEventListener('click', () => {
+                document.querySelectorAll('.color-dot').forEach(d => d.classList.remove('selected'));
+                dot.classList.add('selected');
+                selectedColor = dot.dataset.color;
+                document.getElementById('modal-content').style.background = colorBgMap[selectedColor] || 'white';
+            });
+        });
+
+        // Search
+        document.getElementById('search-input').addEventListener('input', e => {
+            currentSearch = e.target.value;
+            renderBoard();
+        });
+    </script>
+
+</body>
+</html>
