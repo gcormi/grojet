@@ -201,27 +201,37 @@
     let storageMode = null;
     let nuageToken = null;
     let folderHandle = null;
-    const NUAGE_BASE = 'https://nuage.apps.education.fr/public.php/webdav/';
+    let nuageBaseUrl = 'https://nuage.apps.education.fr/public.php/webdav/';
 
     window.connectNuage = async () => {
         const raw = document.getElementById('nuage-link-input').value.trim();
         if (!raw) { alert('Collez votre lien Nuage.'); return; }
-        const match = raw.match(/\/s\/([a-zA-Z0-9]+)/);
-        if (!match) { alert('Lien invalide. Il doit ressembler à :\nhttps://nuage.apps.education.fr/s/XXXXXXXX'); return; }
-        nuageToken = match[1];
+        
+        // Détecte l'hôte (nuage03...) et le jeton de partage (/s/XXX)
+        // On supporte maintenant les liens avec ou sans /index.php/ avant le /s/
+        const match = raw.match(/https?:\/\/([a-zA-Z0-9.-]+).*\/s\/([a-zA-Z0-9]+)/);
+        if (!match) { 
+            alert('Lien de partage invalide.\n\nAssurez-vous de :\n1. Faire un clic droit sur votre dossier Mentoria\n2. Cliquer sur "Partager"\n3. Copier le "Lien de partage" (il doit contenir "/s/")'); 
+            return; 
+        }
+        
+        const host = match[1];
+        nuageToken = match[2];
+        nuageBaseUrl = `https://${host}/public.php/webdav/`;
         storageMode = 'nuage';
+        
         try {
-            const res = await fetch(NUAGE_BASE, {
+            const res = await fetch(nuageBaseUrl, {
                 method: 'PROPFIND',
                 headers: { 'Authorization': 'Basic ' + btoa(nuageToken + ':'), 'Depth': '1' }
             });
             if (!res.ok && res.status !== 207) throw new Error('HTTP ' + res.status);
             document.getElementById('startup-screen').style.display = 'none';
-            updateStorageBadge('☁️ Nuage apps.education.fr');
+            updateStorageBadge(`☁️ ${host}`);
             showToast('☁️ Connecté', 'Dossier Nuage chargé.');
             await loadLibrary();
         } catch(e) {
-            alert('Connexion impossible.\nVérifiez le lien et que "Autoriser l\'édition" est activé.\n\nErreur : ' + e.message);
+            alert('Connexion impossible.\n\n1. Vérifiez que "Autoriser l\'édition" est bien coché sur le lien de partage.\n2. Si l\'erreur persiste, il se peut que Nuage bloque la connexion (CORS).\n\nErreur : ' + e.message);
             nuageToken = null; storageMode = null;
         }
     };
@@ -256,7 +266,7 @@
     // ═══════════════════════════════════════════
     async function readBotFile(filename) {
         if (storageMode === 'nuage') {
-            const res = await fetch(NUAGE_BASE + filename, { headers: { 'Authorization': 'Basic ' + btoa(nuageToken + ':') } });
+            const res = await fetch(nuageBaseUrl + filename, { headers: { 'Authorization': 'Basic ' + btoa(nuageToken + ':') } });
             return res.ok ? await res.json() : null;
         } else if (storageMode === 'folder') {
             try { const fh = await folderHandle.getFileHandle(filename); return JSON.parse(await (await fh.getFile()).text()); }
@@ -266,7 +276,7 @@
     async function writeBotFile(filename, data) {
         const content = JSON.stringify(data, null, 2);
         if (storageMode === 'nuage') {
-            const res = await fetch(NUAGE_BASE + filename, {
+            const res = await fetch(nuageBaseUrl + filename, {
                 method: 'PUT',
                 headers: { 'Authorization': 'Basic ' + btoa(nuageToken + ':'), 'Content-Type': 'application/json' },
                 body: content
@@ -279,7 +289,7 @@
     }
     async function deleteBotFile(filename) {
         if (storageMode === 'nuage') {
-            await fetch(NUAGE_BASE + filename, { method: 'DELETE', headers: { 'Authorization': 'Basic ' + btoa(nuageToken + ':') } });
+            await fetch(nuageBaseUrl + filename, { method: 'DELETE', headers: { 'Authorization': 'Basic ' + btoa(nuageToken + ':') } });
         } else if (storageMode === 'folder') {
             try { await folderHandle.removeEntry(filename); } catch {}
         }
