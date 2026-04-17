@@ -1,10 +1,10 @@
 {
   "id": "bot_1776422667178",
-  "updatedAt": "2026-04-17T11:12:28.252Z",
+  "updatedAt": "2026-04-17T11:12:53.243Z",
   "config": {
     "title": "Chopin - Musique",
     "instructions": "un grand specialiste de la vie et l'oeuvre de chopin.",
-    "name": "Soecialiste de Chopin",
+    "name": "specialiste de Chopin",
     "targetAge": "14 ans",
     "theme": "Musique",
     "welcomeMessage": "Hello la team",
