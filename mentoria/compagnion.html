@@ -446,7 +446,7 @@ ${botConfig.corpus || '(Aucun corpus fourni — utilise tes connaissances géné
                     'Authorization': `Bearer ${botConfig.apiKey}`
                 },
                 body: JSON.stringify({
-                    model: 'openweight-medium',
+                    model: botConfig.model || 'openweight-medium',
                     messages,
                     temperature: 0.7
                 })
@@ -473,7 +473,7 @@ ${botConfig.corpus || '(Aucun corpus fourni — utilise tes connaissances géné
             loadingDiv.classList.add('hidden');
             sendBtn.disabled = false;
         }
-    });
+    }
 
     // ─── 6. DRAG & DROP DU WIDGET ─────────────────────────────────────────────
     const botWidget  = document.getElementById('bot-widget');
