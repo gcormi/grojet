@@ -1772,8 +1772,7 @@
                 Albert analyse la conversation de ${suiviSelectedStudent}…
             </div>`;
         const convText = log.map(e => `[${e.role === 'user' ? suiviSelectedStudent : 'Bot'}] ${e.text}`).join('\n');
-        const albertEndpoint = 'https://albert.api.gouv.fr/v1/chat/completions';
-        const apiUrl = bot.proxyUrl || `https://corsproxy.io/?${encodeURIComponent(albertEndpoint)}`;
+        const apiUrl = bot.proxyUrl || 'https://mentoria-proxy.gilles-cormi.workers.dev';
         const prompt = `Tu es un évaluateur pédagogique. Analyse cette conversation entre un élève et un assistant pédagogique IA, et évalue l'élève sur 5 critères (chacun sur 2 points, total sur 10).\n\nCritères :\n1. Effort de rédaction et orthographe (/2)\n2. Pertinence des questions posées (/2)\n3. Quantité d'interactions (/2)\n4. Relances et réponses aux défis du bot (/2)\n5. Progression dans la conversation (/2)\n\nNotes possibles : 0, 0.5, 1, 1.5 ou 2.\n\nRéponds UNIQUEMENT en JSON valide sans markdown :\n{"criteres":[{"nom":"Effort de rédaction et orthographe","note":0,"commentaire":""},{"nom":"Pertinence des questions posées","note":0,"commentaire":""},{"nom":"Quantité d'interactions","note":0,"commentaire":""},{"nom":"Relances et réponses aux défis du bot","note":0,"commentaire":""},{"nom":"Progression dans la conversation","note":0,"commentaire":""}],"total":0,"appreciation":""}\n\nConversation :\n${convText}`;
         try {
             const res = await fetch(apiUrl, {
