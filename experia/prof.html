@@ -1727,10 +1727,10 @@ async function duplicateForClass(templateId) {
     createdAt: Date.now()
   };
 
-  const saveRes = await storage({ action: 'writeSession', session: duplicate });
-  if (!saveRes.success) { alert('Erreur sauvegarde : ' + (saveRes.error || 'inconnue')); return; }
+  try {
+    await storage({ action: 'writeSession', session: duplicate });
+  } catch(e) { alert('Erreur sauvegarde : ' + e.message); return; }
 
-  // Retourner au dashboard et recharger
   showScreen('dashboard');
   await loadSessions();
 }
@@ -1962,15 +1962,15 @@ async function publishSession() {
     model: pendingParams.model
   };
 
-  const saveRes = await storage({ action: 'writeSession', session });
-  if (!saveRes.success) {
+  try {
+    await storage({ action: 'writeSession', session });
+  } catch(e) {
     btn.disabled = false;
     btn.innerHTML = '<i data-lucide="rocket" class="w-5 h-5"></i> Publier la session';
     lucide.createIcons();
-    alert('Erreur sauvegarde : ' + (saveRes.error || 'Vérifiez votre connexion au Worker.'));
+    alert('Erreur sauvegarde Nuage : ' + e.message);
     return;
   }
-  if (saveRes.sessionId) session.id = saveRes.sessionId;
 
   state.currentSession = session;
   state.sessions.unshift(session);
