@@ -1972,7 +1972,7 @@ async function publishSession() {
     await storage({ action: 'writeSession', session });
   } catch(e) {
     btn.disabled = false;
-    btn.innerHTML = '<i data-lucide="rocket" class="w-5 h-5"></i> Publier l'évaluation';
+    btn.innerHTML = '<i data-lucide="rocket" class="w-5 h-5"></i> Publier l\'évaluation';
     lucide.createIcons();
     alert('Erreur sauvegarde Nuage : ' + e.message);
     return;
