@@ -885,7 +885,7 @@ async function terminateActivity() {
   if (!confirm('Terminer cette activité ?\n\nTu pourras voir ton score mais tu ne pourras plus recommencer.\nSi tu veux y accéder à nouveau, demande à ton professeur.')) return;
   const id = E.currentActivity;
   const sc = E.scores[id];
-  const score = sc ? sc.score : 0;
+  const score = sc ? sc.score : E.gameScore;
   const max = sc ? sc.max : (E.session.scoring?.[id] || E.gameData.length || 1);
   E.completions[id] = { done: true, score, max, doneAt: Date.now() };
   storage({ action: 'setCompletion', sessionId: E.session.id, studentId: E.studentId, activityId: id, score, max }).catch(() => {});
@@ -1748,7 +1748,13 @@ function renderIntrus() {
   document.getElementById('int-explanation').classList.add('hidden');
   document.getElementById('int-next').classList.add('hidden');
 
-  document.getElementById('int-statements').innerHTML = q.statements.map((s, i) => `
+  // Mélange les statements et retient la nouvelle position de l'intrus
+  const indices = q.statements.map((_, i) => i).sort(() => Math.random() - 0.5);
+  const shuffled = indices.map(i => q.statements[i]);
+  const newIntrusIdx = indices.indexOf(q.intrus);
+  q._shuffledIntrus = newIntrusIdx;
+
+  document.getElementById('int-statements').innerHTML = shuffled.map((s, i) => `
     <button onclick="answerIntrus(${i})"
       class="choice-btn w-full bg-white border-2 border-slate-100 rounded-2xl px-5 py-3.5 text-left font-medium text-slate-700 hover:border-amber-300 hover:bg-amber-50 flex items-start gap-3">
       <span class="w-6 h-6 rounded-lg bg-amber-50 text-amber-600 font-black text-xs flex items-center justify-center flex-none mt-0.5">${i+1}</span>
@@ -1758,13 +1764,14 @@ function renderIntrus() {
 
 function answerIntrus(idx) {
   const q = E.gameData[E.gameIdx];
-  const correct = idx === q.intrus;
+  const intrusIdx = q._shuffledIntrus ?? q.intrus;
+  const correct = idx === intrusIdx;
   const showCorr = E.session.showCorrection;
   const btns = document.querySelectorAll('#int-statements button');
   btns.forEach((btn, i) => {
     btn.disabled = true;
     if (showCorr) {
-      if (i === q.intrus) btn.classList.add('border-emerald-400','bg-emerald-50');
+      if (i === intrusIdx) btn.classList.add('border-emerald-400','bg-emerald-50');
       else if (i === idx && !correct) btn.classList.add('border-red-300','bg-red-50');
     } else {
       if (i === idx && correct)  btn.classList.add('border-emerald-400','bg-emerald-50');
