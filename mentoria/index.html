@@ -1798,7 +1798,7 @@
                 ${ev.appreciation ? `<div class="bg-indigo-50 rounded-lg px-3 py-2 text-[10px] text-indigo-700 italic mb-2">${ev.appreciation}</div>` : ''}
                 <p class="text-[9px] text-gray-300">Évaluation automatique indicative — la note finale reste à la discrétion du professeur.</p>`;
         } catch(e) {
-            document.getElementById('suivi-eval-content').innerHTML = `<p class="text-xs text-red-500 py-2">Erreur : ${e.message}</p>`;
+            document.getElementById('suivi-eval-content').innerHTML = `<p class="text-xs text-red-500 py-2">Erreur : ${e.message}<br><span class="text-[9px] text-gray-400">URL : ${apiUrl}</span></p>`;
         }
     };
 
