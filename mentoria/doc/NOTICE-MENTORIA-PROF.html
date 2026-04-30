@@ -600,7 +600,7 @@
 
             <ul>
                 <li><strong>La liste de la classe (panneau de gauche) :</strong> Elle s'actualise automatiquement toutes
-                    les 30 secondes. Pour chaque élève connecté, vous visualisez d'un coup d'œil son <strong>identifiant
+                    les <strong>5 minutes</strong>, ou manuellement via le bouton de rafraîchissement. Pour chaque élève connecté, vous visualisez d'un coup d'œil son <strong>identifiant
                         ENT</strong>, le <strong>volume d'échanges</strong> (nombre de messages), l'heure de sa dernière
                     activité, ainsi qu'un aperçu tronqué de sa dernière interaction.</li>
                 <li><strong>Le fil de conversation (panneau central) :</strong> En cliquant sur le nom d'un élève dans
@@ -633,19 +633,19 @@
             </ul>
             <p>Le résultat s'affiche dans un panneau en bas de la conversation, avec la note, un commentaire par critère (code couleur vert/orange/rouge) et une appréciation générale. Cette évaluation est <strong>indicative</strong> — la note finale reste à la discrétion du professeur.</p>
 
+            <h3>Export des évaluations :</h3>
+            <p>Une fois plusieurs élèves évalués dans la session, le bouton <strong>"Exporter évaluations"</strong> en bas de la console génère un fichier <code>.csv</code> contenant une ligne par élève avec les 5 notes détaillées, le total /10 et l'appréciation générale. Ce fichier s'ouvre directement dans un tableur (Excel, Calc).</p>
+
             <h3>Actions de modération :</h3>
             <ul>
-                <li><strong>Bouton "Expulser" (🚫) :</strong> Coupe immédiatement l'accès de l'élève à l'assistant. Son
-                    interface se bloquera.</li>
-                <li><strong>Bouton "Supprimer tous les logs" (🗑️) :</strong> Efface définitivement l'historique des
-                    conversations du groupe.</li>
+                <li><strong>Bouton "Expulser" (🚫) :</strong> Coupe immédiatement l'accès de l'élève à l'assistant. Son interface se bloquera.</li>
+                <li><strong>Bouton "Supprimer" (classe) :</strong> Supprime la classe sélectionnée et toutes ses sessions élèves. La classe disparaît du menu déroulant.</li>
+                <li><strong>Bouton "Supprimer tous les logs" (🗑️) :</strong> Efface définitivement l'historique des conversations du groupe actif.</li>
             </ul>
 
             <div class="callout callout-info">
                 <h4>Conformité RGPD</h4>
-                <p>Les conversations sont conservées temporairement pour des raisons pédagogiques (maximum 7 jours) sur
-                    l'infrastructure de l'État. Il est de la responsabilité de l'enseignant de cliquer sur la
-                    "Corbeille" en fin de séance s'il n'a plus besoin des traces.</p>
+                <p>Les conversations sont stockées sur votre Nuage personnel (infrastructure de l'État). Le professeur peut les supprimer à tout moment via le bouton "Supprimer" de la console Suivi. Les élèves en sont informés dès l'écran de connexion.</p>
             </div>
         </section>
 
@@ -659,7 +659,7 @@
                 <li><strong>L'écran de connexion :</strong> L'élève saisit obligatoirement son <strong>Identifiant
                         ENT</strong> (ex: <code>j.dupont</code>). Une mention légale l'avertit que le professeur peut
                     lire les échanges.</li>
-                <li><strong>Grille d'évaluation visible :</strong> Sur ce même écran de connexion, une section <strong>"📊 Critères d'évaluation de votre discussion"</strong> est affichée. L'élève voit les 5 critères et leur barème avant même de commencer, ce qui l'encourage à soigner sa participation. Il peut replier cette section en cliquant dessus.</li>
+                <li><strong>Barème visible :</strong> Sur ce même écran de connexion, un bouton <strong>"📊 Voir le barème d'évaluation"</strong> ouvre une modale affichant les 5 critères et leur barème (/10) avant même de commencer. Cela encourage l'élève à soigner sa participation.</li>
                 <li><strong>L'espace de Chat :</strong> Si l'élève se reconnecte plus tard (avec le même identifiant et
                     le même lien), l'IA se souviendra de lui et restaurera la conversation précédente.</li>
                 <li><strong>Les boutons d'action :</strong> Ils apparaissent juste au-dessus de la barre de texte,
