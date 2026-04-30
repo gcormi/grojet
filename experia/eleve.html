@@ -712,27 +712,102 @@ function showScreen(id) {
 }
 
 // ─── STORAGE / ALBERT ─────────────────────────────────────────────────────────
-async function storage(params) {
-  const res = await fetch(E.config.workerUrl, {
-    method: 'POST', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(params)
+const NUAGE_PROXY = 'https://n8n.incubateur.education.gouv.fr/webhook/mentoria_storage';
+
+async function callNuage(action, filename, content = null) {
+  const body = {
+    action,
+    nuageUser: E.config.nuageUser,
+    nuagePass: E.config.nuagePass,
+    nuageServer: E.config.nuageServer || 'nuage.apps.education.fr',
+    filename
+  };
+  if (content !== null) body.content = content;
+  const res = await fetch(NUAGE_PROXY, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
   });
-  if (!res.ok) throw new Error('Erreur réseau Worker : ' + res.status);
+  if (!res.ok) throw new Error('Erreur Nuage : ' + res.status);
   return await res.json();
 }
 
+async function storage(params) {
+  const { action, sessionId, studentId, activityId, score, max, data } = params;
+
+  switch (action) {
+    case 'studentReadSession': {
+      const r = await callNuage('read', `experia_session_${sessionId}.json`);
+      if (!r.success || !r.content) return { success: false };
+      return { success: true, content: r.content };
+    }
+    case 'writePresence': {
+      let pf = { presences: [] };
+      try {
+        const r = await callNuage('read', `experia_presences_${sessionId}.json`);
+        if (r.success && r.content) pf = r.content;
+      } catch(e) {}
+      const pi = pf.presences.findIndex(p => p.studentId === studentId);
+      const entry = { studentId, connectedAt: Date.now() };
+      if (pi >= 0) pf.presences[pi] = entry; else pf.presences.push(entry);
+      await callNuage('write', `experia_presences_${sessionId}.json`, pf);
+      return { success: true };
+    }
+    case 'readResult': {
+      try {
+        const r = await callNuage('read', `experia_results_${sessionId}.json`);
+        const found = (r.content?.results || []).find(x => x.studentId === studentId);
+        return found ? { success: true, content: found } : { success: false };
+      } catch(e) { return { success: false }; }
+    }
+    case 'getCompletions': {
+      try {
+        const r = await callNuage('read', `experia_completions_${sessionId}.json`);
+        return { completions: r.content?.completions?.[studentId] || {} };
+      } catch(e) { return { completions: {} }; }
+    }
+    case 'setCompletion': {
+      let cf = { completions: {} };
+      try {
+        const r = await callNuage('read', `experia_completions_${sessionId}.json`);
+        if (r.success && r.content) cf = r.content;
+      } catch(e) {}
+      if (!cf.completions[studentId]) cf.completions[studentId] = {};
+      cf.completions[studentId][activityId] = { done: true, score, max, doneAt: Date.now() };
+      await callNuage('write', `experia_completions_${sessionId}.json`, cf);
+      return { success: true };
+    }
+    case 'writeResult': {
+      let rf = { results: [] };
+      try {
+        const r = await callNuage('read', `experia_results_${sessionId}.json`);
+        if (r.success && r.content) rf = r.content;
+      } catch(e) {}
+      const ri = rf.results.findIndex(x => x.studentId === studentId);
+      if (ri >= 0) rf.results[ri] = data; else rf.results.push(data);
+      await callNuage('write', `experia_results_${sessionId}.json`, rf);
+      return { success: true };
+    }
+    default:
+      throw new Error('Action storage inconnue : ' + action);
+  }
+}
+
 async function callAlbert(messages) {
-  const res = await fetch(E.config.workerUrl, {
+  const proxy = E.config.albertProxy || 'https://mentoria-proxy.gilles-cormi.workers.dev';
+  const res = await fetch(proxy, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + (E.config.albertKey || '')
+    },
     body: JSON.stringify({
-      action: 'albert',
       model: E.config.model || 'openai/gpt-oss-120b',
       messages,
       temperature: 0.2
     })
   });
-  if (!res.ok) throw new Error('Erreur Worker : ' + res.status);
+  if (!res.ok) throw new Error('Proxy Albert erreur HTTP ' + res.status);
   const data = await res.json();
   if (data.error) throw new Error(data.error);
   return data.choices?.[0]?.message?.content || '';
@@ -749,7 +824,7 @@ async function doConnect() {
   if (!studentId) { errEl.textContent = 'Ton identifiant est requis.'; errEl.classList.remove('hidden'); return; }
   if (!codeInput) { errEl.textContent = 'Le code de session est requis.'; errEl.classList.remove('hidden'); return; }
 
-  // Config dans URL hash (lien prof) — ne contient que workerUrl, sessionId, model
+  // Config dans URL hash (lien prof) — contient nuageUser, nuagePass, nuageServer, albertProxy, albertKey, sessionId, model
   const hash = location.hash.replace('#config=', '');
   if (hash && hash.length > 10) {
     try {
@@ -761,8 +836,8 @@ async function doConnect() {
     errEl.textContent = 'Utilise le lien fourni par ton professeur.'; errEl.classList.remove('hidden'); return;
   }
 
-  if (!E.config.workerUrl || !E.config.sessionId) {
-    errEl.textContent = 'Lien de session incomplet ou obsolète.'; errEl.classList.remove('hidden'); return;
+  if (!E.config.nuageUser || !E.config.sessionId) {
+    errEl.textContent = 'Lien de session incomplet ou obsolète. Demande un nouveau lien à ton professeur.'; errEl.classList.remove('hidden'); return;
   }
 
   E.studentId = studentId;

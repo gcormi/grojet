@@ -61,17 +61,22 @@
 
     <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-100 space-y-4">
       <div>
-        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Identifiant professeur</label>
-        <input id="login-profid" type="text" placeholder="Votre identifiant (ex : dupont.marie)"
+        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Identifiant Nuage</label>
+        <input id="login-nuage-user" type="text" placeholder="prenom.nom"
           class="w-full bg-slate-50 border-2 border-transparent focus:border-indigo-500 focus:bg-white rounded-xl px-4 py-3 outline-none text-sm transition-all">
       </div>
       <div>
-        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Secret professeur</label>
-        <input id="login-secret" type="password" placeholder="Votre mot de passe Experia"
+        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Mot de passe Nuage</label>
+        <input id="login-nuage-pass" type="password" placeholder="Votre mot de passe Nuage"
           class="w-full bg-slate-50 border-2 border-transparent focus:border-indigo-500 focus:bg-white rounded-xl px-4 py-3 outline-none text-sm transition-all">
       </div>
+      <div>
+        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Clé API Albert</label>
+        <input id="login-albert-key" type="password" placeholder="sk-..."
+          class="w-full bg-slate-50 border-2 border-transparent focus:border-indigo-500 focus:bg-white rounded-xl px-4 py-3 outline-none font-mono text-sm transition-all">
+      </div>
 
-      <!-- Paramètre avancé : URL du Worker -->
+      <!-- Paramètres avancés -->
       <div>
         <button type="button" onclick="toggleAdvanced()" class="flex items-center gap-1.5 text-xs text-slate-400 hover:text-slate-600 transition-colors font-bold">
           <i data-lucide="settings-2" class="w-3.5 h-3.5"></i>
@@ -79,10 +84,15 @@
         </button>
         <div id="advanced-settings" class="hidden mt-3 space-y-3 border-t border-slate-100 pt-3">
           <div>
-            <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">URL du Worker Experia</label>
-            <input id="login-proxy" type="text" value="https://experia-proxy.gilles-cormi.workers.dev"
+            <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">Serveur Nuage</label>
+            <input id="login-nuage-server" type="text" value="nuage.apps.education.fr"
               class="w-full bg-slate-50 border-2 border-transparent focus:border-indigo-500 focus:bg-white rounded-xl px-4 py-2.5 outline-none font-mono text-xs transition-all">
-            <p class="text-xs text-slate-400 font-medium mt-1">Cloudflare Worker — contient vos credentials de façon sécurisée.</p>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">Proxy Albert (CORS)</label>
+            <input id="login-albert-proxy" type="text" value="https://mentoria-proxy.gilles-cormi.workers.dev"
+              class="w-full bg-slate-50 border-2 border-transparent focus:border-indigo-500 focus:bg-white rounded-xl px-4 py-2.5 outline-none font-mono text-xs transition-all">
+            <p class="text-xs text-slate-400 font-medium mt-1">Proxy CORS souverain pour les appels Albert.</p>
           </div>
         </div>
       </div>
@@ -215,20 +225,14 @@
     </div>
 
     <div class="space-y-6">
-      <!-- Section Worker -->
       <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-100">
         <div class="flex items-center gap-2 mb-4 text-indigo-600">
-          <i data-lucide="server" class="w-5 h-5"></i>
-          <h3 class="font-black uppercase tracking-wider text-xs">Worker Experia (Albert + Nuage)</h3>
+          <i data-lucide="cpu" class="w-5 h-5"></i>
+          <h3 class="font-black uppercase tracking-wider text-xs">Modèle IA par défaut</h3>
         </div>
         <div class="space-y-4">
           <div>
-            <label class="block text-xs font-bold text-slate-400 mb-1.5 uppercase">URL du Worker</label>
-            <input id="config-proxy" type="text"
-              class="w-full bg-slate-50 border-2 border-transparent focus:border-indigo-500 focus:bg-white rounded-xl px-4 py-2.5 outline-none font-mono text-xs transition-all">
-          </div>
-          <div>
-            <label class="block text-xs font-bold text-slate-400 mb-1.5 uppercase">Modèle Albert par défaut</label>
+            <label class="block text-xs font-bold text-slate-400 mb-1.5 uppercase">Modèle Albert</label>
             <select id="config-model" class="w-full bg-slate-50 border-2 border-transparent focus:border-indigo-500 rounded-xl px-4 py-2.5 outline-none text-sm font-bold">
               <option value="openai/gpt-oss-120b">Albert Grand (gpt-oss-120b)</option>
               <option value="openai/gpt-oss-20b">Albert Moyen (gpt-oss-20b)</option>
@@ -237,7 +241,7 @@
           </div>
           <div class="p-4 bg-emerald-50 border border-emerald-100 rounded-2xl">
             <p class="text-[11px] text-emerald-700 font-medium leading-relaxed">
-              <strong>Sécurisé :</strong> Les identifiants Nuage et la clé Albert sont stockés dans les secrets Cloudflare du Worker — jamais dans le navigateur ni dans les liens élèves.
+              <strong>Souverain :</strong> Données élèves stockées dans votre Nuage (infrastructure éducation nationale). Appels Albert via proxy CORS. Aucune donnée dans Cloudflare.
             </p>
           </div>
         </div>
@@ -640,6 +644,19 @@ function changeCurrentTheme() {
   el.classList.toggle('hidden');
 }
 
+function makeSessionLink(session) {
+  const config = {
+    nuageUser: state.nuageUser,
+    nuagePass: state.nuagePass,
+    nuageServer: state.nuageServer || 'nuage.apps.education.fr',
+    albertProxy: state.albertProxy || 'https://mentoria-proxy.gilles-cormi.workers.dev',
+    albertKey: state.albertKey,
+    sessionId: session.id,
+    model: session.model
+  };
+  return `${location.origin}${location.pathname.replace("prof.html","eleve.html")}#config=${btoa(unescape(encodeURIComponent(JSON.stringify(config))))}`;
+}
+
 async function updateSessionTheme(theme) {
   if (!state.currentSession) return;
   state.currentSession.theme = theme;
@@ -653,8 +670,7 @@ async function updateSessionTheme(theme) {
     await storage({ action: 'writeSession', session: state.currentSession });
     
     // Mettre à jour le lien de partage
-    const link = `${location.origin}${location.pathname.replace("prof.html","eleve.html")}#config=${btoa(unescape(encodeURIComponent(JSON.stringify({workerUrl: state.proxyUrl, sessionId: state.currentSession.id, model: state.currentSession.model}))))}`;
-    document.getElementById('sess-link').value = link;
+    document.getElementById('sess-link').value = makeSessionLink(state.currentSession);
     
     document.getElementById('quick-theme-selector').classList.add('hidden');
   } catch(e) {
@@ -664,12 +680,34 @@ async function updateSessionTheme(theme) {
 
 // ─── ÉTAT ───────────────────────────────────────────────────────────────────
 const state = {
-  proxyUrl: '',    // URL du Worker Experia central
-  profId: '',      // Identifiant professeur (choisi à l'inscription)
-  profSecret: '',  // Secret professeur (choisi à l'inscription)
+  nuageUser: '',
+  nuagePass: '',
+  nuageServer: 'nuage.apps.education.fr',
+  albertKey: '',
+  albertProxy: 'https://mentoria-proxy.gilles-cormi.workers.dev',
   sessions: [],
   currentSession: null, currentResult: null
 };
+
+const NUAGE_PROXY = 'https://n8n.incubateur.education.gouv.fr/webhook/mentoria_storage';
+
+async function callNuage(action, filename, content = null) {
+  const body = {
+    action,
+    nuageUser: state.nuageUser,
+    nuagePass: state.nuagePass,
+    nuageServer: state.nuageServer || 'nuage.apps.education.fr',
+    filename
+  };
+  if (content !== null) body.content = content;
+  const res = await fetch(NUAGE_PROXY, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
+  if (!res.ok) throw new Error('Erreur Nuage : ' + res.status);
+  return await res.json();
+}
 
 const ACTIVITIES = [
   { id: 'qcm',          label: 'Quiz QCM',               icon: 'circle-help',     color: 'blue',   default: 10, defaultPts: 10 },
@@ -701,10 +739,8 @@ function showScreen(id) {
   document.getElementById('screen-' + id).classList.add('active');
   document.getElementById('btn-logout').classList.toggle('hidden', id === 'login');
   
-  // Remplir l'écran config si besoin
   if (id === 'config') {
     document.getElementById('config-model').value = document.getElementById('create-model').value;
-    document.getElementById('config-proxy').value = state.proxyUrl || document.getElementById('login-proxy').value;
   }
 
   // Stopper l'auto-refresh si on quitte l'écran session
@@ -713,24 +749,109 @@ function showScreen(id) {
 
 // ─── STORAGE ─────────────────────────────────────────────────────────────────
 async function storage(params) {
-  const res = await fetch(state.proxyUrl, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ ...params, profId: state.profId, profSecret: state.profSecret })
-  });
-  if (!res.ok) throw new Error('Erreur réseau Worker : ' + res.status);
-  return await res.json();
+  const { action, session, sessionId, studentId, activityId, data } = params;
+
+  switch (action) {
+    case 'listSessions': {
+      try {
+        const r = await callNuage('read', 'experia_manifest.json');
+        return { sessions: r.content?.sessions || [] };
+      } catch(e) { return { sessions: [] }; }
+    }
+    case 'readSession': {
+      const r = await callNuage('read', `experia_session_${sessionId}.json`);
+      if (!r.success || !r.content) return { success: false, error: 'Session introuvable' };
+      return { success: true, session: r.content };
+    }
+    case 'writeSession': {
+      await callNuage('write', `experia_session_${session.id}.json`, session);
+      let manifest = { sessions: [] };
+      try {
+        const mr = await callNuage('read', 'experia_manifest.json');
+        if (mr.success && mr.content) manifest = mr.content;
+      } catch(e) {}
+      const meta = {
+        id: session.id, title: session.title, code: session.code,
+        createdAt: session.createdAt, updatedAt: Date.now(),
+        activitiesCount: session.activities?.length || Object.keys(session.questions || {}).length,
+        scoring: session.scoring, model: session.model,
+        classe: session.classe, templateId: session.templateId, theme: session.theme
+      };
+      const idx = manifest.sessions.findIndex(s => s.id === session.id);
+      if (idx >= 0) manifest.sessions[idx] = meta;
+      else manifest.sessions.push(meta);
+      await callNuage('write', 'experia_manifest.json', manifest);
+      return { success: true };
+    }
+    case 'deleteSession': {
+      try {
+        const mr = await callNuage('read', 'experia_manifest.json');
+        if (mr.success && mr.content?.sessions) {
+          mr.content.sessions = mr.content.sessions.filter(s => s.id !== sessionId);
+          await callNuage('write', 'experia_manifest.json', mr.content);
+        }
+      } catch(e) {}
+      await Promise.allSettled([
+        callNuage('delete', `experia_session_${sessionId}.json`),
+        callNuage('delete', `experia_results_${sessionId}.json`),
+        callNuage('delete', `experia_presences_${sessionId}.json`),
+        callNuage('delete', `experia_completions_${sessionId}.json`)
+      ]);
+      return { success: true };
+    }
+    case 'readResults': {
+      try {
+        const r = await callNuage('read', `experia_results_${sessionId}.json`);
+        return { results: r.content?.results || [] };
+      } catch(e) { return { results: [] }; }
+    }
+    case 'readPresences': {
+      try {
+        const r = await callNuage('read', `experia_presences_${sessionId}.json`);
+        return { presences: r.content?.presences || [] };
+      } catch(e) { return { presences: [] }; }
+    }
+    case 'writeResult': {
+      let current = { results: [] };
+      try {
+        const r = await callNuage('read', `experia_results_${sessionId}.json`);
+        if (r.success && r.content) current = r.content;
+      } catch(e) {}
+      const ri = current.results.findIndex(r => r.studentId === studentId);
+      if (ri >= 0) current.results[ri] = data;
+      else current.results.push(data);
+      await callNuage('write', `experia_results_${sessionId}.json`, current);
+      return { success: true };
+    }
+    case 'getCompletions': {
+      try {
+        const r = await callNuage('read', `experia_completions_${sessionId}.json`);
+        return { completions: r.content?.completions?.[studentId] || {} };
+      } catch(e) { return { completions: {} }; }
+    }
+    case 'resetCompletion': {
+      let current = { completions: {} };
+      try {
+        const r = await callNuage('read', `experia_completions_${sessionId}.json`);
+        if (r.success && r.content) current = r.content;
+      } catch(e) {}
+      if (current.completions[studentId]) delete current.completions[studentId][activityId];
+      await callNuage('write', `experia_completions_${sessionId}.json`, current);
+      return { success: true };
+    }
+    default:
+      throw new Error('Action storage inconnue : ' + action);
+  }
 }
 
 // ─── ALBERT ──────────────────────────────────────────────────────────────────
 async function loadModels() {
   const sel = document.getElementById('create-model');
+  const proxy = state.albertProxy || 'https://mentoria-proxy.gilles-cormi.workers.dev';
   sel.innerHTML = '<option>Chargement...</option>';
   try {
-    const res = await fetch(state.proxyUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'listModels', profSecret: state.profSecret })
+    const res = await fetch(proxy + '/v1/models', {
+      headers: { 'Authorization': 'Bearer ' + state.albertKey }
     });
     const data = await res.json();
     if (data.error) throw new Error(data.error);
@@ -745,12 +866,16 @@ async function loadModels() {
 
 async function callAlbert(messages) {
   const model = document.getElementById('create-model').value;
-  const res = await fetch(state.proxyUrl, {
+  const proxy = state.albertProxy || 'https://mentoria-proxy.gilles-cormi.workers.dev';
+  const res = await fetch(proxy, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ action: 'albert', model, messages, temperature: 0.3 })
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + state.albertKey
+    },
+    body: JSON.stringify({ model, messages, temperature: 0.3 })
   });
-  if (!res.ok) throw new Error('Worker Experia erreur HTTP ' + res.status);
+  if (!res.ok) throw new Error('Proxy Albert erreur HTTP ' + res.status);
   const data = await res.json();
   if (data.error) throw new Error('Albert : ' + data.error);
   return data.choices?.[0]?.message?.content || '';
@@ -824,13 +949,11 @@ async function importFile(input) {
 // ─── CONFIG PERSISTANTE ───────────────────────────────────────────────────────
 function loadSavedConfig() {
   const cfg = JSON.parse(localStorage.getItem('experia_config') || '{}');
-  if (cfg.proxy) {
-    document.getElementById('login-proxy').value = cfg.proxy;
-    if (document.getElementById('config-proxy')) document.getElementById('config-proxy').value = cfg.proxy;
-  }
-  if (cfg.profId) document.getElementById('login-profid').value = cfg.profId;
+  if (cfg.nuageUser) document.getElementById('login-nuage-user').value = cfg.nuageUser;
+  if (cfg.albertProxy) document.getElementById('login-albert-proxy').value = cfg.albertProxy;
+  if (cfg.nuageServer) document.getElementById('login-nuage-server').value = cfg.nuageServer;
   if (cfg.theme) applyGlobalTheme(cfg.theme);
-  // Note: le secret n'est PAS sauvegardé en localStorage (sécurité)
+  // Le mot de passe Nuage et la clé Albert ne sont PAS sauvegardés (sécurité)
 }
 
 function toggleAdvanced() {
@@ -843,8 +966,9 @@ function toggleAdvanced() {
 
 function saveConfig() {
   const cfg = {
-    proxy: document.getElementById('login-proxy').value.trim(),
-    profId: document.getElementById('login-profid').value.trim(),
+    nuageUser: document.getElementById('login-nuage-user').value.trim(),
+    albertProxy: document.getElementById('login-albert-proxy').value.trim(),
+    nuageServer: document.getElementById('login-nuage-server').value.trim(),
     theme: document.body.className.match(/theme-(\w+)/)?.[1] || 'classique'
   };
   localStorage.setItem('experia_config', JSON.stringify(cfg));
@@ -852,25 +976,22 @@ function saveConfig() {
 
 function applyAndSaveConfig() {
   const model = document.getElementById('config-model').value;
-  const proxy = document.getElementById('config-proxy').value.trim();
-  state.proxyUrl = proxy;
   document.getElementById('create-model').value = model;
-  document.getElementById('login-proxy').value = proxy;
   saveConfig();
   showScreen('dashboard');
   lucide.createIcons();
 }
 
-// Ajouter des écouteurs pour sauvegarder automatiquement dès qu'un champ change
 document.addEventListener('DOMContentLoaded', () => {
-  // Lire le hash #login=BASE64 pour connexion automatique
   const hash = location.hash;
   if (hash.startsWith('#login=')) {
     try {
       const decoded = JSON.parse(decodeURIComponent(escape(atob(hash.slice(7)))));
-      if (decoded.proxy)  document.getElementById('login-proxy').value  = decoded.proxy;
-      if (decoded.profId) document.getElementById('login-profid').value = decoded.profId;
-      if (decoded.secret) document.getElementById('login-secret').value = decoded.secret;
+      if (decoded.nuageUser)   document.getElementById('login-nuage-user').value   = decoded.nuageUser;
+      if (decoded.nuagePass)   document.getElementById('login-nuage-pass').value   = decoded.nuagePass;
+      if (decoded.nuageServer) document.getElementById('login-nuage-server').value = decoded.nuageServer;
+      if (decoded.albertKey)   document.getElementById('login-albert-key').value   = decoded.albertKey;
+      if (decoded.albertProxy) document.getElementById('login-albert-proxy').value = decoded.albertProxy;
       setTimeout(() => doLogin(), 300);
     } catch(e) { /* lien invalide */ }
   } else {
@@ -880,35 +1001,34 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // ─── LOGIN ────────────────────────────────────────────────────────────────────
 async function doLogin() {
-  const profId = document.getElementById('login-profid').value.trim();
-  const secret = document.getElementById('login-secret').value.trim();
-  const proxy  = document.getElementById('login-proxy').value.trim();
+  const nuageUser   = document.getElementById('login-nuage-user').value.trim();
+  const nuagePass   = document.getElementById('login-nuage-pass').value.trim();
+  const albertKey   = document.getElementById('login-albert-key').value.trim();
+  const nuageServer = document.getElementById('login-nuage-server').value.trim() || 'nuage.apps.education.fr';
+  const albertProxy = document.getElementById('login-albert-proxy').value.trim() || 'https://mentoria-proxy.gilles-cormi.workers.dev';
 
-  if (!profId) { showLoginError('L\'identifiant professeur est requis.'); return; }
-  if (!secret) { showLoginError('Le secret professeur est requis.'); return; }
-  if (!proxy)  { showLoginError('L\'URL du Worker est requise.'); return; }
+  if (!nuageUser) { showLoginError('L\'identifiant Nuage est requis.'); return; }
+  if (!nuagePass) { showLoginError('Le mot de passe Nuage est requis.'); return; }
+  if (!albertKey) { showLoginError('La clé API Albert est requise.'); return; }
 
   const btn = document.getElementById('login-btn-text');
   btn.textContent = 'Connexion en cours...';
 
-  state.proxyUrl   = proxy;
-  state.profId     = profId;
-  state.profSecret = secret;
+  state.nuageUser   = nuageUser;
+  state.nuagePass   = nuagePass;
+  state.nuageServer = nuageServer;
+  state.albertKey   = albertKey;
+  state.albertProxy = albertProxy;
 
   try {
-    const res = await fetch(state.proxyUrl, {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'test', profId, profSecret: secret })
-    });
-    const data = await res.json();
-    if (!data.success) { showLoginError(data.error || 'Identifiant ou secret invalide.'); btn.textContent = 'Se connecter'; return; }
-
-    document.getElementById('dash-user').textContent = data.profId || profId;
+    // Test connexion Nuage : lecture du manifest (peut ne pas exister encore)
+    await callNuage('read', 'experia_manifest.json');
+    document.getElementById('dash-user').textContent = nuageUser;
     saveConfig();
     showScreen('dashboard');
     loadSessions();
   } catch (e) {
-    showLoginError('Impossible de joindre le Worker : ' + e.message);
+    showLoginError('Impossible de joindre Nuage : ' + e.message);
   }
   btn.textContent = 'Se connecter';
 }
@@ -920,24 +1040,28 @@ function showLoginError(msg) {
 }
 
 function logout() {
-  state.profSecret = '';
-  document.getElementById('login-secret').value = '';
+  state.nuagePass = '';
+  state.albertKey = '';
+  document.getElementById('login-nuage-pass').value = '';
+  document.getElementById('login-albert-key').value = '';
   saveConfig();
   showScreen('login');
 }
 
 // ─── LIEN DE CONNEXION RAPIDE ────────────────────────────────────────────────
 function generateQuickLink() {
-  const profId = document.getElementById('login-profid').value.trim();
-  const secret = document.getElementById('login-secret').value.trim();
-  const proxy  = document.getElementById('login-proxy').value.trim();
+  const nuageUser   = document.getElementById('login-nuage-user').value.trim();
+  const nuagePass   = document.getElementById('login-nuage-pass').value.trim();
+  const albertKey   = document.getElementById('login-albert-key').value.trim();
+  const nuageServer = document.getElementById('login-nuage-server').value.trim();
+  const albertProxy = document.getElementById('login-albert-proxy').value.trim();
 
-  if (!profId || !secret) {
-    alert('Entre d\'abord ton identifiant et ton secret avant de générer le lien.');
+  if (!nuageUser || !nuagePass) {
+    alert('Entre d\'abord ton identifiant et ton mot de passe Nuage avant de générer le lien.');
     return;
   }
 
-  const config = { proxy, profId, secret };
+  const config = { nuageUser, nuagePass, nuageServer, albertKey, albertProxy };
   const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(config))));
   const url = `${location.origin}${location.pathname}#login=${encoded}`;
 
@@ -1110,9 +1234,7 @@ async function openSession(id) {
   document.getElementById('sess-date').textContent = new Date(session.createdAt).toLocaleDateString('fr-FR', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
   document.getElementById('sess-code').textContent = session.code;
 
-  const link = `${location.origin}${location.pathname.replace("prof.html","eleve.html")}#config=${btoa(unescape(encodeURIComponent(JSON.stringify({workerUrl: state.proxyUrl, sessionId: session.id, model: session.model}))))}`;
-  document.getElementById('sess-link').value = link;
-
+  document.getElementById('sess-link').value = makeSessionLink(session);
   renderBareme(session);
   showScreen('session');
   startResultsAutoRefresh();
@@ -1589,8 +1711,7 @@ async function publishSession() {
   document.getElementById('sess-title').textContent = session.title;
   document.getElementById('sess-date').textContent = new Date().toLocaleDateString('fr-FR', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
   document.getElementById('sess-code').textContent = session.code;
-  const link = `${location.origin}${location.pathname.replace("prof.html","eleve.html")}#config=${btoa(unescape(encodeURIComponent(JSON.stringify({workerUrl: state.proxyUrl, sessionId: session.id, model: session.model}))))}`;
-  document.getElementById('sess-link').value = link;
+  document.getElementById('sess-link').value = makeSessionLink(session);
   document.getElementById('results-list').innerHTML = `<div class="text-center py-10 text-slate-400 bg-white rounded-2xl border border-slate-100"><i data-lucide="users" class="w-8 h-8 mx-auto mb-2 opacity-40"></i><p class="font-medium text-sm">En attente des premiers élèves...</p></div>`;
   renderBareme(session);
   lucide.createIcons();
