@@ -96,22 +96,33 @@
             <span class="font-black text-slate-500">🔒 Confidentialité</span> — Vos échanges avec cet assistant sont visibles par votre professeur pendant 7 jours, conformément au RGPD. Utilisez votre identifiant ENT.
         </div>
 
-        <!-- Grille d'évaluation -->
+        <!-- Bouton barème -->
         <div class="mt-1">
-            <button onclick="toggleEvalGrid()" class="w-full flex items-center justify-between text-[10px] font-black text-indigo-600 uppercase tracking-widest bg-indigo-50 rounded-xl px-4 py-2.5 border border-indigo-100 hover:bg-indigo-100 transition-all">
-                <span>📊 Critères d'évaluation de votre discussion</span>
-                <span id="eval-chevron" class="text-slate-400">▾</span>
+            <button onclick="openEvalModal()" class="w-full flex items-center justify-center gap-2 text-[10px] font-black text-indigo-600 uppercase tracking-widest bg-indigo-50 rounded-xl px-4 py-2.5 border border-indigo-100 hover:bg-indigo-100 transition-all">
+                <span>📊</span><span>Voir le barème d'évaluation</span>
             </button>
-            <div id="eval-grid" class="hidden mt-1.5 bg-slate-50 rounded-xl border border-slate-100 overflow-hidden text-[10px]">
-                <div class="divide-y divide-slate-100">
-                    <div class="flex justify-between px-4 py-2"><span class="text-slate-600">Effort de rédaction et orthographe</span><span class="font-black text-indigo-600">/2</span></div>
-                    <div class="flex justify-between px-4 py-2"><span class="text-slate-600">Pertinence des questions posées</span><span class="font-black text-indigo-600">/2</span></div>
-                    <div class="flex justify-between px-4 py-2"><span class="text-slate-600">Quantité d'interactions</span><span class="font-black text-indigo-600">/2</span></div>
-                    <div class="flex justify-between px-4 py-2"><span class="text-slate-600">Relances et réponses aux défis du bot</span><span class="font-black text-indigo-600">/2</span></div>
-                    <div class="flex justify-between px-4 py-2"><span class="text-slate-600">Progression dans la conversation</span><span class="font-black text-indigo-600">/2</span></div>
-                    <div class="flex justify-between px-4 py-2.5 bg-indigo-50"><span class="font-black text-slate-700">Total</span><span class="font-black text-indigo-700">/10</span></div>
+        </div>
+
+        <!-- Modale barème -->
+        <div id="eval-modal" class="fixed inset-0 z-[200] flex items-center justify-center p-4" style="display:none;">
+            <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" onclick="closeEvalModal()"></div>
+            <div class="relative bg-white rounded-3xl shadow-2xl w-full max-w-sm overflow-hidden border border-slate-100">
+                <div class="bg-indigo-600 px-6 py-5 flex items-center justify-between">
+                    <div>
+                        <h3 class="text-white font-black text-sm uppercase tracking-widest">📊 Barème d'évaluation</h3>
+                        <p class="text-indigo-200 text-[9px] mt-0.5">Critères notés par votre professeur</p>
+                    </div>
+                    <button onclick="closeEvalModal()" class="w-8 h-8 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center text-white font-black text-sm transition-all">✕</button>
                 </div>
-                <p class="text-[9px] text-slate-400 px-4 pb-2.5 pt-1">Évaluation indicative — votre professeur évalue votre conversation après la séance.</p>
+                <div class="divide-y divide-slate-100 text-[11px]">
+                    <div class="flex justify-between items-center px-6 py-3"><span class="text-slate-600">Effort de rédaction et orthographe</span><span class="font-black text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-lg">/2</span></div>
+                    <div class="flex justify-between items-center px-6 py-3"><span class="text-slate-600">Pertinence des questions posées</span><span class="font-black text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-lg">/2</span></div>
+                    <div class="flex justify-between items-center px-6 py-3"><span class="text-slate-600">Quantité d'interactions</span><span class="font-black text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-lg">/2</span></div>
+                    <div class="flex justify-between items-center px-6 py-3"><span class="text-slate-600">Relances et réponses aux défis du bot</span><span class="font-black text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-lg">/2</span></div>
+                    <div class="flex justify-between items-center px-6 py-3"><span class="text-slate-600">Progression dans la conversation</span><span class="font-black text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-lg">/2</span></div>
+                    <div class="flex justify-between items-center px-6 py-3.5 bg-indigo-50"><span class="font-black text-slate-800">Total</span><span class="font-black text-indigo-700 text-base">/10</span></div>
+                </div>
+                <p class="text-[9px] text-slate-400 px-6 py-3 text-center">Évaluation effectuée par votre professeur après la séance.</p>
             </div>
         </div>
 
@@ -229,12 +240,12 @@
     }
     safeCreateIcons();
 
-    function toggleEvalGrid() {
-        const grid = document.getElementById('eval-grid');
-        const chevron = document.getElementById('eval-chevron');
-        const isHidden = grid.classList.contains('hidden');
-        grid.classList.toggle('hidden');
-        chevron.textContent = isHidden ? '▴' : '▾';
+    function openEvalModal() {
+        const m = document.getElementById('eval-modal');
+        m.style.display = 'flex';
+    }
+    function closeEvalModal() {
+        document.getElementById('eval-modal').style.display = 'none';
     }
 
     // ─── 1. DÉCODAGE DE LA CONFIG DEPUIS L'URL (#config=BASE64) ───────────────
