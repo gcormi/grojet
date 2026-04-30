@@ -1124,7 +1124,10 @@
                         <span class="text-[10px] font-black text-indigo-600 uppercase tracking-widest flex items-center gap-1.5">
                             <i data-lucide="sparkles" class="w-3 h-3"></i> Évaluation Albert — indicative
                         </span>
-                        <button onclick="document.getElementById('suivi-eval-panel').classList.add('hidden')" class="text-gray-300 hover:text-gray-500 text-lg leading-none">&times;</button>
+                        <div class="flex items-center gap-2">
+                            <button onclick="exportEvalCSV()" title="Exporter en CSV" class="text-[9px] font-bold text-indigo-500 hover:text-indigo-700 border border-indigo-200 rounded px-2 py-0.5 hover:bg-indigo-50 transition-colors">⬇ CSV</button>
+                            <button onclick="document.getElementById('suivi-eval-panel').classList.add('hidden')" class="text-gray-300 hover:text-gray-500 text-lg leading-none">&times;</button>
+                        </div>
                     </div>
                     <div id="suivi-eval-content" class="p-4"></div>
                 </div>
@@ -1803,6 +1806,30 @@
         } catch(e) {
             document.getElementById('suivi-eval-content').innerHTML = `<p class="text-xs text-red-500 py-2">Erreur : ${e.message}<br><span class="text-[9px] text-gray-400">URL : ${apiUrl}</span></p>`;
         }
+    };
+
+    window.exportEvalCSV = () => {
+        const content = document.getElementById('suivi-eval-content');
+        if (!content || !suiviSelectedStudent) return;
+        const rows = content.querySelectorAll('.bg-slate-50.rounded-lg');
+        if (!rows.length) return;
+        const scoreEl = content.querySelector('.text-2xl');
+        const total = scoreEl ? scoreEl.textContent.trim() : '';
+        const select = document.getElementById('suivi-group-select');
+        const classe = select?.value || '';
+        let csv = 'Élève;Classe;Critère;Note;Commentaire\n';
+        rows.forEach(row => {
+            const critere = row.querySelector('.font-bold')?.textContent.trim() || '';
+            const note = row.querySelector('.font-black')?.textContent.trim() || '';
+            const commentaire = (row.querySelector('p')?.textContent.trim() || '').replace(/;/g, ',');
+            csv += `${suiviSelectedStudent};${classe};${critere};${note};${commentaire}\n`;
+        });
+        csv += `${suiviSelectedStudent};${classe};TOTAL;${total}/10;\n`;
+        const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = `eval_${suiviSelectedStudent}_${classe}_${new Date().toLocaleDateString('fr-FR').replace(/\//g,'-')}.csv`;
+        a.click();
     };
 
     window.deleteCurrentGroup = async () => {
