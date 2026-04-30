@@ -106,15 +106,15 @@
         <!-- Modale barème -->
         <div id="eval-modal" class="fixed inset-0 z-[200] flex items-center justify-center p-4" style="display:none;">
             <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" onclick="closeEvalModal()"></div>
-            <div class="relative bg-white rounded-3xl shadow-2xl w-full max-w-sm overflow-hidden border border-slate-100">
-                <div class="bg-indigo-600 px-6 py-5 flex items-center justify-between">
+            <div class="relative bg-white rounded-3xl shadow-2xl w-full max-w-sm border border-slate-100 flex flex-col max-h-[90vh]">
+                <div class="bg-indigo-600 px-6 py-5 flex items-center justify-between flex-shrink-0">
                     <div>
                         <h3 class="text-white font-black text-sm uppercase tracking-widest">📊 Barème d'évaluation</h3>
                         <p class="text-indigo-200 text-[9px] mt-0.5">Critères notés par votre professeur</p>
                     </div>
                     <button onclick="closeEvalModal()" class="w-8 h-8 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center text-white font-black text-sm transition-all">✕</button>
                 </div>
-                <div class="divide-y divide-slate-100 text-[11px]">
+                <div class="divide-y divide-slate-100 text-[11px] overflow-y-auto">
                     <div class="flex justify-between items-center px-6 py-3"><span class="text-slate-600">Effort de rédaction et orthographe</span><span class="font-black text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-lg">/2</span></div>
                     <div class="flex justify-between items-center px-6 py-3"><span class="text-slate-600">Pertinence des questions posées</span><span class="font-black text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-lg">/2</span></div>
                     <div class="flex justify-between items-center px-6 py-3"><span class="text-slate-600">Quantité d'interactions</span><span class="font-black text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-lg">/2</span></div>
