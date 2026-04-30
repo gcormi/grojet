@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
@@ -676,7 +676,7 @@
 // ─── ÉTAT GLOBAL ──────────────────────────────────────────────────────────────
 const E = {
   config: null, session: null, studentId: '',
-  scores: {}, completions: {},
+  scores: {}, completions: {}, partialScores: {},
   gameIdx: 0, gameData: [], gameScore: 0,
   currentActivity: null
 };
@@ -894,6 +894,9 @@ async function doConnect() {
         } else {
           E._resuming = false;
         }
+        if (prev.content.partialScores) {
+          E.partialScores = prev.content.partialScores;
+        }
       } else {
         E._resuming = false;
       }
@@ -938,14 +941,18 @@ function setupDashboard() {
   grid.innerHTML = available.map(a => {
     const comp = E.completions[a.id];
     const sc = E.scores[a.id];
+    const psc = E.partialScores[a.id];
     const locked = !!comp?.done;
     const scored = !locked && !!sc;
+    const partial = !locked && !scored && !!psc;
     const pct = locked
       ? (comp.max > 0 ? Math.round((comp.score / comp.max) * 100) : 0)
-      : (scored ? Math.round((sc.score / sc.max) * 100) : 0);
-    const shown = locked || scored;
+      : scored ? Math.round((sc.score / sc.max) * 100)
+      : partial ? Math.round((psc.score / psc.max) * 100)
+      : 0;
+    const shown = locked || scored || partial;
     return `<div onclick="startActivity('${a.id}')"
-      class="bg-white rounded-2xl p-4 shadow-sm border ${locked ? 'border-emerald-300 opacity-70' : 'border-slate-100 hover:border-indigo-200 hover:shadow-md cursor-pointer'} transition-all flex items-center gap-4">
+      class="bg-white rounded-2xl p-4 shadow-sm border ${locked ? 'border-emerald-300 opacity-70' : partial ? 'border-amber-200' : 'border-slate-100 hover:border-indigo-200 hover:shadow-md cursor-pointer'} transition-all flex items-center gap-4">
       <div class="w-12 h-12 ${COLORS[a.color].bg} rounded-2xl flex items-center justify-center flex-none">
         <i data-lucide="${locked ? 'check-circle' : a.icon}" class="w-6 h-6 ${locked ? 'text-emerald-500' : COLORS[a.color].text}"></i>
       </div>
@@ -955,14 +962,14 @@ function setupDashboard() {
       </div>
       <div class="flex-none text-right">
         ${shown
-          ? `<div class="font-black text-emerald-600 text-xl">${pct}%</div><p class="text-xs text-emerald-500 font-bold">${locked ? '✓ terminé' : 'en cours'}</p>`
+          ? `<div class="font-black ${partial ? 'text-amber-500' : 'text-emerald-600'} text-xl">${pct}%</div><p class="text-xs ${partial ? 'text-amber-400' : 'text-emerald-500'} font-bold">${locked ? '✓ terminé' : partial ? '~ en cours' : 'en cours'}</p>`
           : `<div class="w-8 h-8 bg-slate-100 rounded-xl flex items-center justify-center"><i data-lucide="play" class="w-4 h-4 text-slate-400"></i></div>`
         }
       </div>
     </div>`;
   }).join('');
 
-  const done = available.filter(a => E.completions[a.id]?.done || E.scores[a.id]).length;
+  const done = available.filter(a => E.completions[a.id]?.done || E.scores[a.id] || E.partialScores[a.id]).length;
   const total = available.length;
   document.getElementById('dash-progress-bar').style.width = `${total ? (done/total)*100 : 0}%`;
   document.getElementById('dash-progress-text').textContent = `${done}/${total}`;
@@ -976,7 +983,29 @@ function setupDashboard() {
   lucide.createIcons();
 }
 
-function backToDashboard() { setupDashboard(); showScreen('dashboard'); }
+function savePartialScore() {
+  const id = E.currentActivity;
+  if (!id || E.scores[id]) return;
+  let rawScore = E.gameScore;
+  let rawMax = E.gameData.length;
+  if (id === 'paires') {
+    rawScore = pairesState.matched.length;
+    rawMax = pairesState.total || E.gameData.length;
+  } else if (id === 'rapidite' || id === 'questions_ia') {
+    rawMax = E.gameData.length * 10;
+  }
+  if (!rawMax || rawScore <= 0) return;
+  const profMax = E.session.scoring?.[id] ?? rawMax;
+  const profScore = Math.round((rawScore / rawMax) * profMax * 10) / 10;
+  E.partialScores[id] = { score: profScore, max: profMax, rawScore, rawMax, partial: true };
+}
+
+function backToDashboard() {
+  savePartialScore();
+  autoSaveProgress().catch(() => {});
+  setupDashboard();
+  showScreen('dashboard');
+}
 
 async function terminateActivity() {
   if (!confirm('Terminer cette activité ?\n\nTu pourras voir ton score mais tu ne pourras plus recommencer.\nSi tu veux y accéder à nouveau, demande à ton professeur.')) return;
@@ -2077,7 +2106,7 @@ async function autoSaveProgress() {
     const result = {
       sessionId: E.session.id, sessionTitle: E.session.title,
       studentId: E.studentId, completedAt: new Date().toISOString(),
-      scores: E.scores, globalPct,
+      scores: E.scores, partialScores: E.partialScores, globalPct,
       partial: done < total, activitiesDone: done, activitiesTotal: total
     };
     const writeRes = await storage({ action: 'writeResult', sessionId: E.session.id, studentId: E.studentId, data: result });
@@ -2106,10 +2135,12 @@ function showFinalSummary() {
   // Toutes les activités de la session
   const allSessionActivities = ACTIVITIES.filter(a => E.session.questions?.[a.id]?.length > 0);
   const completed = ACTIVITIES.filter(a => E.scores[a.id]);
+  const withPartial = allSessionActivities.filter(a => !E.scores[a.id] && E.partialScores[a.id]);
+  const withScore = [...completed, ...withPartial];
 
-  // Score obtenu = somme des pts par activité terminée
+  // Score obtenu = somme des pts (activités terminées + partielles)
   let totalPts = 0;
-  completed.forEach(a => { totalPts += E.scores[a.id].score; });
+  withScore.forEach(a => { const sc = E.scores[a.id] || E.partialScores[a.id]; totalPts += sc.score; });
   totalPts = Math.round(totalPts * 10) / 10;
 
   // Score max = somme du barème de TOUTES les activités de la session
@@ -2117,17 +2148,19 @@ function showFinalSummary() {
 
   // Garder globalPct pour la sauvegarde
   let pctSum = 0;
-  completed.forEach(a => { pctSum += (E.scores[a.id].score / E.scores[a.id].max) * 100; });
-  E._globalPct = Math.round(pctSum / (completed.length || 1));
+  withScore.forEach(a => { const sc = E.scores[a.id] || E.partialScores[a.id]; pctSum += (sc.score / sc.max) * 100; });
+  E._globalPct = Math.round(pctSum / (withScore.length || 1));
+
+  const notDoneCount = allSessionActivities.filter(a => !E.scores[a.id] && !E.partialScores[a.id]).length;
 
   // Afficher "X / Y pts"
   document.getElementById('final-global').textContent = `${totalPts} / ${maxPts}`;
   document.getElementById('final-global-sub').textContent =
-    completed.length < allSessionActivities.length
-      ? `points · ${allSessionActivities.length - completed.length} activité(s) non faite(s) = 0 pt`
+    withScore.length < allSessionActivities.length
+      ? `points · ${notDoneCount} activité(s) non commencée(s) = 0 pt`
       : `points sur ${maxPts} au barème`;
 
-  // Détail : activités faites + activités non faites en grisé
+  // Détail : activités terminées + partielles + non faites
   document.getElementById('final-details').innerHTML = [
     ...completed.map(a => {
       const sc = E.scores[a.id];
@@ -2141,8 +2174,21 @@ function showFinalSummary() {
         <span class="text-xs font-bold text-slate-400 w-12 text-right">${pct}%</span>
       </div>`;
     }),
-    // Activités non faites = 0 pts, grisées
-    ...allSessionActivities.filter(a => !E.scores[a.id]).map(a => {
+    // Activités partiellement faites (points partiels comptés)
+    ...withPartial.map(a => {
+      const psc = E.partialScores[a.id];
+      const pct = Math.round((psc.score / psc.max) * 100);
+      return `<div class="bg-amber-50 rounded-xl p-3 flex items-center gap-3 border border-amber-200">
+        <div class="w-8 h-8 ${COLORS[a.color].bg} rounded-lg flex items-center justify-center flex-none">
+          <i data-lucide="${a.icon}" class="w-4 h-4 ${COLORS[a.color].text}"></i>
+        </div>
+        <span class="flex-1 font-bold text-slate-700 text-sm">${a.label}</span>
+        <span class="font-black text-amber-600">${psc.score} / ${psc.max} pts</span>
+        <span class="text-xs font-bold text-amber-400 w-16 text-right">${pct}% partiel</span>
+      </div>`;
+    }),
+    // Activités non commencées = 0 pts, grisées
+    ...allSessionActivities.filter(a => !E.scores[a.id] && !E.partialScores[a.id]).map(a => {
       const maxA = E.session.scoring?.[a.id] || 0;
       return `<div class="bg-slate-50 rounded-xl p-3 flex items-center gap-3 border border-dashed border-slate-200 opacity-60">
         <div class="w-8 h-8 bg-slate-100 rounded-lg flex items-center justify-center flex-none">
@@ -2163,32 +2209,34 @@ function showFinalSummary() {
 // ─── CONTINUER PLUS TARD ──────────────────────────────────────────────────────
 function saveLater() {
   const available = ACTIVITIES.filter(a => E.session.questions?.[a.id]?.length > 0);
-  const done   = available.filter(a => E.scores[a.id]);
-  const notDone = available.filter(a => !E.scores[a.id]);
+  const done    = available.filter(a => E.scores[a.id]);
+  const partial = available.filter(a => !E.scores[a.id] && E.partialScores[a.id]);
+  const notDone = available.filter(a => !E.scores[a.id] && !E.partialScores[a.id]);
 
-  // Construire le message d'information
-  const doneList  = done.map(a  => `✅ ${a.label}`).join('\n');
-  const todoList  = notDone.map(a => `⚠️ ${a.label} (non terminée, à recommencer)`).join('\n');
+  const doneList    = done.map(a    => `✅ ${a.label}`).join('\n');
+  const partialList = partial.map(a => `~ ${a.label} (points partiels conservés)`).join('\n');
+  const todoList    = notDone.map(a => `⬜ ${a.label} (pas encore commencée)`).join('\n');
 
   const msg = [
     '💾 Ce qui sera sauvegardé :',
-    doneList || '  (aucune activité complètement terminée)',
-    '',
-    notDone.length > 0 ? 'Les activités non terminées devront \u00eatre recommencées depuis le début :' : '',
-    todoList,
+    doneList || '',
+    partialList || '',
+    todoList || '',
     '',
     'Tu peux fermer cet onglet et revenir plus tard avec le même lien.'
-  ].filter(l => l !== undefined && !(l === '' && !notDone.length)).join('\n');
+  ].filter(Boolean).join('\n');
 
   alert(msg);
 
   // Afficher le message de confirmation dans l'interface
   const msgEl = document.getElementById('save-later-msg');
-  const hasDone = done.length > 0;
+  const hasDone = done.length > 0 || partial.length > 0;
+  const countSaved = done.length + partial.length;
   msgEl.innerHTML = `<i data-lucide="check-circle" class="w-4 h-4 flex-none"></i>
     <span>
-      <strong>${done.length} activité${done.length > 1 ? 's' : ''} sauvegardée${done.length > 1 ? 's' : ''}</strong>
-      ${notDone.length > 0 ? `&nbsp;—&nbsp;<span class="text-amber-600">${notDone.length} à recommencer</span>` : ''}<br>
+      <strong>${countSaved} activité${countSaved > 1 ? 's' : ''} sauvegardée${countSaved > 1 ? 's' : ''}</strong>
+      ${partial.length > 0 ? `&nbsp;—&nbsp;<span class="text-amber-600">${partial.length} partielle${partial.length > 1 ? 's' : ''}</span>` : ''}
+      ${notDone.length > 0 ? `&nbsp;—&nbsp;<span class="text-slate-400">${notDone.length} non commencée${notDone.length > 1 ? 's' : ''}</span>` : ''}<br>
       <span class="font-medium text-emerald-600 text-xs">Reviens avec le même lien pour continuer.</span>
     </span>`;
   document.getElementById('btn-save-later').classList.add('hidden');
@@ -2201,14 +2249,13 @@ function saveLater() {
                       hasDone ? 'border-emerald-200' : 'border-amber-200');
   lucide.createIcons();
 }
-
-// ─── CONFIRMER LE RENDU DÉFINITIF ────────────────────────────────────────────
 function confirmSubmit() {
-  const total = ACTIVITIES.filter(a => E.session.questions?.[a.id]?.length > 0).length;
-  const done = Object.keys(E.scores).length;
+  const allActs = ACTIVITIES.filter(a => E.session.questions?.[a.id]?.length > 0);
+  const total = allActs.length;
+  const done = allActs.filter(a => E.scores[a.id] || E.partialScores[a.id]).length;
   let msg = 'Rendre définitivement ton travail au professeur ?\n\nTu ne pourras plus y accéder ensuite.';
   if (done < total) {
-    msg = `Attention : tu n'as terminé que ${done} activité sur ${total}.\n\nRendre quand même ? Tu ne pourras plus y accéder ensuite.`;
+    msg = `Attention : ${total - done} activité(s) non commencée(s) compteront 0 point.\n\nRendre quand même ? Tu ne pourras plus y accéder ensuite.`;
   }
   if (confirm(msg)) {
     submitResults();
@@ -2220,37 +2267,38 @@ async function submitResults() {
   const btn = document.getElementById('btn-final-send');
   if (btn) { btn.disabled = true; btn.textContent = 'Envoi en cours...'; }
 
-  const available = ACTIVITIES.filter(a => E.scores[a.id]);
-  let totalScore = 0, totalMax = 0;
-  available.forEach(a => { const sc = E.scores[a.id]; totalScore += (sc.score/sc.max)*100; totalMax++; });
+  const allActs = ACTIVITIES.filter(a => E.session.questions?.[a.id]?.length > 0);
+  const withScore = allActs.filter(a => E.scores[a.id] || E.partialScores[a.id]);
+  let totalScore = 0, totalMax = 0, totalPtsR = 0;
+  withScore.forEach(a => {
+    const sc = E.scores[a.id] || E.partialScores[a.id];
+    totalScore += (sc.score/sc.max)*100; totalMax++;
+    totalPtsR += sc.score;
+  });
   const globalPct = Math.round(totalScore / (totalMax||1));
+  totalPtsR = Math.round(totalPtsR * 10) / 10;
 
   const result = {
     sessionId: E.session.id, sessionTitle: E.session.title,
     studentId: E.studentId, completedAt: new Date().toISOString(),
-    scores: E.scores, globalPct,
+    scores: E.scores, partialScores: E.partialScores, globalPct,
     submitted: true,  // verrou définitif
-    activitiesDone: available.length,
-    activitiesTotal: ACTIVITIES.filter(a => E.session.questions?.[a.id]?.length > 0).length
+    activitiesDone: withScore.length,
+    activitiesTotal: allActs.length
   };
 
   try {
     const writeRes = await storage({ action: 'writeResult', sessionId: E.session.id, studentId: E.studentId, data: result });
     if (!writeRes?.success) throw new Error(writeRes?.error || 'Erreur serveur');
 
-    // Calcul pts pour l'écran de rendu
-    const allActs = ACTIVITIES.filter(a => E.session.questions?.[a.id]?.length > 0);
-    let totalPtsR = 0;
-    available.forEach(a => { totalPtsR += E.scores[a.id].score; });
-    totalPtsR = Math.round(totalPtsR * 10) / 10;
     const maxPtsR = allActs.reduce((sum, a) => sum + (E.session.scoring?.[a.id] || 0), 0);
 
     // Rediriger vers l'écran de confirmation de rendu
     document.getElementById('submitted-student').textContent = E.studentId + ' — ' + E.session.title;
     document.getElementById('submitted-score').textContent = `${totalPtsR} / ${maxPtsR} pts`;
     document.getElementById('submitted-score-sub').textContent =
-      available.length < allActs.length
-        ? `(${available.length}/${allActs.length} activités faites)`
+      withScore.length < allActs.length
+        ? `(${withScore.length}/${allActs.length} activités avec points)`
         : 'session complète';
     lucide.createIcons();
     showScreen('submitted');
