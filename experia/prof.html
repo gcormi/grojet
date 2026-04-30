@@ -155,9 +155,14 @@
           </button>
         </div>
       </div>
-      <button onclick="showScreen('create')" class="bg-indigo-600 text-white font-black px-6 py-4 rounded-2xl hover:bg-indigo-700 transition-all flex items-center gap-2 shadow-lg shadow-indigo-200">
-        <i data-lucide="plus" class="w-5 h-5"></i> Nouvelle session
-      </button>
+      <div class="flex items-center gap-2">
+        <button onclick="loadLibrary()" class="flex items-center gap-2 bg-white border border-slate-200 text-slate-600 font-bold px-4 py-3 rounded-2xl hover:border-amber-300 hover:text-amber-600 transition-all text-sm shadow-sm">
+          <i data-lucide="archive" class="w-4 h-4"></i> Bibliothèque
+        </button>
+        <button onclick="showScreen('create')" class="bg-indigo-600 text-white font-black px-6 py-4 rounded-2xl hover:bg-indigo-700 transition-all flex items-center gap-2 shadow-lg shadow-indigo-200">
+          <i data-lucide="plus" class="w-5 h-5"></i> Nouvelle session
+        </button>
+      </div>
     </div>
 
     <!-- PANNEAU DE DESIGN GLOBAL -->
@@ -251,6 +256,29 @@
         <i data-lucide="save" class="w-5 h-5"></i> Enregistrer les paramètres
       </button>
     </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- ÉCRAN : BIBLIOTHÈQUE                       -->
+<!-- ═══════════════════════════════════════════ -->
+<div id="screen-library" class="screen">
+  <div class="max-w-3xl mx-auto px-6 py-10 fade-up">
+    <div class="flex items-center justify-between mb-8">
+      <div class="flex items-center gap-3">
+        <button onclick="showScreen('dashboard')" class="p-2 hover:bg-white rounded-xl transition-colors text-slate-500">
+          <i data-lucide="arrow-left" class="w-5 h-5"></i>
+        </button>
+        <div>
+          <h2 class="text-2xl font-black text-slate-900">Bibliothèque</h2>
+          <p class="text-sm text-slate-500 font-medium">Évaluations archivées</p>
+        </div>
+      </div>
+      <button onclick="createFolder()" class="flex items-center gap-2 bg-white border border-slate-200 text-slate-600 font-bold px-4 py-2.5 rounded-xl hover:border-amber-300 hover:text-amber-600 transition-all text-sm shadow-sm">
+        <i data-lucide="folder-plus" class="w-4 h-4"></i> Nouveau dossier
+      </button>
+    </div>
+    <div id="library-content" class="space-y-6"></div>
   </div>
 </div>
 
@@ -839,6 +867,16 @@ async function storage(params) {
       await callNuage('write', `experia_completions_${sessionId}.json`, current);
       return { success: true };
     }
+    case 'readLibrary': {
+      try {
+        const r = await callNuage('read', 'experia_library.json');
+        return { library: r.content || { folders: [], uncategorized: [] } };
+      } catch(e) { return { library: { folders: [], uncategorized: [] } }; }
+    }
+    case 'writeLibrary': {
+      await callNuage('write', 'experia_library.json', params.library);
+      return { success: true };
+    }
     default:
       throw new Error('Action storage inconnue : ' + action);
   }
@@ -1080,6 +1118,226 @@ function copyQuickLink() {
   });
 }
 
+// ─── BIBLIOTHÈQUE ────────────────────────────────────────────────────────────
+async function archiveSession(id) {
+  const sess = state.sessions.find(s => s.id === id);
+  if (!sess) return;
+  if (!confirm(`Archiver "${sess.title}" ?\nElle disparaîtra du tableau de bord mais sera conservée dans la bibliothèque.`)) return;
+
+  const mr = await callNuage('read', 'experia_manifest.json');
+  if (mr.success && mr.content?.sessions) {
+    mr.content.sessions = mr.content.sessions.filter(s => s.id !== id);
+    await callNuage('write', 'experia_manifest.json', mr.content);
+  }
+
+  const lr = await storage({ action: 'readLibrary' });
+  const lib = lr.library;
+  if (!lib.uncategorized) lib.uncategorized = [];
+  const meta = {
+    id: sess.id, title: sess.title, code: sess.code, createdAt: sess.createdAt,
+    activitiesCount: sess.activitiesCount || 0, scoring: sess.scoring, model: sess.model,
+    classe: sess.classe, theme: sess.theme, archivedAt: Date.now()
+  };
+  lib.uncategorized.push(meta);
+  await storage({ action: 'writeLibrary', library: lib });
+
+  if (state.currentSession?.id === id) state.currentSession = null;
+  loadSessions();
+}
+
+async function loadLibrary() {
+  showScreen('library');
+  const container = document.getElementById('library-content');
+  container.innerHTML = `<div class="text-center py-8 text-slate-400"><i data-lucide="loader" class="w-6 h-6 mx-auto animate-spin"></i></div>`;
+  lucide.createIcons();
+
+  try {
+    const lr = await storage({ action: 'readLibrary' });
+    const lib = lr.library;
+    const totalSessions = (lib.folders || []).reduce((n, f) => n + (f.sessions?.length || 0), 0) + (lib.uncategorized?.length || 0);
+
+    if (totalSessions === 0 && (!lib.folders || lib.folders.length === 0)) {
+      container.innerHTML = `<div class="text-center py-16 text-slate-400 bg-white rounded-2xl border border-slate-100">
+        <i data-lucide="archive" class="w-10 h-10 mx-auto mb-3 opacity-40"></i>
+        <p class="font-medium">Bibliothèque vide</p>
+        <p class="text-sm mt-1">Archivez des sessions depuis le tableau de bord via le bouton 📦</p>
+      </div>`;
+      lucide.createIcons(); return;
+    }
+
+    const sessionCard = (s, folderId) => `
+      <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 flex items-center gap-3">
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2 flex-wrap">
+            <span class="font-bold text-slate-800 text-sm">${s.title}</span>
+            ${s.classe ? `<span class="text-xs font-bold text-violet-600 bg-violet-50 px-2 py-0.5 rounded-full border border-violet-200">${s.classe}</span>` : ''}
+          </div>
+          <p class="text-xs text-slate-400 font-medium mt-0.5">
+            ${new Date(s.createdAt).toLocaleDateString('fr-FR', { day:'numeric', month:'short', year:'numeric' })}
+            ${s.archivedAt ? ' · archivé ' + new Date(s.archivedAt).toLocaleDateString('fr-FR', { day:'numeric', month:'short' }) : ''}
+          </p>
+        </div>
+        <div class="flex items-center gap-2 flex-none">
+          <select onchange="moveToFolder('${s.id}', this.value, '${folderId || ''}')"
+            class="text-xs bg-slate-50 border border-slate-200 rounded-lg px-2 py-1.5 outline-none font-medium text-slate-600">
+            <option value="">📁 Déplacer...</option>
+            <option value="__none__">Sans dossier</option>
+            ${(lib.folders || []).map(f => `<option value="${f.id}">${f.label}</option>`).join('')}
+          </select>
+          <button onclick="restoreSession('${s.id}', '${folderId || ''}')"
+            class="flex items-center gap-1 px-3 py-1.5 bg-indigo-50 border border-indigo-200 text-indigo-700 rounded-xl text-xs font-bold hover:bg-indigo-100 transition-all whitespace-nowrap">
+            <i data-lucide="rotate-ccw" class="w-3 h-3"></i> Réactiver
+          </button>
+          <button onclick="deleteArchivedSession('${s.id}', '${folderId || ''}')"
+            class="p-1.5 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all">
+            <i data-lucide="trash-2" class="w-4 h-4"></i>
+          </button>
+        </div>
+      </div>`;
+
+    let html = '';
+
+    (lib.folders || []).forEach(folder => {
+      const sessions = folder.sessions || [];
+      html += `
+        <div class="bg-white/60 rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
+          <div class="flex items-center justify-between px-5 py-3 border-b border-slate-100">
+            <div class="flex items-center gap-2">
+              <i data-lucide="folder" class="w-4 h-4 text-amber-500"></i>
+              <span class="font-black text-slate-800 text-sm">${folder.label}</span>
+              <span class="text-xs text-slate-400 font-medium">${sessions.length} éval${sessions.length > 1 ? 's' : ''}</span>
+            </div>
+            <button onclick="deleteFolder('${folder.id}')" class="p-1.5 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all">
+              <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+            </button>
+          </div>
+          ${sessions.length === 0
+            ? `<p class="text-xs text-slate-400 font-medium text-center py-4">Dossier vide</p>`
+            : `<div class="p-3 space-y-2">${sessions.map(s => sessionCard(s, folder.id)).join('')}</div>`}
+        </div>`;
+    });
+
+    const uncategorized = lib.uncategorized || [];
+    if (uncategorized.length > 0) {
+      html += `
+        <div>
+          <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Sans dossier</p>
+          <div class="space-y-2">${uncategorized.map(s => sessionCard(s, null)).join('')}</div>
+        </div>`;
+    }
+
+    container.innerHTML = html;
+    lucide.createIcons();
+  } catch(e) {
+    container.innerHTML = `<div class="text-red-500 bg-red-50 rounded-2xl p-5 text-sm font-medium">Erreur : ${e.message}</div>`;
+  }
+}
+
+async function restoreSession(sessionId, folderId) {
+  const lr = await storage({ action: 'readLibrary' });
+  const lib = lr.library;
+
+  let meta = null;
+  if (folderId) {
+    const folder = lib.folders.find(f => f.id === folderId);
+    if (folder) { meta = folder.sessions.find(s => s.id === sessionId); folder.sessions = folder.sessions.filter(s => s.id !== sessionId); }
+  } else {
+    meta = (lib.uncategorized || []).find(s => s.id === sessionId);
+    lib.uncategorized = (lib.uncategorized || []).filter(s => s.id !== sessionId);
+  }
+  if (!meta) { alert('Session introuvable dans la bibliothèque.'); return; }
+
+  const mr = await callNuage('read', 'experia_manifest.json');
+  const manifest = mr.success && mr.content ? mr.content : { sessions: [] };
+  if (!manifest.sessions.find(s => s.id === sessionId)) manifest.sessions.unshift({ ...meta, updatedAt: Date.now() });
+
+  await Promise.all([
+    callNuage('write', 'experia_manifest.json', manifest),
+    storage({ action: 'writeLibrary', library: lib })
+  ]);
+
+  alert(`"${meta.title}" est de retour dans le tableau de bord.`);
+  loadLibrary();
+}
+
+async function deleteArchivedSession(sessionId, folderId) {
+  if (!confirm('Supprimer définitivement cette évaluation et tous les résultats élèves ?\nIrréversible.')) return;
+
+  const lr = await storage({ action: 'readLibrary' });
+  const lib = lr.library;
+  if (folderId) {
+    const folder = lib.folders.find(f => f.id === folderId);
+    if (folder) folder.sessions = folder.sessions.filter(s => s.id !== sessionId);
+  } else {
+    lib.uncategorized = (lib.uncategorized || []).filter(s => s.id !== sessionId);
+  }
+
+  await Promise.allSettled([
+    storage({ action: 'writeLibrary', library: lib }),
+    callNuage('delete', `experia_session_${sessionId}.json`),
+    callNuage('delete', `experia_results_${sessionId}.json`),
+    callNuage('delete', `experia_presences_${sessionId}.json`),
+    callNuage('delete', `experia_completions_${sessionId}.json`)
+  ]);
+  loadLibrary();
+}
+
+async function createFolder() {
+  const label = prompt('Nom du dossier (ex: 2024-2025 — 6ème A) :');
+  if (!label || !label.trim()) return;
+
+  const lr = await storage({ action: 'readLibrary' });
+  const lib = lr.library;
+  if (!lib.folders) lib.folders = [];
+  lib.folders.push({ id: 'folder_' + Date.now(), label: label.trim(), sessions: [] });
+  await storage({ action: 'writeLibrary', library: lib });
+  loadLibrary();
+}
+
+async function deleteFolder(folderId) {
+  const lr = await storage({ action: 'readLibrary' });
+  const lib = lr.library;
+  const folder = lib.folders.find(f => f.id === folderId);
+  if (!folder) return;
+
+  const count = folder.sessions?.length || 0;
+  if (!confirm(`Supprimer le dossier "${folder.label}" ?\n${count > 0 ? `Les ${count} évaluation(s) seront déplacées dans "Sans dossier".` : ''}`)) return;
+
+  if (!lib.uncategorized) lib.uncategorized = [];
+  lib.uncategorized.push(...(folder.sessions || []));
+  lib.folders = lib.folders.filter(f => f.id !== folderId);
+  await storage({ action: 'writeLibrary', library: lib });
+  loadLibrary();
+}
+
+async function moveToFolder(sessionId, targetFolderId, currentFolderId) {
+  if (!targetFolderId) return;
+
+  const lr = await storage({ action: 'readLibrary' });
+  const lib = lr.library;
+
+  let meta = null;
+  if (currentFolderId) {
+    const folder = lib.folders.find(f => f.id === currentFolderId);
+    if (folder) { meta = folder.sessions.find(s => s.id === sessionId); folder.sessions = folder.sessions.filter(s => s.id !== sessionId); }
+  } else {
+    meta = (lib.uncategorized || []).find(s => s.id === sessionId);
+    lib.uncategorized = (lib.uncategorized || []).filter(s => s.id !== sessionId);
+  }
+  if (!meta) { loadLibrary(); return; }
+
+  if (targetFolderId === '__none__') {
+    if (!lib.uncategorized) lib.uncategorized = [];
+    lib.uncategorized.push(meta);
+  } else {
+    const target = lib.folders.find(f => f.id === targetFolderId);
+    if (target) { if (!target.sessions) target.sessions = []; target.sessions.push(meta); }
+  }
+
+  await storage({ action: 'writeLibrary', library: lib });
+  loadLibrary();
+}
+
 // ─── INIT ACTIVITÉS CONFIG ────────────────────────────────────────────────────
 function initActivitiesConfig() {
   const container = document.getElementById('activities-config');
@@ -1193,9 +1451,14 @@ async function loadSessions() {
               title="Utiliser avec une autre classe">
               + Classe
             </button>` : ''}
+            <button onclick="event.stopPropagation(); archiveSession('${s.id}')"
+              class="p-2 rounded-xl text-slate-200 hover:text-amber-500 hover:bg-amber-50 transition-all flex-none"
+              title="Archiver dans la bibliothèque">
+              <i data-lucide="archive" class="w-4 h-4"></i>
+            </button>
             <button onclick="event.stopPropagation(); deleteSession('${s.id}')"
               class="p-2 rounded-xl text-slate-200 hover:text-red-500 hover:bg-red-50 transition-all flex-none"
-              title="Supprimer cette session">
+              title="Supprimer définitivement">
               <i data-lucide="trash-2" class="w-4 h-4"></i>
             </button>
           </div>
