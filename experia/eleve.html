@@ -723,15 +723,26 @@ async function callNuage(action, filename, content = null) {
     filename
   };
   if (content !== null) body.content = content;
-  const res = await fetch(NUAGE_PROXY, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body)
-  });
-  if (!res.ok) throw new Error('Erreur Nuage : ' + res.status);
-  const data = await res.json();
-  if (!data.success && action !== 'read') throw new Error(data.error || 'Erreur Nuage inconnue');
-  return data;
+
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 15000);
+  try {
+    const res = await fetch(NUAGE_PROXY, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+      signal: controller.signal
+    });
+    clearTimeout(timer);
+    if (!res.ok) throw new Error('Erreur Nuage HTTP ' + res.status);
+    const data = await res.json();
+    if (!data.success && action !== 'read') throw new Error(data.error || 'Erreur Nuage inconnue');
+    return data;
+  } catch(e) {
+    clearTimeout(timer);
+    if (e.name === 'AbortError') throw new Error('Nuage ne répond pas (timeout 15s).');
+    throw e;
+  }
 }
 
 async function storage(params) {

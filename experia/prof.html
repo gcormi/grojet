@@ -729,15 +729,26 @@ async function callNuage(action, filename, content = null) {
     filename
   };
   if (content !== null) body.content = content;
-  const res = await fetch(NUAGE_PROXY, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body)
-  });
-  if (!res.ok) throw new Error('Erreur Nuage : ' + res.status);
-  const data = await res.json();
-  if (!data.success && action !== 'read') throw new Error(data.error || 'Erreur Nuage inconnue');
-  return data;
+
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 15000);
+  try {
+    const res = await fetch(NUAGE_PROXY, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+      signal: controller.signal
+    });
+    clearTimeout(timer);
+    if (!res.ok) throw new Error('Erreur Nuage HTTP ' + res.status);
+    const data = await res.json();
+    if (!data.success && action !== 'read') throw new Error(data.error || 'Erreur Nuage inconnue');
+    return data;
+  } catch(e) {
+    clearTimeout(timer);
+    if (e.name === 'AbortError') throw new Error('Nuage ne répond pas (timeout 15s) — vérifiez vos identifiants et le serveur.');
+    throw e;
+  }
 }
 
 const ACTIVITIES = [
@@ -1127,26 +1138,24 @@ async function archiveSession(id) {
   const sess = state.sessions.find(s => s.id === id);
   if (!sess) return;
   if (!confirm(`Archiver "${sess.title}" ?\nElle disparaîtra du tableau de bord mais sera conservée dans la bibliothèque.`)) return;
-
-  const mr = await callNuage('read', 'experia_manifest.json');
-  if (mr.success && mr.content?.sessions) {
-    mr.content.sessions = mr.content.sessions.filter(s => s.id !== id);
-    await callNuage('write', 'experia_manifest.json', mr.content);
-  }
-
-  const lr = await storage({ action: 'readLibrary' });
-  const lib = lr.library;
-  if (!lib.uncategorized) lib.uncategorized = [];
-  const meta = {
-    id: sess.id, title: sess.title, code: sess.code, createdAt: sess.createdAt,
-    activitiesCount: sess.activitiesCount || 0, scoring: sess.scoring, model: sess.model,
-    classe: sess.classe, theme: sess.theme, archivedAt: Date.now()
-  };
-  lib.uncategorized.push(meta);
-  await storage({ action: 'writeLibrary', library: lib });
-
-  if (state.currentSession?.id === id) state.currentSession = null;
-  loadSessions();
+  try {
+    const mr = await callNuage('read', 'experia_manifest.json');
+    if (mr.success && mr.content?.sessions) {
+      mr.content.sessions = mr.content.sessions.filter(s => s.id !== id);
+      await callNuage('write', 'experia_manifest.json', mr.content);
+    }
+    const lr = await storage({ action: 'readLibrary' });
+    const lib = lr.library;
+    if (!lib.uncategorized) lib.uncategorized = [];
+    lib.uncategorized.push({
+      id: sess.id, title: sess.title, code: sess.code, createdAt: sess.createdAt,
+      activitiesCount: sess.activitiesCount || 0, scoring: sess.scoring, model: sess.model,
+      classe: sess.classe, theme: sess.theme, archivedAt: Date.now()
+    });
+    await storage({ action: 'writeLibrary', library: lib });
+    if (state.currentSession?.id === id) state.currentSession = null;
+    loadSessions();
+  } catch(e) { alert('Erreur archivage : ' + e.message); }
 }
 
 async function loadLibrary() {
@@ -1238,30 +1247,28 @@ async function loadLibrary() {
 }
 
 async function restoreSession(sessionId, folderId) {
-  const lr = await storage({ action: 'readLibrary' });
-  const lib = lr.library;
-
-  let meta = null;
-  if (folderId) {
-    const folder = lib.folders.find(f => f.id === folderId);
-    if (folder) { meta = folder.sessions.find(s => s.id === sessionId); folder.sessions = folder.sessions.filter(s => s.id !== sessionId); }
-  } else {
-    meta = (lib.uncategorized || []).find(s => s.id === sessionId);
-    lib.uncategorized = (lib.uncategorized || []).filter(s => s.id !== sessionId);
-  }
-  if (!meta) { alert('Session introuvable dans la bibliothèque.'); return; }
-
-  const mr = await callNuage('read', 'experia_manifest.json');
-  const manifest = mr.success && mr.content ? mr.content : { sessions: [] };
-  if (!manifest.sessions.find(s => s.id === sessionId)) manifest.sessions.unshift({ ...meta, updatedAt: Date.now() });
-
-  await Promise.all([
-    callNuage('write', 'experia_manifest.json', manifest),
-    storage({ action: 'writeLibrary', library: lib })
-  ]);
-
-  alert(`"${meta.title}" est de retour dans le tableau de bord.`);
-  loadLibrary();
+  try {
+    const lr = await storage({ action: 'readLibrary' });
+    const lib = lr.library;
+    let meta = null;
+    if (folderId) {
+      const folder = lib.folders.find(f => f.id === folderId);
+      if (folder) { meta = folder.sessions.find(s => s.id === sessionId); folder.sessions = folder.sessions.filter(s => s.id !== sessionId); }
+    } else {
+      meta = (lib.uncategorized || []).find(s => s.id === sessionId);
+      lib.uncategorized = (lib.uncategorized || []).filter(s => s.id !== sessionId);
+    }
+    if (!meta) { alert('Évaluation introuvable dans la bibliothèque.'); return; }
+    const mr = await callNuage('read', 'experia_manifest.json');
+    const manifest = mr.success && mr.content ? mr.content : { sessions: [] };
+    if (!manifest.sessions.find(s => s.id === sessionId)) manifest.sessions.unshift({ ...meta, updatedAt: Date.now() });
+    await Promise.all([
+      callNuage('write', 'experia_manifest.json', manifest),
+      storage({ action: 'writeLibrary', library: lib })
+    ]);
+    alert(`"${meta.title}" est de retour dans le tableau de bord.`);
+    loadLibrary();
+  } catch(e) { alert('Erreur restauration : ' + e.message); }
 }
 
 async function deleteArchivedSession(sessionId, folderId) {
@@ -1289,57 +1296,56 @@ async function deleteArchivedSession(sessionId, folderId) {
 async function createFolder() {
   const label = prompt('Nom du dossier (ex: 2024-2025 — 6ème A) :');
   if (!label || !label.trim()) return;
-
-  const lr = await storage({ action: 'readLibrary' });
-  const lib = lr.library;
-  if (!lib.folders) lib.folders = [];
-  lib.folders.push({ id: 'folder_' + Date.now(), label: label.trim(), sessions: [] });
-  await storage({ action: 'writeLibrary', library: lib });
-  loadLibrary();
+  try {
+    const lr = await storage({ action: 'readLibrary' });
+    const lib = lr.library;
+    if (!lib.folders) lib.folders = [];
+    lib.folders.push({ id: 'folder_' + Date.now(), label: label.trim(), sessions: [] });
+    await storage({ action: 'writeLibrary', library: lib });
+    loadLibrary();
+  } catch(e) { alert('Erreur création dossier : ' + e.message); }
 }
 
 async function deleteFolder(folderId) {
-  const lr = await storage({ action: 'readLibrary' });
-  const lib = lr.library;
-  const folder = lib.folders.find(f => f.id === folderId);
-  if (!folder) return;
-
-  const count = folder.sessions?.length || 0;
-  if (!confirm(`Supprimer le dossier "${folder.label}" ?\n${count > 0 ? `Les ${count} évaluation(s) seront déplacées dans "Sans dossier".` : ''}`)) return;
-
-  if (!lib.uncategorized) lib.uncategorized = [];
-  lib.uncategorized.push(...(folder.sessions || []));
-  lib.folders = lib.folders.filter(f => f.id !== folderId);
-  await storage({ action: 'writeLibrary', library: lib });
-  loadLibrary();
+  try {
+    const lr = await storage({ action: 'readLibrary' });
+    const lib = lr.library;
+    const folder = lib.folders.find(f => f.id === folderId);
+    if (!folder) return;
+    const count = folder.sessions?.length || 0;
+    if (!confirm(`Supprimer le dossier "${folder.label}" ?\n${count > 0 ? `Les ${count} évaluation(s) seront déplacées dans "Sans dossier".` : ''}`)) return;
+    if (!lib.uncategorized) lib.uncategorized = [];
+    lib.uncategorized.push(...(folder.sessions || []));
+    lib.folders = lib.folders.filter(f => f.id !== folderId);
+    await storage({ action: 'writeLibrary', library: lib });
+    loadLibrary();
+  } catch(e) { alert('Erreur suppression dossier : ' + e.message); }
 }
 
 async function moveToFolder(sessionId, targetFolderId, currentFolderId) {
   if (!targetFolderId) return;
-
-  const lr = await storage({ action: 'readLibrary' });
-  const lib = lr.library;
-
-  let meta = null;
-  if (currentFolderId) {
-    const folder = lib.folders.find(f => f.id === currentFolderId);
-    if (folder) { meta = folder.sessions.find(s => s.id === sessionId); folder.sessions = folder.sessions.filter(s => s.id !== sessionId); }
-  } else {
-    meta = (lib.uncategorized || []).find(s => s.id === sessionId);
-    lib.uncategorized = (lib.uncategorized || []).filter(s => s.id !== sessionId);
-  }
-  if (!meta) { loadLibrary(); return; }
-
-  if (targetFolderId === '__none__') {
-    if (!lib.uncategorized) lib.uncategorized = [];
-    lib.uncategorized.push(meta);
-  } else {
-    const target = lib.folders.find(f => f.id === targetFolderId);
-    if (target) { if (!target.sessions) target.sessions = []; target.sessions.push(meta); }
-  }
-
-  await storage({ action: 'writeLibrary', library: lib });
-  loadLibrary();
+  try {
+    const lr = await storage({ action: 'readLibrary' });
+    const lib = lr.library;
+    let meta = null;
+    if (currentFolderId) {
+      const folder = lib.folders.find(f => f.id === currentFolderId);
+      if (folder) { meta = folder.sessions.find(s => s.id === sessionId); folder.sessions = folder.sessions.filter(s => s.id !== sessionId); }
+    } else {
+      meta = (lib.uncategorized || []).find(s => s.id === sessionId);
+      lib.uncategorized = (lib.uncategorized || []).filter(s => s.id !== sessionId);
+    }
+    if (!meta) { loadLibrary(); return; }
+    if (targetFolderId === '__none__') {
+      if (!lib.uncategorized) lib.uncategorized = [];
+      lib.uncategorized.push(meta);
+    } else {
+      const target = lib.folders.find(f => f.id === targetFolderId);
+      if (target) { if (!target.sessions) target.sessions = []; target.sessions.push(meta); }
+    }
+    await storage({ action: 'writeLibrary', library: lib });
+    loadLibrary();
+  } catch(e) { alert('Erreur déplacement : ' + e.message); }
 }
 
 // ─── INIT ACTIVITÉS CONFIG ────────────────────────────────────────────────────
