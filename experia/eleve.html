@@ -574,13 +574,22 @@
       <p class="text-sm font-bold text-slate-500">Albert évalue ta réponse...</p>
     </div>
 
-    <div id="ia-result" class="hidden bg-indigo-50 border border-indigo-100 rounded-2xl p-5 mb-4">
-      <div class="flex items-center gap-3 mb-2">
-        <div class="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white font-black text-lg" id="ia-result-score">—</div>
+    <div id="ia-result" class="hidden bg-indigo-50 border border-indigo-100 rounded-2xl p-5 mb-4 space-y-3">
+      <div class="flex items-center gap-3">
+        <div class="w-12 h-12 bg-indigo-600 rounded-xl flex items-center justify-center text-white font-black text-lg flex-none" id="ia-result-score">—</div>
         <div>
           <p class="text-xs font-bold text-indigo-400 uppercase tracking-wider">Évaluation Albert</p>
           <p id="ia-result-feedback" class="text-sm font-medium text-slate-700"></p>
         </div>
+      </div>
+      <div id="ia-result-detail" class="hidden space-y-1.5 text-xs">
+        <div class="flex justify-between bg-white rounded-lg px-3 py-1.5"><span class="text-slate-600">Mots-clés <span class="text-slate-400">(50%)</span></span><span id="ia-kw-score" class="font-black text-indigo-600"></span></div>
+        <div class="flex justify-between bg-white rounded-lg px-3 py-1.5"><span class="text-slate-600">Pertinence <span class="text-slate-400">(30%)</span></span><span id="ia-pt-score" class="font-black text-indigo-600"></span></div>
+        <div class="flex justify-between bg-white rounded-lg px-3 py-1.5"><span class="text-slate-600">Rédaction <span class="text-slate-400">(20%)</span></span><span id="ia-rd-score" class="font-black text-indigo-600"></span></div>
+      </div>
+      <div id="ia-result-correction" class="hidden bg-emerald-50 border border-emerald-100 rounded-xl px-3 py-2.5">
+        <p class="text-[10px] font-black text-emerald-600 uppercase tracking-wider mb-1">Correction modèle</p>
+        <p id="ia-correction-text" class="text-xs text-emerald-800 italic"></p>
       </div>
     </div>
 
@@ -1808,6 +1817,31 @@ function intrusNext() {
 // ══════════════════════════════════════════════
 let iaScores = [];
 
+function showIAResult(score, feedback, modelAnswer, kPts, pPts, rPts, totalPts) {
+  document.getElementById('ia-result-score').textContent = score !== undefined ? score : '?';
+  document.getElementById('ia-result-feedback').textContent = feedback;
+  const detail = document.getElementById('ia-result-detail');
+  if (kPts !== undefined) {
+    document.getElementById('ia-kw-score').textContent = `${kPts}/50`;
+    document.getElementById('ia-pt-score').textContent = `${pPts}/30`;
+    document.getElementById('ia-rd-score').textContent = `${rPts}/20`;
+    detail.classList.remove('hidden');
+  } else {
+    detail.classList.add('hidden');
+  }
+  const corrBlock = document.getElementById('ia-result-correction');
+  if (modelAnswer) {
+    document.getElementById('ia-correction-text').textContent = modelAnswer;
+    corrBlock.classList.remove('hidden');
+  } else {
+    corrBlock.classList.add('hidden');
+  }
+  document.getElementById('ia-result').classList.remove('hidden');
+  document.getElementById('ia-next').classList.remove('hidden');
+  document.getElementById('ia-validate-btn').classList.add('hidden');
+  document.getElementById('ia-loading').classList.add('hidden');
+}
+
 function initIA() {
   document.getElementById('ia-end').classList.add('hidden');
   document.getElementById('ia-result').classList.add('hidden');
@@ -1838,70 +1872,70 @@ async function validateIA() {
   document.getElementById('ia-validate-btn').classList.add('hidden');
   document.getElementById('ia-loading').classList.remove('hidden');
 
-  // Pré-filtre : réponse trop courte = 0 sans appel Albert
-  const NONSENSE_PATTERNS = /^[^a-zA-ZàâäéèêëîïôùûüçÀÂÄÉÈÊËÎÏÔÙÛÜÇ]{0,4}$|^\s*$/;
-  if (answer.length < 10 || NONSENSE_PATTERNS.test(answer)) {
+  // Pré-filtre : réponse vide = 0
+  if (!answer || answer.length < 3) {
     iaScores.push(0);
-    E.gameScore += 0;
-    document.getElementById('ia-result-score').textContent = '0/10';
-    document.getElementById('ia-result-feedback').textContent = 'Ta réponse est trop courte ou vide pour être évaluée.';
-    document.getElementById('ia-result').classList.remove('hidden');
-    document.getElementById('ia-next').classList.remove('hidden');
+    showIAResult(0, 'Aucune réponse fournie.', q.model_answer || '');
     document.getElementById('ia-loading').classList.add('hidden');
     return;
   }
 
+  // Calcul des points de cette question
+  const totalPts = E.session.scoring?.questions_ia
+    ? Math.round(E.session.scoring.questions_ia / E.gameData.length)
+    : 10;
+
+  const keywords = (q.keywords || []).join(', ') || 'non spécifiés';
+  const modelAnswer = q.model_answer || '';
+
   try {
-    const prompt = `Tu es un correcteur scolaire STRICT. Évalue si la réponse de l'élève répond RÉELLEMENT à la question en s'appuyant sur le corpus.
+    const prompt = `Tu es un correcteur scolaire. Évalue la réponse de l'élève selon 3 critères STRICTS.
 
 QUESTION : ${q.q}
-
-CORPUS DE RÉFÉRENCE :
-${E.session.corpus.substring(0, 2500)}
-
+MOTS-CLÉS ATTENDUS : ${keywords}
+CORPUS : ${E.session.corpus.substring(0, 2000)}
 RÉPONSE DE L'ÉLÈVE : "${answer}"
 
-BARÈME OBLIGATOIRE :
-- 0/10 : Réponse vide, hors-sujet, charabia, insulte, "je sais pas", mots inventés, ou aucun élément du corpus utilisé correctement.
-- 1-3/10 : Très vague ou très incomplet, un seul élément superficiel du corpus mentionné.
-- 4-6/10 : Partiellement correct, quelques éléments clés du corpus présents mais incomplets.
-- 7-9/10 : Bonne réponse, la plupart des éléments clés sont présents.
-- 10/10 : Réponse complète, précise, structurée.
+CRITÈRES DE NOTATION (total 100 points) :
 
-RÈGLES ABSOLUES :
-- N'attribue JAMAIS 5/10 par défaut ou par gentillesse.
-- Si la réponse ne cite aucun élément factuel du corpus, le score est 0.
-- Si la réponse répète la question sans y répondre, le score est 0.
-- Une réponse courte et vague ne dépasse pas 2/10.
+1. MOTS-CLÉS (50 pts max) : Combien de mots-clés attendus sont présents ou clairement exprimés dans la réponse ?
+   - Tous présents = 50, la plupart = 35-45, quelques-uns = 15-30, aucun = 0
 
-Réponds UNIQUEMENT avec ce JSON (rien d'autre avant ou après) :
-{"score": ENTIER_0_A_10, "feedback": "Feedback court en français"}`;
+2. PERTINENCE (30 pts max) : La réponse répond-elle réellement à la question ?
+   - Réponse complète et juste = 30, partielle = 10-20, hors-sujet ou répétition = 0
+
+3. RÉDACTION (20 pts max) : Qualité grammaticale et orthographique.
+   - Si la réponse est une liste de mots isolés (pas de phrases) : 0
+   - Si réponse vide ou charabia : 0
+   - Phrases correctes = 20, quelques fautes = 12-18, beaucoup de fautes = 5-10
+
+RÈGLES :
+- Si l'élève n'écrit que des mots sans construire de phrases : critère rédaction = 0
+- Ne jamais donner 50% par défaut ou par pitié
+- Réponds UNIQUEMENT en JSON valide :
+{"keywords_pts":0,"pertinence_pts":0,"redaction_pts":0,"feedback":"commentaire court"}`;
 
     const raw = await callAlbert([
-      { role: 'system', content: 'Tu es un correcteur pédagogique STRICT. Tu donnes 0 pour toute réponse hors-sujet ou sans lien avec le corpus. Réponds UNIQUEMENT avec du JSON valide, sans aucun texte autour.' },
+      { role: 'system', content: 'Tu es un correcteur pédagogique strict. Réponds UNIQUEMENT avec du JSON valide, sans texte autour.' },
       { role: 'user', content: prompt }
     ]);
 
     const match = raw.match(/\{[\s\S]*?\}/);
-    const result = match ? JSON.parse(match[0]) : { score: 0, feedback: 'Évaluation technique indisponible.' };
-    let score = Math.max(0, Math.min(10, typeof result.score === 'number' ? result.score : 0));
+    const result = match ? JSON.parse(match[0]) : null;
+    if (!result) throw new Error('Format JSON invalide');
 
-    // Post-validation : score suspect si réponse très courte
-    if (answer.length < 30 && score > 3) score = Math.floor(score / 2);
+    const kPts = Math.max(0, Math.min(50, result.keywords_pts || 0));
+    const pPts = Math.max(0, Math.min(30, result.pertinence_pts || 0));
+    const rPts = Math.max(0, Math.min(20, result.redaction_pts || 0));
+    const pct = kPts + pPts + rPts; // 0-100
+    const score = Math.round(pct * totalPts / 100);
 
-    // Post-validation : feedback négatif mais score élevé = incohérence, on force à 0
-    const negativeFeedback = /hors.sujet|hors sujet|ne répond pas|aucun élément|charabia|incompréhensible|nonsense|vide|inventé/i;
-    if (negativeFeedback.test(result.feedback || '') && score > 2) score = 0;
     iaScores.push(score);
     E.gameScore += score;
-
-    document.getElementById('ia-result-score').textContent = `${score}/10`;
-    document.getElementById('ia-result-feedback').textContent = result.feedback || '';
-    document.getElementById('ia-result').classList.remove('hidden');
-    document.getElementById('ia-next').classList.remove('hidden');
+    showIAResult(score, result.feedback || '', modelAnswer, kPts, pPts, rPts, totalPts);
   } catch(e) {
     document.getElementById('ia-result-score').textContent = '?';
-    document.getElementById('ia-result-feedback').textContent = 'Erreur évaluation: ' + e.message;
+    document.getElementById('ia-result-feedback').textContent = 'Erreur : ' + e.message;
     document.getElementById('ia-result').classList.remove('hidden');
     document.getElementById('ia-next').classList.remove('hidden');
   }

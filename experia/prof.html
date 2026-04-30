@@ -765,7 +765,7 @@ async function generateActivity(type, count, corpus, level = "Non spécifié") {
     rapidite: `Génère exactement ${count} QCM courts et simples en français sur le sujet ou texte de référence suivant (pour un défi de rapidité).\nSi le texte fourni est court (un simple thème), utilise tes connaissances expertes. Si c'est un texte long, base-toi UNIQUEMENT dessus.\nAdapte le vocabulaire et la complexité pour le niveau : ${level}.\nJSON uniquement, sans markdown :\n[{"q":"...","choices":["...","...","...","..."],"correct":0}]\n\nSujet / Texte de référence:\n${corpus}`,
     completer: `Génère exactement ${count} phrases à trous en français sur le sujet ou texte de référence suivant.\nSi le texte fourni est court (un simple thème), utilise tes connaissances expertes. Si c'est un texte long, base-toi UNIQUEMENT dessus.\nRÈGLE ABSOLUE : UN SEUL MOT manquant par phrase (jamais un groupe de mots, jamais une expression de plusieurs mots). La valeur "answer" doit être un unique mot sans espace.\nAdapte le vocabulaire et la complexité pour le niveau : ${level}.\nJSON uniquement, sans markdown :\n[{"phrase":"... _____ ...","answer":"unmotunique"}]\n\nSujet / Texte de référence:\n${corpus}`,
     intrus: `Génère exactement ${count} groupes de 4 affirmations en français dont UNE SEULE est fausse, sur le sujet ou texte de référence suivant.\nSi le texte fourni est court (un simple thème), utilise tes connaissances expertes. Si c'est un texte long, base-toi UNIQUEMENT dessus.\nAdapte le vocabulaire et la complexité pour le niveau : ${level}.\nJSON uniquement, sans markdown :\n[{"statements":["...","...","...","..."],"intrus":2,"expl":"..."}]\nintrus = index 0-3 de la fausse affirmation.\n\nSujet / Texte de référence:\n${corpus}`,
-    questions_ia: `Génère exactement ${count} questions ouvertes en français sur le sujet ou texte de référence suivant, qui nécessitent une réponse développée.\nSi le texte fourni est court (un simple thème), utilise tes connaissances expertes. Si c'est un texte long, base-toi UNIQUEMENT dessus.\nAdapte la complexité et les attentes pour le niveau : ${level}.\nJSON uniquement, sans markdown :\n[{"q":"..."}]\n\nSujet / Texte de référence:\n${corpus}`
+    questions_ia: `Génère exactement ${count} questions ouvertes en français sur le sujet ou texte de référence suivant, qui nécessitent une réponse développée.\nSi le texte fourni est court (un simple thème), utilise tes connaissances expertes. Si c'est un texte long, base-toi UNIQUEMENT dessus.\nAdapte la complexité et les attentes pour le niveau : ${level}.\nPour chaque question, fournis :\n- "q" : la question\n- "keywords" : liste de 3 à 5 mots-clés incontournables attendus dans la réponse\n- "model_answer" : une phrase de correction modèle complète et précise\nJSON uniquement, sans markdown :\n[{"q":"...","keywords":["mot1","mot2","mot3"],"model_answer":"Réponse modèle complète."}]\n\nSujet / Texte de référence:\n${corpus}`
   };
 
   const content = await callAlbert([
@@ -1778,7 +1778,11 @@ function downloadCorrection() {
   if (s.questions.questions_ia && s.questions.questions_ia.length) {
     html += `<h2>Questions Ouvertes (Correction par IA)</h2>`;
     s.questions.questions_ia.forEach((q, i) => {
-      html += `<div class="q"><b>Q${i+1}: ${q.q}</b><br><br><i>L'IA évaluera directement la réponse de l'élève en se basant sur le contexte.</i></div>`;
+      const kw = (q.keywords||[]).map(k=>`<span class="answer">${k}</span>`).join(' · ');
+      html += `<div class="q"><b>Q${i+1}: ${q.q}</b><br><br>
+        <u>Mots-clés attendus (50% du barème) :</u> ${kw||'—'}<br><br>
+        <u>Correction modèle :</u> <em>${q.model_answer||'—'}</em><br><br>
+        <small style="color:#6b7280">Barème : 50% mots-clés · 30% pertinence · 20% rédaction</small></div>`;
     });
   }
   
