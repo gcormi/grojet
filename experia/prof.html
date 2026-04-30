@@ -61,6 +61,12 @@
 
     <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-100 space-y-4">
       <div>
+        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Serveur Nuage</label>
+        <input id="login-nuage-server" type="text" placeholder="nuage03.apps.education.fr"
+          class="w-full bg-slate-50 border-2 border-transparent focus:border-indigo-500 focus:bg-white rounded-xl px-4 py-3 outline-none font-mono text-sm transition-all">
+        <p class="text-xs text-slate-400 font-medium mt-1">nuage02, nuage03… selon votre académie.</p>
+      </div>
+      <div>
         <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Identifiant Nuage</label>
         <input id="login-nuage-user" type="text" placeholder="prenom.nom"
           class="w-full bg-slate-50 border-2 border-transparent focus:border-indigo-500 focus:bg-white rounded-xl px-4 py-3 outline-none text-sm transition-all">
@@ -84,15 +90,10 @@
         </button>
         <div id="advanced-settings" class="hidden mt-3 space-y-3 border-t border-slate-100 pt-3">
           <div>
-            <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">Serveur Nuage</label>
-            <input id="login-nuage-server" type="text" value="nuage.apps.education.fr"
-              class="w-full bg-slate-50 border-2 border-transparent focus:border-indigo-500 focus:bg-white rounded-xl px-4 py-2.5 outline-none font-mono text-xs transition-all">
-          </div>
-          <div>
             <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">Proxy Albert (CORS)</label>
             <input id="login-albert-proxy" type="text" value="https://mentoria-proxy.gilles-cormi.workers.dev"
               class="w-full bg-slate-50 border-2 border-transparent focus:border-indigo-500 focus:bg-white rounded-xl px-4 py-2.5 outline-none font-mono text-xs transition-all">
-            <p class="text-xs text-slate-400 font-medium mt-1">Proxy CORS souverain pour les appels Albert.</p>
+            <p class="text-xs text-slate-400 font-medium mt-1">Proxy CORS pour les appels Albert.</p>
           </div>
         </div>
       </div>
@@ -676,7 +677,7 @@ function makeSessionLink(session) {
   const config = {
     nuageUser: state.nuageUser,
     nuagePass: state.nuagePass,
-    nuageServer: state.nuageServer || 'nuage.apps.education.fr',
+    nuageServer: state.nuageServer,
     albertProxy: state.albertProxy || 'https://mentoria-proxy.gilles-cormi.workers.dev',
     albertKey: state.albertKey,
     sessionId: session.id,
@@ -724,7 +725,7 @@ async function callNuage(action, filename, content = null) {
     action,
     nuageUser: state.nuageUser,
     nuagePass: state.nuagePass,
-    nuageServer: state.nuageServer || 'nuage.apps.education.fr',
+    nuageServer: state.nuageServer,
     filename
   };
   if (content !== null) body.content = content;
@@ -1042,12 +1043,13 @@ async function doLogin() {
   const nuageUser   = document.getElementById('login-nuage-user').value.trim();
   const nuagePass   = document.getElementById('login-nuage-pass').value.trim();
   const albertKey   = document.getElementById('login-albert-key').value.trim();
-  const nuageServer = document.getElementById('login-nuage-server').value.trim() || 'nuage.apps.education.fr';
+  const nuageServer = document.getElementById('login-nuage-server').value.trim();
   const albertProxy = document.getElementById('login-albert-proxy').value.trim() || 'https://mentoria-proxy.gilles-cormi.workers.dev';
 
-  if (!nuageUser) { showLoginError('L\'identifiant Nuage est requis.'); return; }
-  if (!nuagePass) { showLoginError('Le mot de passe Nuage est requis.'); return; }
-  if (!albertKey) { showLoginError('La clé API Albert est requise.'); return; }
+  if (!nuageServer) { showLoginError('Le serveur Nuage est requis (ex: nuage03.apps.education.fr).'); return; }
+  if (!nuageUser)   { showLoginError('L\'identifiant Nuage est requis.'); return; }
+  if (!nuagePass)   { showLoginError('Le mot de passe Nuage est requis.'); return; }
+  if (!albertKey)   { showLoginError('La clé API Albert est requise.'); return; }
 
   const btn = document.getElementById('login-btn-text');
   btn.textContent = 'Connexion en cours...';

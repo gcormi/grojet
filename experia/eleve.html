@@ -719,7 +719,7 @@ async function callNuage(action, filename, content = null) {
     action,
     nuageUser: E.config.nuageUser,
     nuagePass: E.config.nuagePass,
-    nuageServer: E.config.nuageServer || 'nuage.apps.education.fr',
+    nuageServer: E.config.nuageServer,
     filename
   };
   if (content !== null) body.content = content;

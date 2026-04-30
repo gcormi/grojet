@@ -413,8 +413,9 @@
     window.connectNuage = async () => {
         const u = document.getElementById('nuage-username')?.value.trim();
         const p = document.getElementById('nuage-password')?.value.trim();
-        const s = document.getElementById('nuage-server')?.value.trim() || 'nuage.apps.education.fr';
+        const s = document.getElementById('nuage-server')?.value.trim();
         if (!u || !p) { alert('Identifiant et mot de passe requis.'); return; }
+        if (!s) { alert('Le serveur Nuage est requis (ex: nuage03.apps.education.fr).'); return; }
         nuageUsername = u; nuagePassword = p; nuageServer = s;
         storageMode = 'nuage';
         try {
@@ -447,7 +448,7 @@
         if (su) {
             document.getElementById('nuage-username').value = su;
             document.getElementById('nuage-password').value = sp || '';
-            if (ss && ss !== 'nuage.apps.education.fr') document.getElementById('nuage-server').value = ss;
+            if (ss) document.getElementById('nuage-server').value = ss;
             document.getElementById('remember-nuage').checked = true;
         }
     });
@@ -1443,7 +1444,7 @@
             loggingConfig: (storageMode === 'nuage' && nuageUsername) ? {
                 username: nuageUsername,
                 password: nuagePassword,
-                server: nuageServer || 'nuage.apps.education.fr'
+                server: nuageServer
             } : null
         };
         try {
