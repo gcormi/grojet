@@ -717,9 +717,9 @@ const NUAGE_PROXY = 'https://n8n.incubateur.education.gouv.fr/webhook/mentoria_s
 async function callNuage(action, filename, content = null) {
   const body = {
     action,
-    nuageUser: E.config.nuageUser,
-    nuagePass: E.config.nuagePass,
-    nuageServer: E.config.nuageServer,
+    username: E.config.nuageUser,
+    password: E.config.nuagePass,
+    server: E.config.nuageServer,
     filename
   };
   if (content !== null) body.content = content;
@@ -729,7 +729,9 @@ async function callNuage(action, filename, content = null) {
     body: JSON.stringify(body)
   });
   if (!res.ok) throw new Error('Erreur Nuage : ' + res.status);
-  return await res.json();
+  const data = await res.json();
+  if (!data.success && action !== 'read') throw new Error(data.error || 'Erreur Nuage inconnue');
+  return data;
 }
 
 async function storage(params) {
