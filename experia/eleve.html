@@ -2235,6 +2235,7 @@ function saveScore(activity, score, max) {
 }
 
 async function autoSaveProgress() {
+  if (E._submitted) return; // rendu définitif — ne plus écraser
   const syncEl = document.getElementById('sync-indicator');
   const syncIcon = document.getElementById('sync-icon');
   const syncText = document.getElementById('sync-text');
@@ -2416,6 +2417,7 @@ function confirmSubmit() {
 
 // ─── SOUMETTRE RÉSULTATS (RENDU DÉFINITIF) ──────────────────────────────────
 async function submitResults() {
+  E._submitted = true; // bloquer tout autoSaveProgress() concurrent
   const btn = document.getElementById('btn-final-send');
   if (btn) { btn.disabled = true; btn.textContent = 'Envoi en cours...'; }
 
