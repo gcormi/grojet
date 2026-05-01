@@ -45,7 +45,7 @@
       <li><a href="#c3" class="text-indigo-600 hover:underline flex items-center gap-2"><i data-lucide="circle-dot" class="w-3.5 h-3.5"></i> 3. Créer une session</a></li>
       <li><a href="#c4" class="text-indigo-600 hover:underline flex items-center gap-2"><i data-lucide="circle-dot" class="w-3.5 h-3.5"></i> 4. Partager avec les élèves</a></li>
       <li><a href="#c5" class="text-indigo-600 hover:underline flex items-center gap-2"><i data-lucide="circle-dot" class="w-3.5 h-3.5"></i> 5. Consulter les résultats</a></li>
-      <li><a href="#c6" class="text-indigo-600 hover:underline flex items-center gap-2"><i data-lucide="circle-dot" class="w-3.5 h-3.5"></i> 6. Gérer ses sessions (dupliquer, supprimer)</a></li>
+      <li><a href="#c6" class="text-indigo-600 hover:underline flex items-center gap-2"><i data-lucide="circle-dot" class="w-3.5 h-3.5"></i> 6. Mes évaluations — dossiers &amp; organisation</a></li>
       <li><a href="#c7" class="text-indigo-600 hover:underline flex items-center gap-2"><i data-lucide="circle-dot" class="w-3.5 h-3.5"></i> 7. Les 8 activités auto-corrigées</a></li>
       <li><a href="#c8" class="text-indigo-600 hover:underline flex items-center gap-2"><i data-lucide="circle-dot" class="w-3.5 h-3.5"></i> 8. Partager l'appli avec un collègue</a></li>
       <li><a href="#c9" class="text-indigo-600 hover:underline flex items-center gap-2"><i data-lucide="circle-dot" class="w-3.5 h-3.5"></i> 9. Confidentialité &amp; RGPD</a></li>
@@ -93,14 +93,7 @@
     <div class="space-y-4">
       <div class="bg-white rounded-xl border border-slate-100 p-5 shadow-sm">
         <h4 class="font-black text-slate-800 mb-3 flex items-center gap-2">
-          <i data-lucide="folder-plus" class="w-4 h-4 text-indigo-500"></i> Étape 1 — Créer le dossier Experia sur votre Nuage
-        </h4>
-        <p class="text-sm text-slate-600 font-medium">Dans l'interface web de votre Nuage, créez un dossier nommé exactement <code>experia</code> (en minuscules) à la racine de vos fichiers. C'est là que seront stockées toutes les sessions et résultats.</p>
-      </div>
-
-      <div class="bg-white rounded-xl border border-slate-100 p-5 shadow-sm">
-        <h4 class="font-black text-slate-800 mb-3 flex items-center gap-2">
-          <i data-lucide="key" class="w-4 h-4 text-indigo-500"></i> Étape 2 — Générer un mot de passe d'application Nuage
+          <i data-lucide="key" class="w-4 h-4 text-indigo-500"></i> Étape 1 — Générer un mot de passe d'application Nuage
         </h4>
         <ol class="list-decimal list-inside space-y-2 text-sm text-slate-600 font-medium">
           <li>Connectez-vous sur votre Nuage (<code>nuage03.apps.education.fr</code> ou nuage02, etc.)</li>
@@ -118,38 +111,49 @@
         <h4 class="font-black text-slate-800 mb-3 flex items-center gap-2">
           <i data-lucide="log-in" class="w-4 h-4 text-indigo-500"></i> Étape 3 — Se connecter dans Experia
         </h4>
-        <p class="text-sm text-slate-600 font-medium mb-3">Sur l'écran de connexion, renseignez simplement :</p>
-        <div class="space-y-2 text-sm">
+        <p class="text-sm text-slate-600 font-medium mb-3">Sur l'écran de connexion, renseignez les 4 champs :</p>
+        <div class="space-y-2 text-sm mb-3">
           <div class="flex gap-3">
-            <span class="w-40 font-bold text-slate-500 flex-none">Identifiant Nuage</span>
+            <span class="w-44 font-bold text-slate-500 flex-none">Serveur Nuage</span>
+            <span class="text-slate-600 font-medium">ex: <code>nuage03.apps.education.fr</code> (vérifiez dans Nuage → Paramètres WebDAV)</span>
+          </div>
+          <div class="flex gap-3">
+            <span class="w-44 font-bold text-slate-500 flex-none">Identifiant Nuage</span>
             <span class="text-slate-600 font-medium">votre identifiant court ENT (ex: <code>gcormi</code>)</span>
           </div>
           <div class="flex gap-3">
-            <span class="w-40 font-bold text-slate-500 flex-none">Mot de passe</span>
-            <span class="text-slate-600 font-medium">le mot de passe d'application généré à l'étape 2</span>
+            <span class="w-44 font-bold text-slate-500 flex-none">Mot de passe Nuage</span>
+            <span class="text-slate-600 font-medium">le mot de passe d'application généré à l'étape 1 <strong class="text-red-600">(⚠️ pas votre mot de passe ENT habituel)</strong></span>
+          </div>
+          <div class="flex gap-3">
+            <span class="w-44 font-bold text-slate-500 flex-none">Clé API Albert</span>
+            <span class="text-slate-600 font-medium">votre clé Albert personnelle (même que pour Mentoria ou Gamia)</span>
           </div>
         </div>
-        <p class="text-xs text-slate-400 font-medium mt-3">Les URLs n8n et le serveur Nuage sont pré-remplis avec les bonnes valeurs. Vous ne devriez pas avoir à les modifier (accessibles via le bouton "Paramètres avancés").</p>
+        <div class="bg-emerald-50 border border-emerald-100 rounded-lg p-3 text-xs text-emerald-700 font-medium">
+          <i data-lucide="sparkles" class="w-3.5 h-3.5 inline mr-1"></i>
+          <strong>Première connexion :</strong> si Experia ne trouve pas encore vos fichiers de travail dans le Nuage, un écran de bienvenue s'affiche avec un bouton <strong>"Démarrer avec Experia"</strong>. Cliquez — l'application initialise automatiquement votre espace (crée les fichiers nécessaires dans votre Nuage). Vous arrivez ensuite directement sur votre tableau de bord.
+        </div>
         <div class="bg-blue-50 border border-blue-100 rounded-lg p-3 mt-3 text-xs text-blue-700 font-medium">
           <i data-lucide="info" class="w-3.5 h-3.5 inline mr-1"></i>
-          <strong>Mémorisation automatique :</strong> après la première connexion, votre identifiant, mot de passe et clé Albert sont mémorisés dans le navigateur. Vous n'aurez pas à les ressaisir lors des prochaines connexions sur le même PC.
+          <strong>Mémorisation automatique :</strong> vos identifiants sont mémorisés dans le navigateur après la première connexion. Lors du prochain chargement, vous êtes connecté automatiquement sans rien saisir.
         </div>
         <div class="bg-indigo-50 border border-indigo-100 rounded-lg p-3 mt-3 text-xs text-indigo-700 font-medium">
           <i data-lucide="link" class="w-3.5 h-3.5 inline mr-1"></i>
-          <strong>Lien de connexion rapide :</strong> sur l'écran de connexion, cliquez <strong>"Générer mon lien de connexion rapide"</strong> (sous le bouton Se connecter). Copiez et conservez ce lien (Post-it, notes perso). En ouvrant ce lien sur n'importe quel PC, vous êtes connecté automatiquement sans rien saisir. ⚠️ Ce lien contient vos identifiants — gardez-le pour vous.
+          <strong>Lien de connexion rapide :</strong> sur l'écran de connexion, cliquez <strong>"Générer mon lien de connexion rapide"</strong>. Conservez ce lien — en l'ouvrant sur n'importe quel PC, vous êtes connecté instantanément. ⚠️ Ce lien contient vos identifiants — gardez-le pour vous.
         </div>
-        <div class="bg-emerald-50 border border-emerald-100 rounded-lg p-3 mt-3 text-xs text-emerald-700 font-medium">
+        <div class="bg-slate-50 border border-slate-200 rounded-lg p-3 mt-3 text-xs text-slate-700 font-medium">
           <i data-lucide="shield-check" class="w-3.5 h-3.5 inline mr-1"></i>
-          <strong>Ordinateurs partagés :</strong> Si vous utilisez l'ordinateur de la salle des profs, cliquez bien sur <strong>"Déconnexion"</strong> à la fin. Cela effacera instantanément vos identifiants sauvegardés en mémoire !
+          <strong>Ordinateurs partagés :</strong> cliquez sur le bouton <strong>Déconnexion</strong> (icône en haut à droite du tableau de bord) avant de quitter. Cela efface instantanément vos identifiants sauvegardés en mémoire.
         </div>
       </div>
 
       <div class="bg-white rounded-xl border border-slate-100 p-5 shadow-sm">
         <h4 class="font-black text-slate-800 mb-3 flex items-center gap-2">
-          <i data-lucide="cpu" class="w-4 h-4 text-indigo-500"></i> Étape 4 — Obtenir une clé API Albert
+          <i data-lucide="cpu" class="w-4 h-4 text-indigo-500"></i> Étape 3 — Obtenir une clé API Albert
         </h4>
         <p class="text-sm text-slate-600 font-medium">La clé API Albert est nécessaire pour que l'IA génère les questions et corrige les réponses ouvertes. Elle est réservée aux agents de l'Éducation Nationale.</p>
-        <p class="text-sm text-slate-500 font-medium mt-2">Si vous utilisez déjà Mentoria ou Gamia, vous possédez déjà une clé Albert — c'est la même.</p>
+        <p class="text-sm text-slate-500 font-medium mt-2">Si vous utilisez déjà Mentoria ou Gamia, vous possédez déjà une clé Albert — c'est la même. Sinon, faites-en la demande auprès du référent numérique de votre établissement ou de votre académie.</p>
       </div>
     </div>
   </section>
@@ -220,7 +224,7 @@
         <h4 class="font-black text-slate-800 mb-2 flex items-center gap-2"><i data-lucide="repeat" class="w-4 h-4 text-indigo-400"></i> Paramètres pédagogiques</h4>
         <ul class="space-y-2 text-sm text-slate-600 font-medium">
           <li class="flex items-start gap-2"><i data-lucide="refresh-cw" class="w-4 h-4 text-indigo-400 mt-0.5 flex-none"></i><span><strong>Activités rejouables</strong> — si coché, l'élève peut recommencer une activité. Décochez pour une évaluation en une seule tentative.</span></li>
-          <li class="flex items-start gap-2"><i data-lucide="eye-off" class="w-4 h-4 text-indigo-400 mt-0.5 flex-none"></i><span><strong>Afficher la correction</strong> (décoché par défaut, recommandé) — si décoché, l'élève voit uniquement ✓ ou ✗ sans voir la bonne réponse. La correction complète reste disponible en fin de session. Cela force la réflexion et évite le tâtonnement aléatoire.</span></li>
+          <li class="flex items-start gap-2"><i data-lucide="eye-off" class="w-4 h-4 text-indigo-400 mt-0.5 flex-none"></i><span><strong>Afficher la correction</strong> (décoché par défaut, recommandé) — si décoché, l'élève voit uniquement ✓ ou ✗ sans voir la bonne réponse. La correction complète reste disponible en fin de session. Cela force la réflexion et évite le tâtonnement aléatoire. <em>Ce réglage peut être modifié à tout moment depuis l'écran de la session (onglet Paramètres).</em></span></li>
           <li class="flex items-start gap-2"><i data-lucide="palette" class="w-4 h-4 text-indigo-400 mt-0.5 flex-none"></i><span><strong>Thème visuel</strong> — choisissez la couleur d'ambiance de l'espace élève via les pastilles colorées (Classique, Nature, Océan, Soleil, Crépuscule, Bonbon).</span></li>
         </ul>
       </div>
@@ -262,7 +266,7 @@
       </div>
     </div>
     <div class="bg-white rounded-xl border border-slate-100 p-4 shadow-sm text-sm text-slate-600 font-medium">
-      <strong>Côté élève :</strong> l'élève saisit son <strong>identifiant ENT</strong> et le code de session. Il peut reprendre là où il s'était arrêté s'il n'a pas eu le temps de tout terminer — ses scores partiels sont sauvegardés automatiquement après chaque activité.
+      <strong>Côté élève :</strong> l'élève saisit son <strong>identifiant ENT</strong> et le code de session. Il peut reprendre là où il s'était arrêté — ses scores sont sauvegardés automatiquement. S'il quitte une activité en cours sans la terminer, les points déjà acquis dans cette activité sont conservés (indiqués en orange <strong>~ XX%</strong> sur son tableau de bord). Il n'est jamais pénalisé pour avoir interrompu.
     </div>
     
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
@@ -315,8 +319,8 @@
       <div class="bg-white rounded-xl border border-slate-100 p-4 shadow-sm flex items-start gap-3">
         <i data-lucide="bar-chart-2" class="w-5 h-5 text-indigo-400 mt-0.5 flex-none"></i>
         <div>
-          <strong class="text-slate-800 text-sm">Score en points réels</strong>
-          <p class="text-xs text-slate-500 font-medium mt-0.5">Le score de l'élève est affiché en <strong>X / Y pts</strong> où Y est le total du barème de toutes les activités de la session. Les activités non faites comptent 0 pt et apparaissent en grisé.</p>
+          <strong class="text-slate-800 text-sm">Score en points et en pourcentage</strong>
+          <p class="text-xs text-slate-500 font-medium mt-0.5">Le score de l'élève est affiché en <strong>X / Y pts</strong> et en <strong>Z %</strong> — Y est le total du barème de toutes les activités. Les activités non faites comptent 0 pt. Les activités partiellement réalisées (élève sorti avant de terminer) apparaissent en orange avec leur score partiel.</p>
         </div>
       </div>
       <div class="bg-white rounded-xl border border-slate-100 p-4 shadow-sm flex items-start gap-3">
@@ -333,32 +337,48 @@
   <section id="c6" class="mb-12">
     <h2 class="text-2xl font-black text-slate-900 mb-4 flex items-center gap-3">
       <span class="w-8 h-8 bg-indigo-600 text-white rounded-xl flex items-center justify-center text-sm font-black flex-none">6</span>
-      Gérer ses sessions
+      Mes évaluations — dossiers &amp; organisation
     </h2>
 
+    <p class="text-slate-600 font-medium mb-4">L'onglet <strong>"Mes évaluations"</strong> (icône dossier dans le tableau de bord) vous permet d'organiser vos évaluations en dossiers réutilisables, distincts des sessions de classe en cours.</p>
+
     <div class="space-y-4">
-      <div class="bg-white rounded-xl border border-slate-100 p-5 shadow-sm">
-        <h4 class="font-black text-slate-800 mb-2 flex items-center gap-2"><i data-lucide="copy-plus" class="w-4 h-4 text-indigo-500"></i> Dupliquer une session (même contenu, autre classe)</h4>
-        <p class="text-sm text-slate-600 font-medium mb-2">Sur l'écran d'une session, cliquez l'icône <strong>Dupliquer</strong> (à gauche de la corbeille). Une boîte vous demande :</p>
-        <ol class="list-decimal list-inside text-sm text-slate-600 font-medium space-y-1">
-          <li>Le nouveau titre (ex: <em>"Les énergies — 5e2"</em>)</li>
-          <li>Le nouveau code d'accès (ex: <em>energies-5e2</em>)</li>
-        </ol>
-        <p class="text-sm text-slate-500 font-medium mt-2">La session est créée instantanément — Albert n'est pas rappelé, les mêmes questions sont réutilisées. Chaque classe aura ses propres résultats séparés.</p>
+
+      <div class="bg-indigo-50 border border-indigo-200 rounded-xl p-4 text-sm text-indigo-800 font-medium mb-2">
+        <i data-lucide="info" class="w-4 h-4 inline mr-1"></i>
+        <strong>Concept clé :</strong> une <em>évaluation</em> est votre modèle (questions, corpus, barème). Une <em>session</em> est le déploiement concret de cette évaluation pour une classe, avec ses propres résultats élèves.
       </div>
 
       <div class="bg-white rounded-xl border border-slate-100 p-5 shadow-sm">
-        <h4 class="font-black text-slate-800 mb-2 flex items-center gap-2"><i data-lucide="trash-2" class="w-4 h-4 text-red-400"></i> Supprimer une session</h4>
-        <p class="text-sm text-slate-600 font-medium mb-2">Deux façons de supprimer :</p>
-        <ul class="space-y-1.5 text-sm text-slate-600 font-medium">
-          <li class="flex items-start gap-2"><i data-lucide="list" class="w-4 h-4 text-slate-400 mt-0.5 flex-none"></i><span><strong>Depuis la liste</strong> — survolez une session, l'icône corbeille apparaît à droite. Cliquez pour supprimer sans ouvrir la session.</span></li>
-          <li class="flex items-start gap-2"><i data-lucide="folder-open" class="w-4 h-4 text-slate-400 mt-0.5 flex-none"></i><span><strong>Depuis la session</strong> — bouton corbeille en haut à droite de l'écran session.</span></li>
-        </ul>
-        <div class="bg-red-50 border border-red-100 rounded-lg p-3 mt-3 text-xs text-red-700 font-medium">
+        <h4 class="font-black text-slate-800 mb-2 flex items-center gap-2"><i data-lucide="folder-input" class="w-4 h-4 text-indigo-500"></i> Classer une session dans un dossier</h4>
+        <p class="text-sm text-slate-600 font-medium mb-2">Sur le tableau de bord, chaque carte de session dispose d'un bouton <strong>"Classer"</strong> (icône dossier avec flèche). Cliquez-le pour choisir un dossier de destination. La session disparaît du tableau de bord actif et est rangée dans "Mes évaluations".</p>
+        <p class="text-sm text-slate-500 font-medium">Utilisez cette fonction pour garder votre tableau de bord propre — seules les sessions en cours y apparaissent.</p>
+      </div>
+
+      <div class="bg-white rounded-xl border border-slate-100 p-5 shadow-sm">
+        <h4 class="font-black text-slate-800 mb-2 flex items-center gap-2"><i data-lucide="folder-plus" class="w-4 h-4 text-indigo-500"></i> Créer un dossier</h4>
+        <p class="text-sm text-slate-600 font-medium">Dans "Mes évaluations", cliquez <strong>"Nouveau dossier"</strong> et donnez-lui un nom (ex: <em>5ème — Sciences</em>, <em>Brevet 2026</em>). Organisez par matière, niveau ou période selon votre convenance.</p>
+      </div>
+
+      <div class="bg-white rounded-xl border border-slate-100 p-5 shadow-sm">
+        <h4 class="font-black text-slate-800 mb-2 flex items-center gap-2"><i data-lucide="play-circle" class="w-4 h-4 text-emerald-500"></i> Créer une session depuis un dossier</h4>
+        <p class="text-sm text-slate-600 font-medium mb-2">Dans un dossier, chaque évaluation a un bouton <strong>"Créer une session"</strong>. Cliquez-le pour déployer cette évaluation pour une nouvelle classe :</p>
+        <ol class="list-decimal list-inside text-sm text-slate-600 font-medium space-y-1 mb-2">
+          <li>Saisissez un nom de classe (ex: <em>5e2 — nov 2026</em>)</li>
+          <li>Une nouvelle session apparaît dans votre tableau de bord avec son propre lien élève</li>
+        </ol>
+        <p class="text-sm text-slate-500 font-medium">Albert n'est pas rappelé — les mêmes questions sont réutilisées. L'évaluation reste dans son dossier, vous pouvez créer autant de sessions de classe que nécessaire.</p>
+      </div>
+
+      <div class="bg-white rounded-xl border border-slate-100 p-5 shadow-sm">
+        <h4 class="font-black text-slate-800 mb-2 flex items-center gap-2"><i data-lucide="trash-2" class="w-4 h-4 text-red-400"></i> Supprimer une session ou une évaluation</h4>
+        <p class="text-sm text-slate-600 font-medium mb-2">Depuis le tableau de bord ou "Mes évaluations", le bouton corbeille supprime la session ou l'évaluation.</p>
+        <div class="bg-red-50 border border-red-100 rounded-lg p-3 text-xs text-red-700 font-medium">
           <i data-lucide="alert-triangle" class="w-3.5 h-3.5 inline mr-1"></i>
-          La suppression efface <strong>le fichier session ET tous les résultats élèves associés</strong> du Nuage. Une confirmation affiche le nombre de résultats qui seront supprimés. Action irréversible.
+          La suppression efface <strong>le fichier session ET tous les résultats élèves associés</strong> du Nuage. Action irréversible.
         </div>
       </div>
+
     </div>
   </section>
 
@@ -525,7 +545,7 @@
   </section>
 
   <div class="border-t border-slate-100 pt-6 text-center text-sm text-slate-400 font-medium">
-    Experia — Forge des Communs Numériques Éducatifs · v1.2 — Mise à jour avril 2026
+    Experia — Forge des Communs Numériques Éducatifs · v1.3 — Mise à jour mai 2026
   </div>
 
 </div>

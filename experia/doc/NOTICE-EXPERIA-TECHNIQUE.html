@@ -33,7 +33,7 @@
       </div>
       <div>
         <h1 class="text-3xl font-black text-slate-900 leading-none">Experia</h1>
-        <p class="text-xs font-bold text-indigo-500 uppercase tracking-widest">Notice technique — v1.0</p>
+        <p class="text-xs font-bold text-indigo-500 uppercase tracking-widest">Notice technique — v1.3</p>
       </div>
     </div>
     <p class="text-slate-400 text-sm mt-3 font-medium">Documentation destinée aux administrateurs, déployeurs et développeurs souhaitant comprendre, installer ou faire évoluer Experia.</p>
@@ -94,50 +94,54 @@
 ├── index.html                      ← Page d'accueil
 ├── prof.html                       ← Interface professeur (SPA multi-écrans)
 ├── eleve.html                      ← Interface élève (8 activités + synthèse)
-├── NOTICE-EXPERIA-PROF.html        ← Guide d'utilisation professeur
-├── NOTICE-EXPERIA-TECHNIQUE.html   ← Ce document
-├── ROADMAP-EXPERIA.html            ← État d'avancement
-├── experia_storage.json            ← Workflow n8n WebDAV à importer
-├── experia_albert.json             ← Workflow n8n Albert IA à importer
+├── doc/
+│   ├── NOTICE-EXPERIA-PROF.html        ← Guide d'utilisation professeur
+│   ├── NOTICE-EXPERIA-TECHNIQUE.html   ← Ce document
+│   ├── ROADMAP-EXPERIA.html            ← État d'avancement
+│   ├── fiche_experia.html              ← Fiche de synthèse A4 imprimable
+│   └── guide_acces_outils.html         ← Guide accès outils IA
 └── .gitlab-ci.yml                  ← Pipeline CI/CD GitLab Pages</code></pre>
 
       <h3>Nuage — dossier <code>/experia/</code> (par professeur)</h3>
       <pre><code>experia/
-├── manifest.json                              ← Index de tous les fichiers
-├── session_&lt;timestamp&gt;.json                  ← Données de session (questions + barème)
-└── result_&lt;sessionId&gt;_&lt;studentId&gt;.json      ← Résultats d'un élève (partiel ou final)</code></pre>
+├── experia_manifest.json                      ← Index des sessions actives
+├── experia_library.json                       ← Évaluations classées en dossiers
+├── experia_session_{id}.json                  ← Données d'une évaluation (questions + barème)
+├── experia_results_{id}.json                  ← Résultats des élèves pour une session
+├── experia_presences_{id}.json                ← Présences temps réel
+└── experia_completions_{id}.json              ← Activités terminées par élève</code></pre>
 
-      <h3>Format session JSON</h3>
+      <h3>Format session JSON (<code>experia_session_{id}.json</code>)</h3>
       <pre><code>{
   "id": "session_1748000000000",
   "code": "energies-5e1",           // code choisi par le prof
   "title": "Les énergies renouvelables",
   "corpus": "Le soleil est...",
-  "createdAt": "2025-09-01T10:00:00Z",
-  "config": { "qcm": 10, "paires": 8, "motsmeles": 8, "motscroises": 8, "rapidite": 8, "completer": 5, "intrus": 5, "questions_ia": 3 },
-  "scoring": { "qcm": 10, "paires": 8, "motsmeles": 8, "motscroises": 8, "rapidite": 8, "completer": 5, "intrus": 5, "questions_ia": 20 },
+  "createdAt": "2026-01-15T10:00:00Z",
+  "config": { "qcm": 10, "paires": 8, ... },
+  "scoring": { "qcm": 10, "paires": 8, ... },
   "retryable": false,
+  "showCorrection": false,          // toggle prof — afficher la correction après chaque réponse
   "theme": "nature",
   "model": "openai/gpt-oss-120b",
-  "apiKey": "sk-...",
   "questions": {
-    "qcm":       [{ "q": "...", "choices": ["...", "...", "...", "..."], "correct": 0, "expl": "..." }],
-    "paires":    [{ "term": "...", "def": "..." }],
-    "motsmeles": [{ "word": "..." }],
+    "qcm":         [{ "q": "...", "choices": ["...", "...", "...", "..."], "correct": 0, "expl": "..." }],
+    "paires":      [{ "term": "...", "def": "..." }],
+    "motsmeles":   [{ "word": "..." }],
     "motscroises": [{ "word": "...", "def": "..." }],
-    "rapidite":  [{ "q": "...", "choices": ["...", "...", "...", "..."], "correct": 0 }],
-    "completer": [{ "phrase": "... _____ ...", "answer": "..." }],
-    "intrus":    [{ "statements": ["...", "...", "...", "..."], "intrus": 2, "expl": "..." }],
+    "rapidite":    [{ "q": "...", "choices": ["...", "...", "...", "..."], "correct": 0 }],
+    "completer":   [{ "phrase": "... _____ ...", "answer": "..." }],
+    "intrus":      [{ "statements": ["...", "...", "...", "..."], "intrus": 2, "expl": "..." }],
     "questions_ia": [{ "q": "..." }]
   }
 }</code></pre>
 
-      <h3>Format résultat JSON</h3>
+      <h3>Format résultats JSON (<code>experia_results_{id}.json</code>)</h3>
       <pre><code>{
   "sessionId": "session_1748000000000",
   "sessionTitle": "Les énergies renouvelables",
   "studentId": "marie.dupont",
-  "completedAt": "2025-09-01T10:35:00Z",
+  "completedAt": "2026-01-15T10:35:00Z",
   "submitted": true,          // true = rendu définitif (accès verrouillé pour l'élève)
   "partial": false,           // true si l'élève n'a pas tout terminé
   "activitiesDone": 6,
@@ -147,11 +151,30 @@
     "qcm": { "score": 7.5, "max": 10, "rawScore": 8, "rawMax": 10 }
     // score = barème prof, rawScore = score brut
   },
-  "teacherGrade": "",         // note ajoutée manuellement par le prof
+  "partialScores": {
+    "motsmeles": { "score": 3.2, "max": 8, "rawScore": 4, "rawMax": 10, "partial": true }
+    // activités quittées en cours — points déjà acquis conservés
+  },
+  "teacherGrade": "",
   "teacherComment": ""
 }</code></pre>
 
-      <p class="text-sm mt-2">Les résultats partiels (<code>partial: true</code>) sont écrits automatiquement après chaque activité terminée. Le fichier est ensuite écrasé (même nom) lors de la soumission finale. Lorsque <code>submitted: true</code>, la reconnexion élève est bloquée avec un message de confirmation de rendu.</p>
+      <p class="text-sm mt-2">Les résultats partiels (<code>partial: true</code>) sont écrits automatiquement après chaque activité terminée <strong>et</strong> quand l'élève retourne au tableau de bord depuis une activité en cours. Le fichier est écrasé lors de la soumission finale. Lorsque <code>submitted: true</code>, la reconnexion est bloquée.</p>
+
+      <h3>Format bibliothèque JSON (<code>experia_library.json</code>)</h3>
+      <pre><code>{
+  "folders": [
+    { "id": "folder_1748000000001", "name": "5ème — Sciences", "createdAt": "..." }
+  ],
+  "items": [
+    {
+      "sessionId": "session_1748000000000",
+      "folderId": "folder_1748000000001",
+      "classifiedAt": "2026-01-20T08:00:00Z"
+      // contenu de la session (questions, barème…) inclus
+    }
+  ]
+}</code></pre>
     </div>
 
     <!-- ═══ WORKFLOWS N8N ═══ -->
@@ -159,25 +182,29 @@
       <h2><i data-lucide="workflow" class="w-5 h-5 text-indigo-500"></i> Workflows n8n</h2>
       <p>Deux workflows distincts sont nécessaires. Les deux ont la même structure : Webhook → Code → Répondre.</p>
 
-      <h3>1. experia_storage — Proxy WebDAV</h3>
-      <p class="text-sm">Traduit les requêtes POST navigateur en requêtes WebDAV authentifiées vers Nuage (contournement CORS).</p>
+      <h3>1. mentoria_storage — Proxy WebDAV partagé</h3>
+      <p class="text-sm">Proxy commun à Mentoria et Experia. Traduit les requêtes POST navigateur en requêtes WebDAV authentifiées vers Nuage (contournement CORS). URL : <code>https://n8n.incubateur.education.gouv.fr/webhook/mentoria_storage</code></p>
       <div class="space-y-1 my-3">
-        <div class="node-box"><p class="font-bold text-slate-800 text-sm">① Webhook</p><p class="text-sm text-slate-500">POST, chemin <code>experia_storage</code>, CORS <code>*</code></p></div>
+        <div class="node-box"><p class="font-bold text-slate-800 text-sm">① Webhook</p><p class="text-sm text-slate-500">POST, chemin <code>mentoria_storage</code>, CORS <code>*</code></p></div>
         <div class="arrow">↓</div>
-        <div class="node-box"><p class="font-bold text-slate-800 text-sm">② Code Experia</p><p class="text-sm text-slate-500">Dispatche selon <code>action</code> : <code>test</code> / <code>list</code> / <code>read</code> / <code>write</code> / <code>delete</code>. Basic Auth WebDAV avec <code>username</code> + <code>password</code>. URL base : <code>https://&lt;server&gt;/remote.php/dav/files/&lt;username&gt;/experia/</code></p></div>
+        <div class="node-box"><p class="font-bold text-slate-800 text-sm">② Code</p><p class="text-sm text-slate-500">Dispatche selon <code>action</code> : <code>read</code> / <code>write</code> / <code>delete</code>. Basic Auth WebDAV avec <code>username</code> + <code>password</code>. URL base : <code>https://&lt;server&gt;/remote.php/dav/files/&lt;username&gt;/experia/</code> (pour les fichiers <code>experia_*</code>)</p></div>
         <div class="arrow">↓</div>
         <div class="node-box"><p class="font-bold text-slate-800 text-sm">③ Répondre</p><p class="text-sm text-slate-500"><code>JSON.stringify($json)</code>, Content-Type <code>application/json</code>, headers CORS complets</p></div>
       </div>
 
       <pre><code>// Corps de requête attendu
 {
-  "action":   "test" | "list" | "read" | "write" | "delete",
+  "action":   "read" | "write" | "delete",
   "username": "gcormi",
   "password": "mot-de-passe-application",
   "server":   "nuage03.apps.education.fr",
-  "filename": "session_abc.json",    // requis pour read/write/delete
-  "content":  { ... }                // requis pour write
-}</code></pre>
+  "filename": "experia_manifest.json",    // requis pour read/write/delete
+  "content":  { ... }                      // requis pour write
+}
+
+// Réponse
+{ "success": true, "content": { ... } }   // read
+{ "success": true }                        // write / delete</code></pre>
 
       <h3>2. experia_albert — Proxy Albert IA</h3>
       <p class="text-sm">Transmet les requêtes à l'API Albert avec la clé API fournie dans le corps de la requête.</p>
@@ -268,18 +295,24 @@ if (!match) throw new Error('JSON invalide');</code></pre>
     <div class="bg-white rounded-3xl p-7 shadow-sm border border-slate-100">
       <h2><i data-lucide="save" class="w-5 h-5 text-emerald-500"></i> Sauvegarde progressive &amp; reprise</h2>
 
-      <h3>Auto-save après chaque activité</h3>
-      <p class="text-sm"><code>autoSaveProgress()</code> est appelée à chaque fois qu'un élève termine une activité (<code>saveScore()</code>). Elle écrit silencieusement un fichier résultat partiel sur le Nuage avec <code>partial: true</code>. Si la sauvegarde échoue, l'erreur est ignorée (l'élève n'est pas bloqué).</p>
+      <h3>Auto-save après chaque activité et en cours d'activité</h3>
+      <p class="text-sm"><code>autoSaveProgress()</code> est appelée : (1) quand un élève termine une activité (<code>saveScore()</code>), (2) quand il revient au tableau de bord depuis une activité en cours (<code>backToDashboard()</code>). Elle écrit silencieusement le fichier résultat sur le Nuage. Si la sauvegarde échoue, l'erreur est ignorée.</p>
+      <p class="text-sm mt-2"><strong>Points partiels :</strong> <code>savePartialScore()</code> est appelée lors du retour au tableau de bord. Elle calcule le score acquis dans l'activité en cours et le stocke dans <code>E.partialScores</code> (objet séparé de <code>E.scores</code>). Ces scores partiels sont inclus dans le rendu final si l'élève remet son travail.</p>
+      <pre><code>// Calcul rawMax selon le type d'activité
+if (id === 'paires') {
+  rawScore = Math.max(0, matched.length - Math.floor(wrongAttempts * 0.5));
+  rawMax = pairesState.total;
+} else if (id === 'motsmeles')  { rawMax = mmState.words.length; }
+else if (id === 'motscroises') { rawMax = mcState.placements.length; }
+else if (['rapidite','questions_ia'].includes(id)) { rawMax = gameData.length * 10; }
+const profScore = Math.round((rawScore / rawMax) * profMax * 10) / 10;</code></pre>
 
       <h3>Reprise de session</h3>
-      <p class="text-sm">À la connexion, <code>doConnect()</code> cherche un fichier résultat existant pour cet élève sur cette session. Si trouvé, les scores sont rechargés dans <code>E.scores</code> avant d'afficher le dashboard. L'élève retrouve ses activités déjà complétées marquées "terminé" et peut continuer les restantes.</p>
-      <pre><code>// Reprise — lecture du résultat partiel existant
-const filename = `result_${session.id}_${studentId.replace(/[^a-zA-Z0-9]/g,'-')}.json`;
-const prev = await storage({ action: 'read', filename });
-if (prev.success && prev.content?.scores) {
-  E.scores = prev.content.scores;   // restaurer les scores
-  E._resuming = true;
-}</code></pre>
+      <p class="text-sm">À la connexion, l'app cherche un fichier résultat existant pour cet élève. Si trouvé, <code>E.scores</code> et <code>E.partialScores</code> sont rechargés. L'élève retrouve ses activités marquées "terminé" (vert) ou "partiel" (orange).</p>
+      <pre><code>const filename = `experia_results_${session.id}.json`;
+const prev = await callNuage('read', filename);
+// Le fichier contient un tableau de résultats par élève
+// On cherche la ligne correspondant à cet élève (studentId)</code></pre>
 
       <p class="text-sm mt-2"><strong>Condition de reprise :</strong> l'élève doit saisir exactement le même identifiant (sensible à la casse) que lors de sa première connexion.</p>
     </div>
@@ -302,10 +335,19 @@ const text = Array.from(tmp.querySelectorAll('p, li, h1, h2, h3, h4, h5, h6, td,
 
     <!-- ═══ PERSISTANCE CONFIG ═══ -->
     <div class="bg-white rounded-3xl p-7 shadow-sm border border-slate-100">
-      <h2><i data-lucide="database" class="w-5 h-5 text-slate-500"></i> Persistance locale (localStorage)</h2>
-      <p class="text-sm">Seuls quatre champs sont mémorisés dans <code>localStorage</code> sous la clé <code>experia_config</code> :</p>
+      <h2><i data-lucide="database" class="w-5 h-5 text-slate-500"></i> Persistance locale (localStorage) &amp; première connexion</h2>
+      <p class="text-sm">Quatre champs sont mémorisés dans <code>localStorage</code> sous la clé <code>experia_config</code> :</p>
       <pre><code>{ "user": "gcormi", "pass": "mot-de-passe-app", "apiKey": "sk-...", "server": "nuage03..." }</code></pre>
-      <p class="text-sm mt-2">La déconnexion depuis l'interface vide explicitement ces champs (sécurité pour ordinateurs partagés).</p>
+      <p class="text-sm mt-2">Au chargement, si tous les champs sont présents, <code>doLogin()</code> est appelé automatiquement après 200 ms. La déconnexion vide explicitement ces champs.</p>
+
+      <h3>Première connexion — détection et initialisation</h3>
+      <p class="text-sm"><code>doLogin()</code> lit <code>experia_manifest.json</code> après authentification. Si le fichier n'existe pas (<code>!mr.success || !mr.content?.sessions</code>), l'écran de bienvenue (<code>screen-welcome</code>) s'affiche. Sinon, accès direct au tableau de bord.</p>
+      <pre><code>// initializeWorkspace() — créé par le bouton "Démarrer avec Experia"
+await callNuage('write', 'experia_manifest.json', { sessions: [] });
+await callNuage('write', 'experia_library.json', { folders: [], items: [] });
+showScreen('dashboard');
+loadSessions();</code></pre>
+      <p class="text-sm mt-2">Cette initialisation crée les deux fichiers racines dans le dossier <code>experia/</code> du Nuage du professeur. S'ils existent déjà (ex: compte existant), cette étape est silencieusement ignorée.</p>
 
       <h3>Lien de connexion rapide (#login=BASE64)</h3>
       <p class="text-sm">Un bouton "Générer mon lien de connexion rapide" encode toutes les credentials en JSON puis Base64 dans le hash URL :</p>
@@ -441,7 +483,7 @@ const decoded = JSON.parse(decodeURIComponent(escape(atob(hash.slice(7)))));
             <p class="font-bold text-slate-700 text-sm">Serveur Nuage variable selon l'académie</p>
           </div>
           <div class="p-4 text-sm text-slate-600">
-            <p>Le serveur Nuage par défaut est <code>nuage03.apps.education.fr</code> mais certains profs sont sur <code>nuage01</code>, <code>nuage02</code>, etc. Vérifiable dans <em>Nuage → Fichiers → Paramètres WebDAV</em>. Modifiable via "Paramètres avancés" dans l'écran de connexion.</p>
+            <p>Il n'y a pas de valeur par défaut — chaque enseignant doit saisir son serveur. Vérifiable dans <em>Nuage → Fichiers → Paramètres WebDAV</em> (généralement <code>nuage01</code>, <code>nuage02</code> ou <code>nuage03.apps.education.fr</code>).</p>
           </div>
         </div>
 
@@ -479,7 +521,7 @@ const decoded = JSON.parse(decodeURIComponent(escape(atob(hash.slice(7)))));
   </div>
 
   <footer class="max-w-3xl mx-auto mt-10 text-center text-xs text-slate-300 font-medium pb-6">
-    Experia v1.1 — Notice technique — Forge des Communs Numériques Éducatifs — Mise à jour avril 2026
+    Experia v1.3 — Notice technique — Forge des Communs Numériques Éducatifs — Mise à jour mai 2026
   </footer>
 
   <script>lucide.createIcons();</script>

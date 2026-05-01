@@ -153,6 +153,65 @@
 </div>
 
 <!-- ═══════════════════════════════════════════ -->
+<!-- ÉCRAN 1B : PREMIÈRE CONNEXION              -->
+<!-- ═══════════════════════════════════════════ -->
+<div id="screen-welcome" class="screen items-center justify-center min-h-screen">
+  <div class="max-w-lg mx-auto px-6 py-12 fade-up w-full">
+
+    <!-- Succès connexion -->
+    <div class="text-center mb-8">
+      <div class="w-16 h-16 bg-emerald-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-emerald-200">
+        <i data-lucide="check" class="w-8 h-8 text-white"></i>
+      </div>
+      <h2 class="text-2xl font-black text-slate-900">Connexion réussie !</h2>
+      <p id="welcome-user" class="text-slate-500 font-medium mt-1"></p>
+    </div>
+
+    <!-- Bienvenue première fois -->
+    <div class="bg-white rounded-3xl p-7 shadow-sm border border-slate-100 mb-5">
+      <p class="font-black text-slate-900 text-lg mb-1">Bienvenue sur Experia</p>
+      <p class="text-sm text-slate-500 font-medium mb-6">C'est votre première connexion. Voici comment ça fonctionne :</p>
+
+      <div class="space-y-4">
+        <div class="flex items-start gap-4">
+          <div class="w-8 h-8 bg-indigo-100 rounded-xl flex items-center justify-center flex-none text-indigo-700 font-black text-sm">1</div>
+          <div>
+            <p class="font-bold text-slate-800 text-sm">Créez une évaluation</p>
+            <p class="text-xs text-slate-400 font-medium mt-0.5">Donnez un titre, un corpus (texte ou thème), et Albert génère les activités automatiquement</p>
+          </div>
+        </div>
+        <div class="flex items-start gap-4">
+          <div class="w-8 h-8 bg-indigo-100 rounded-xl flex items-center justify-center flex-none text-indigo-700 font-black text-sm">2</div>
+          <div>
+            <p class="font-bold text-slate-800 text-sm">Classez vos évaluations en dossiers</p>
+            <p class="text-xs text-slate-400 font-medium mt-0.5">Organisez par matière, niveau ou période depuis "Mes évaluations"</p>
+          </div>
+        </div>
+        <div class="flex items-start gap-4">
+          <div class="w-8 h-8 bg-indigo-100 rounded-xl flex items-center justify-center flex-none text-indigo-700 font-black text-sm">3</div>
+          <div>
+            <p class="font-bold text-slate-800 text-sm">Créez une session pour votre classe</p>
+            <p class="text-xs text-slate-400 font-medium mt-0.5">Partagez le lien avec vos élèves — les résultats arrivent en temps réel</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Infos stockage -->
+    <div class="bg-slate-50 border border-slate-200 rounded-2xl px-5 py-4 mb-6 text-sm text-slate-600 space-y-1 font-medium">
+      <p class="font-black text-slate-700 text-xs uppercase tracking-wider mb-2">Où sont stockées vos données ?</p>
+      <p>Vos évaluations et résultats élèves sont stockés dans votre <strong>Nuage personnel</strong> sous forme de fichiers <span class="font-mono text-xs">experia_*.json</span>.</p>
+      <p class="text-slate-400 text-xs mt-1">Aucun serveur central — vos données restent chez vous, conformément au RGPD.</p>
+    </div>
+
+    <button onclick="initializeWorkspace()" class="w-full bg-indigo-600 text-white font-black py-4 rounded-2xl hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-200 flex items-center justify-center gap-2">
+      <i data-lucide="rocket" class="w-5 h-5"></i>
+      <span id="welcome-btn-text">Démarrer avec Experia</span>
+    </button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
 <!-- ÉCRAN 2 : TABLEAU DE BORD                  -->
 <!-- ═══════════════════════════════════════════ -->
 <div id="screen-dashboard" class="screen">
@@ -816,7 +875,7 @@ function applyGlobalTheme(theme) {
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById('screen-' + id).classList.add('active');
-  document.getElementById('btn-logout').classList.toggle('hidden', id === 'login');
+  document.getElementById('btn-logout').classList.toggle('hidden', id === 'login' || id === 'welcome');
   
   if (id === 'config') {
     document.getElementById('config-model').value = document.getElementById('create-model').value;
@@ -1127,16 +1186,39 @@ async function doLogin() {
   state.albertProxy = albertProxy;
 
   try {
-    // Test connexion Nuage : lecture du manifest (peut ne pas exister encore)
-    await callNuage('read', 'experia_manifest.json');
-    document.getElementById('dash-user').textContent = nuageUser;
+    const mr = await callNuage('read', 'experia_manifest.json');
     saveConfig();
-    showScreen('dashboard');
-    loadSessions();
+    const isNew = !mr.success || !mr.content || !mr.content.sessions;
+    if (isNew) {
+      document.getElementById('welcome-user').textContent = nuageUser + ' · ' + nuageServer;
+      showScreen('welcome');
+    } else {
+      document.getElementById('dash-user').textContent = nuageUser;
+      showScreen('dashboard');
+      loadSessions();
+    }
   } catch (e) {
     showLoginError('Impossible de joindre Nuage : ' + e.message);
   }
   btn.textContent = 'Se connecter';
+}
+
+async function initializeWorkspace() {
+  const btnText = document.getElementById('welcome-btn-text');
+  const btn = btnText?.closest('button');
+  if (btn) btn.disabled = true;
+  if (btnText) btnText.textContent = 'Initialisation…';
+  try {
+    await callNuage('write', 'experia_manifest.json', { sessions: [] });
+    await callNuage('write', 'experia_library.json', { folders: [], items: [] });
+    document.getElementById('dash-user').textContent = state.nuageUser;
+    showScreen('dashboard');
+    loadSessions();
+  } catch(e) {
+    alert('Erreur initialisation Nuage : ' + e.message);
+    if (btn) btn.disabled = false;
+    if (btnText) btnText.textContent = 'Démarrer avec Experia';
+  }
 }
 
 function showLoginError(msg) {

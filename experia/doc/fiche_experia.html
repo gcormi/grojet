@@ -164,7 +164,7 @@ body {
     <div class="sub">Outil d'évaluation formative enrichi par l'IA — fiche de fonctionnement</div>
     <div class="badges">
       <span class="badge">🇫🇷 Albert API — IA souveraine</span>
-      <span class="badge">☁️ Cloudflare Workers (Europe, RGPD)</span>
+      <span class="badge">☁️ Nuage apps.education.fr (données chez le prof)</span>
       <span class="badge">🏫 Forge des Communs Numériques</span>
       <span class="badge">📱 Zéro installation élève</span>
     </div>
@@ -177,31 +177,31 @@ body {
   <div class="phases">
 
     <div class="phase">
-      <div class="phase-title">① Création de la séance — côté professeur</div>
+      <div class="phase-title">① Création de l'évaluation — côté professeur</div>
       <div class="flow">
         <span class="node prof">👨‍🏫 Professeur</span>
         <span class="arr">→</span>
-        <span class="desc">saisit un thème, un niveau ou colle une leçon dans l'interface Experia</span>
+        <span class="desc">saisit un corpus (leçon, article, transcription…) dans l'interface Experia</span>
       </div>
       <div class="flow">
         <span class="arr">↓</span>
-        <span class="node sys">⚙️ Worker Cloudflare</span>
+        <span class="node sys">⚙️ Proxy n8n (incubateur.education.gouv.fr)</span>
         <span class="arr">→</span>
         <span class="node ia">🤖 Albert API (Étalab)</span>
         <span class="arr">→</span>
-        <span class="desc"><strong>génère les activités</strong> : QCM, mots croisés, phrases à trous, mots mêlés…</span>
+        <span class="desc"><strong>génère les activités</strong> : QCM, mots croisés, phrases à trous, mots mêlés, paires…</span>
       </div>
       <div class="flow">
         <span class="arr">↓</span>
         <span class="node prof">👨‍🏫 Professeur</span>
         <span class="arr">→</span>
-        <span class="desc"><strong>valide les questions</strong> : supprime les indésirables, ajuste le barème par activité, puis publie</span>
+        <span class="desc"><strong>valide les questions</strong> : supprime les indésirables, ajuste le barème, publie</span>
       </div>
       <div class="flow">
         <span class="arr">↓</span>
-        <span class="node store">💾 Cloudflare KV</span>
+        <span class="node store">☁️ Nuage apps.education.fr (compte du prof)</span>
         <span class="arr">→</span>
-        <span class="desc">la session est <strong>stockée</strong> + un <strong>lien unique</strong> est généré pour les élèves</span>
+        <span class="desc">la session est <strong>stockée dans son espace Nuage</strong> + un <strong>lien unique</strong> est généré pour les élèves</span>
       </div>
     </div>
 
@@ -214,34 +214,30 @@ body {
       </div>
       <div class="flow">
         <span class="arr">↓</span>
-        <span class="desc">choisit un pseudonyme libre → accède aux activités → répond</span>
+        <span class="desc">saisit son identifiant ENT → accède aux activités → répond</span>
       </div>
       <div class="flow">
         <span class="arr">↓</span>
-        <span class="node sys">⚙️ Worker Cloudflare</span>
-        <span class="arr">→</span>
         <span class="node ia">🤖 Albert API</span>
         <span class="arr">→</span>
-        <span class="desc">corrige la réponse et <strong>génère un feedback personnalisé</strong></span>
+        <span class="desc">corrige les questions ouvertes et <strong>génère un feedback personnalisé</strong> (autres activités : auto-correction locale)</span>
       </div>
       <div class="flow">
         <span class="arr">↓</span>
-        <span class="node eleve">🎓 Élève</span>
-        <span class="arr">←</span>
-        <span class="desc">reçoit le feedback <strong>immédiatement</strong> dans son navigateur — résultats enregistrés dans KV</span>
+        <span class="node store">☁️ Nuage apps.education.fr</span>
+        <span class="arr">→</span>
+        <span class="desc">résultats <strong>sauvegardés automatiquement</strong> après chaque activité (points partiels conservés si départ en cours)</span>
       </div>
     </div>
 
     <div class="phase">
       <div class="phase-title">③ Suivi en temps réel — côté professeur</div>
       <div class="flow">
-        <span class="node store">💾 Cloudflare KV</span>
-        <span class="arr">→</span>
-        <span class="node sys">⚙️ Worker</span>
+        <span class="node store">☁️ Nuage apps.education.fr</span>
         <span class="arr">→</span>
         <span class="node prof">👨‍🏫 Professeur</span>
         <span class="arr">←</span>
-        <span class="desc">voit les résultats <strong>en direct</strong>, peut réactiver une activité, télécharger la correction (.doc) ou l'<strong>évaluation papier</strong> (.doc)</span>
+        <span class="desc">voit les résultats <strong>en direct</strong> (actualisation 30s), scores en pts + %, export CSV, correction (.doc), évaluation papier (.doc)</span>
       </div>
     </div>
 
@@ -258,9 +254,9 @@ body {
       <div class="infra-desc">IA souveraine française (Étalab / DINUM). Les échanges restent sur les serveurs de l'État français.</div>
     </div>
     <div class="infra-item">
-      <div class="infra-role">Proxy & stockage des sessions</div>
-      <div class="infra-name">Cloudflare Workers + KV</div>
-      <div class="infra-desc">Accord DPA RGPD en place. Données localisables en Europe. Effacement possible à tout moment.</div>
+      <div class="infra-role">Stockage des sessions &amp; résultats</div>
+      <div class="infra-name">Nuage apps.education.fr</div>
+      <div class="infra-desc">Nextcloud de l'Éducation Nationale. Données dans le compte personnel du professeur. Proxy n8n sur incubateur.education.gouv.fr.</div>
     </div>
     <div class="infra-item">
       <div class="infra-role">Hébergement de l'interface</div>
@@ -283,7 +279,7 @@ body {
   </div>
 </div>
 
-<div class="footer">Experia — Prototype pédagogique — Académie de Corse — 2025-2026 · Code source : forge.aeif.fr</div>
+<div class="footer">Experia v1.3 — Forge des Communs Numériques Éducatifs — Mai 2026 · forge.aeif.fr</div>
 
 </body>
 </html>

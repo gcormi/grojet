@@ -36,7 +36,7 @@
       </div>
       <div>
         <h1 class="text-3xl font-black text-slate-900 leading-none">Experia — Roadmap</h1>
-        <p class="text-xs font-bold text-indigo-500 uppercase tracking-widest">État d'avancement · Avril 2026</p>
+        <p class="text-xs font-bold text-indigo-500 uppercase tracking-widest">État d'avancement · Mai 2026</p>
       </div>
     </div>
     <p class="text-slate-400 text-sm mt-3 font-medium">Vision d'ensemble de ce qui est fait, en cours et à venir.</p>
@@ -163,11 +163,44 @@
         </div>
         <div class="item">
           <div class="item-icon icon-done"><i data-lucide="check" class="w-3.5 h-3.5 text-emerald-600"></i></div>
-          <div><p class="font-semibold text-slate-700">Workflow de rendu & Reprise</p><p class="text-slate-400">Boutons "Rendre le travail" (verrouillage) et "Continuer plus tard" (sauvegarde partielle), gestion automatique de la reprise au retour</p></div>
+          <div><p class="font-semibold text-slate-700">Workflow de rendu &amp; Reprise</p><p class="text-slate-400">Boutons "Rendre le travail" (verrouillage) et "Continuer plus tard" (sauvegarde partielle), gestion automatique de la reprise au retour</p></div>
         </div>
         <div class="item">
           <div class="item-icon icon-done"><i data-lucide="check" class="w-3.5 h-3.5 text-emerald-600"></i></div>
-          <div><p class="font-semibold text-slate-700">Synthèse finale + barème réel</p><p class="text-slate-400">Récapitulatif des scores sur X points (barème prof), soumission vers le Nuage</p></div>
+          <div><p class="font-semibold text-slate-700">Synthèse finale — score en points ET en %</p><p class="text-slate-400">Récapitulatif affiché en X / Y pts et Z %, soumission vers le Nuage</p></div>
+        </div>
+        <div class="item">
+          <div class="item-icon icon-done"><i data-lucide="check" class="w-3.5 h-3.5 text-emerald-600"></i></div>
+          <div><p class="font-semibold text-slate-700">Points partiels conservés si départ en cours d'activité</p><p class="text-slate-400">savePartialScore() capte les points acquis dans une activité interrompue. rawMax corrigé pour paires, mots mêlés, mots croisés, rapidité, questions IA. Affichage orange ~ XX% sur le tableau de bord élève.</p></div>
+        </div>
+      </div>
+
+      <!-- Interface professeur v1.3 -->
+      <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Interface professeur — nouvelles fonctionnalités (v1.3)</p>
+      <div class="space-y-0 mb-5">
+        <div class="item">
+          <div class="item-icon icon-done"><i data-lucide="check" class="w-3.5 h-3.5 text-emerald-600"></i></div>
+          <div><p class="font-semibold text-slate-700">Persistance session / auto-login</p><p class="text-slate-400">Les 4 credentials (serveur, login, mot de passe d'application, clé Albert) sont mémorisés dans localStorage. Auto-login au rechargement si tous présents.</p></div>
+        </div>
+        <div class="item">
+          <div class="item-icon icon-done"><i data-lucide="check" class="w-3.5 h-3.5 text-emerald-600"></i></div>
+          <div><p class="font-semibold text-slate-700">Bouton déconnexion</p><p class="text-slate-400">Icône en haut à droite du tableau de bord — vide le localStorage et retourne à l'écran de connexion. Essentiel pour ordinateurs partagés.</p></div>
+        </div>
+        <div class="item">
+          <div class="item-icon icon-done"><i data-lucide="check" class="w-3.5 h-3.5 text-emerald-600"></i></div>
+          <div><p class="font-semibold text-slate-700">Écran de bienvenue — première connexion</p><p class="text-slate-400">Si le manifest Nuage n'existe pas, un écran de bienvenue explique le fonctionnement. Le bouton "Démarrer" crée experia_manifest.json et experia_library.json dans le Nuage puis ouvre le tableau de bord.</p></div>
+        </div>
+        <div class="item">
+          <div class="item-icon icon-done"><i data-lucide="check" class="w-3.5 h-3.5 text-emerald-600"></i></div>
+          <div><p class="font-semibold text-slate-700">Toggle "Afficher la correction" dans les paramètres de session</p><p class="text-slate-400">Case à cocher dans l'onglet Paramètres de l'écran de session — modifiable après publication. Met à jour showCorrection dans le fichier session sur le Nuage.</p></div>
+        </div>
+        <div class="item">
+          <div class="item-icon icon-done"><i data-lucide="check" class="w-3.5 h-3.5 text-emerald-600"></i></div>
+          <div><p class="font-semibold text-slate-700">Mes évaluations — dossiers &amp; classement</p><p class="text-slate-400">Onglet "Mes évaluations" avec dossiers personnalisés. Classer une session dans un dossier (retire du tableau de bord, range dans experia_library.json). Créer une session de classe depuis un dossier (réutilise les questions, crée une nouvelle entrée dans le manifest).</p></div>
+        </div>
+        <div class="item">
+          <div class="item-icon icon-done"><i data-lucide="check" class="w-3.5 h-3.5 text-emerald-600"></i></div>
+          <div><p class="font-semibold text-slate-700">Export CSV des résultats élèves</p><p class="text-slate-400">Bouton d'export dans l'écran de résultats — génère un fichier CSV avec identifiant élève, score par activité, total, date de rendu.</p></div>
         </div>
       </div>
 
@@ -191,22 +224,28 @@
 
     <!-- ══════════ EN COURS ══════════ -->
     <div class="bg-white rounded-3xl p-7 shadow-sm border border-amber-100">
-      <h2><i data-lucide="loader" class="w-5 h-5 text-amber-500"></i> En cours — À valider</h2>
+      <h2><i data-lucide="loader" class="w-5 h-5 text-amber-500"></i> En cours — À valider en test</h2>
 
       <div class="space-y-0">
         <div class="item">
           <div class="item-icon icon-wip"><i data-lucide="alert-circle" class="w-3.5 h-3.5 text-amber-600"></i></div>
           <div>
-            <p class="font-semibold text-slate-700">Test end-to-end complet <span class="pill-wip ml-2">Priorité 1</span></p>
-            <p class="text-slate-400">Parcours complet depuis la Forge : connexion Nuage → création session → lien élève → jeu → résultats visibles dans le tableau prof. Le fix du serveur (<code>nuage03.apps.education.fr</code>) est appliqué mais n'a pas encore été testé en production après correction.</p>
-            <p class="mt-1 text-xs text-amber-600 font-medium">Blocker : valider que le 405 est résolu avant de déclarer la v1.0 stable.</p>
+            <p class="font-semibold text-slate-700">Test du flux complet points partiels <span class="pill-wip ml-2">Priorité 1</span></p>
+            <p class="text-slate-400">Ouvrir une activité, répondre partiellement, cliquer Retour → vérifier l'affichage orange ~ XX% sur le tableau de bord élève. Tester "Rendre le travail" avec des activités partielles. Vérifier que le total côté prof inclut ces points.</p>
           </div>
         </div>
         <div class="item">
           <div class="item-icon icon-wip"><i data-lucide="alert-circle" class="w-3.5 h-3.5 text-amber-600"></i></div>
           <div>
-            <p class="font-semibold text-slate-700">Validation de la lecture PDF</p>
-            <p class="text-slate-400">L'upload de fichier TXT/PDF est implémenté côté interface mais la lecture du contenu PDF (extraction du texte) doit être testée avec un vrai fichier PDF.</p>
+            <p class="font-semibold text-slate-700">Test dossiers / Mes évaluations</p>
+            <p class="text-slate-400">Classer une session dans un dossier → vérifier qu'elle disparaît du tableau de bord. Créer une session depuis le dossier → vérifier qu'elle apparaît avec un lien élève valide. Supprimer un dossier.</p>
+          </div>
+        </div>
+        <div class="item">
+          <div class="item-icon icon-wip"><i data-lucide="alert-circle" class="w-3.5 h-3.5 text-amber-600"></i></div>
+          <div>
+            <p class="font-semibold text-slate-700">Test première connexion (welcome screen)</p>
+            <p class="text-slate-400">Se connecter avec un compte Nuage sans fichier experia_manifest.json → vérifier l'affichage du welcome screen. Cliquer "Démarrer" → vérifier que les deux fichiers sont créés dans le Nuage.</p>
           </div>
         </div>
         <div class="item">
@@ -216,69 +255,54 @@
             <p class="text-slate-400">L'interaction cliquer-pour-associer doit être testée sur écran tactile (touch events).</p>
           </div>
         </div>
+        <div class="item">
+          <div class="item-icon icon-wip"><i data-lucide="alert-circle" class="w-3.5 h-3.5 text-amber-600"></i></div>
+          <div>
+            <p class="font-semibold text-slate-700">Validation de la lecture PDF</p>
+            <p class="text-slate-400">L'upload PDF est implémenté mais doit être testé avec un vrai fichier PDF en production.</p>
+          </div>
+        </div>
       </div>
     </div>
 
-    <!-- ══════════ À FAIRE v1.0 ══════════ -->
+    <!-- ══════════ À FAIRE ══════════ -->
     <div class="bg-white rounded-3xl p-7 shadow-sm border border-slate-100">
-      <h2><i data-lucide="list-todo" class="w-5 h-5 text-slate-500"></i> À faire — Version 1.0 stable</h2>
-      <p class="text-slate-400 text-sm mb-4">Fonctionnalités manquantes avant de considérer l'application stable pour un usage en classe.</p>
+      <h2><i data-lucide="list-todo" class="w-5 h-5 text-slate-500"></i> À faire — Améliorations prochaines</h2>
 
       <div class="space-y-0">
         <div class="item">
           <div class="item-icon icon-todo"><i data-lucide="circle" class="w-3.5 h-3.5 text-slate-400"></i></div>
           <div>
-            <p class="font-semibold text-slate-700">Export résultats de classe <span class="pill-todo ml-2">Priorité haute</span></p>
-            <p class="text-slate-400">Vue synthétique de la classe téléchargeable (CSV ou Word) : nom élève, scores par activité, total, date de rendu, participation. Utile pour la trace pédagogique et l'import dans un carnet de notes.</p>
-          </div>
-        </div>
-        <div class="item">
-          <div class="item-icon icon-todo"><i data-lucide="circle" class="w-3.5 h-3.5 text-slate-400"></i></div>
-          <div>
-            <p class="font-semibold text-slate-700">Banque de sessions <span class="pill-todo ml-2">Priorité haute</span></p>
-            <p class="text-slate-400">Sauvegarder une configuration (corpus + activités sélectionnées + barème) pour la réutiliser ou la partager avec un collègue. Évite de repartir de zéro pour une session similaire ou pour une autre classe.</p>
+            <p class="font-semibold text-slate-700">Remplacer <code>prompt()</code> dans duplicateForClass() <span class="pill-todo ml-2">Priorité haute</span></p>
+            <p class="text-slate-400">La duplication de session utilise encore un prompt() natif peu élégant. À remplacer par une vraie modale avec champ de saisie avant la généralisation à d'autres profs.</p>
           </div>
         </div>
         <div class="item">
           <div class="item-icon icon-todo"><i data-lucide="circle" class="w-3.5 h-3.5 text-slate-400"></i></div>
           <div>
             <p class="font-semibold text-slate-700">QR code du lien élève</p>
-            <p class="text-slate-400">Générer un QR code directement dans l'interface prof — à projeter au tableau ou à scanner depuis un smartphone. Permet aux élèves de rejoindre la session depuis leur téléphone (QCM, appariement, texte à trous). Un avertissement s'affiche si la session contient des mots mêlés ou mots croisés, peu adaptés au petit écran.</p>
-          </div>
-        </div>
-        <div class="item">
-          <div class="item-icon icon-todo"><i data-lucide="circle" class="w-3.5 h-3.5 text-slate-400"></i></div>
-          <div>
-            <p class="font-semibold text-slate-700">Saisie du prénom élève</p>
-            <p class="text-slate-400">Permettre à l'élève de saisir son prénom (ou initiales) au lieu d'un identifiant aléatoire, pour une meilleure lisibilité dans le tableau résultats. Sans données nominatives complètes.</p>
+            <p class="text-slate-400">Générer un QR code à projeter au tableau ou scanner depuis un smartphone. Avertissement si la session contient des mots mêlés ou mots croisés (peu adaptés au petit écran).</p>
           </div>
         </div>
         <div class="item">
           <div class="item-icon icon-todo"><i data-lucide="circle" class="w-3.5 h-3.5 text-slate-400"></i></div>
           <div>
             <p class="font-semibold text-slate-700">Expiration de session</p>
-            <p class="text-slate-400">Champ "date de fermeture" à la création — après cette date, les élèves ne peuvent plus soumettre de résultats. Vérification côté client à la lecture de la session.</p>
+            <p class="text-slate-400">Champ "date de fermeture" à la création — après cette date, les élèves ne peuvent plus soumettre. Vérification côté client à la lecture de la session.</p>
           </div>
         </div>
         <div class="item">
           <div class="item-icon icon-todo"><i data-lucide="circle" class="w-3.5 h-3.5 text-slate-400"></i></div>
           <div>
-            <p class="font-semibold text-slate-700">Suppression de session</p>
-            <p class="text-slate-400">Bouton "Supprimer" dans le tableau de bord prof → supprime le fichier session + tous les fichiers résultats associés sur le Nuage.</p>
+            <p class="font-semibold text-slate-700">Mise à jour du guide professeur</p>
+            <p class="text-slate-400">guide_experia.html et setup_experia.html datent de l'ancienne architecture. À mettre à jour ou supprimer — setup_experia.html n'est plus pertinent (plus de compte à créer, juste s'authentifier avec les credentials Nuage).</p>
           </div>
         </div>
         <div class="item">
           <div class="item-icon icon-todo"><i data-lucide="circle" class="w-3.5 h-3.5 text-slate-400"></i></div>
           <div>
-            <p class="font-semibold text-slate-700">Page de politique RGPD</p>
-            <p class="text-slate-400">Page dédiée détaillant les données traitées, leur durée de conservation, les droits des utilisateurs, et les mesures de souveraineté numérique.</p>
-          </div>
-        </div>
-        <div class="item">
-          <div class="item-icon icon-todo"><i data-lucide="circle" class="w-3.5 h-3.5 text-slate-400"></i></div>
-          <div>
-            <p class="font-semibold text-slate-700">Tests sur plusieurs serveurs Nuage</p>
-            <p class="text-slate-400">Certains enseignants utilisent <code>nuage01</code>, <code>nuage02</code> ou <code>nuage03</code>. Vérifier que la détection automatique du bon serveur fonctionne ou documenter clairement comment trouver le sien.</p>
+            <p class="font-semibold text-slate-700">Corrections cosmétiques texte élève</p>
+            <p class="text-slate-400">Écran fermée : "session" → "évaluation". Écran connexion : "Rejoindre une session" → "Rejoindre une évaluation".</p>
           </div>
         </div>
       </div>
@@ -348,26 +372,26 @@
 
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-4">
         <div class="bg-white/10 rounded-2xl p-4 text-center">
-          <p class="text-4xl font-black text-white">v1.1</p>
-          <p class="text-indigo-200 text-sm font-medium mt-1">en production — usage classe possible</p>
+          <p class="text-4xl font-black text-white">v1.3</p>
+          <p class="text-indigo-200 text-sm font-medium mt-1">en production — mai 2026</p>
         </div>
         <div class="bg-white/10 rounded-2xl p-4 text-center">
           <p class="text-4xl font-black text-white">8/8</p>
-          <p class="text-indigo-200 text-sm font-medium mt-1">activités élève implémentées</p>
+          <p class="text-indigo-200 text-sm font-medium mt-1">activités élève + points partiels</p>
         </div>
         <div class="bg-white/10 rounded-2xl p-4 text-center">
-          <p class="text-4xl font-black text-white">2</p>
-          <p class="text-indigo-200 text-sm font-medium mt-1">priorités hautes à venir (export + banque)</p>
+          <p class="text-4xl font-black text-white">5</p>
+          <p class="text-indigo-200 text-sm font-medium mt-1">fonctionnalités à valider en test</p>
         </div>
       </div>
 
-      <p class="text-indigo-100 text-sm mt-5">L'application est stable et utilisable en classe. Les 8 activités sont fonctionnelles, le prof peut valider les questions avant publication, exporter une évaluation papier, et suivre les résultats en temps réel. Les prochaines priorités sont l'export de résultats de classe et la banque de sessions réutilisables.</p>
+      <p class="text-indigo-100 text-sm mt-5">L'application est stable et utilisable en classe. V1.3 apporte les points partiels (conservation si départ en cours d'activité), le système de dossiers "Mes évaluations", la persistance de session, le welcome screen pour les nouveaux profs et le toggle d'affichage de correction. Prochaine étape : test end-to-end de ces nouvelles fonctionnalités.</p>
     </div>
 
   </div>
 
   <footer class="max-w-3xl mx-auto mt-10 text-center text-xs text-slate-300 font-medium pb-6">
-    Experia — Forge des Communs Numériques Éducatifs · Éducation Nationale · Avril 2026
+    Experia — Forge des Communs Numériques Éducatifs · Éducation Nationale · Mai 2026
   </footer>
 
   <script>lucide.createIcons();</script>
