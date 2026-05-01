@@ -563,6 +563,19 @@
       <p class="text-xs text-indigo-400 font-medium mt-2">Code d'accès : <strong id="sess-code" class="text-indigo-700 font-black"></strong></p>
     </div>
 
+    <!-- Paramètres de la session -->
+    <div class="bg-white rounded-2xl px-5 py-4 shadow-sm border border-slate-100 mb-4 fade-up">
+      <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Paramètres</p>
+      <label class="flex items-center justify-between gap-3 cursor-pointer">
+        <div>
+          <span class="font-bold text-slate-700 text-sm">Afficher la correction après chaque réponse</span>
+          <p class="text-xs text-slate-400 font-medium">Si activé, la bonne réponse est montrée à l'élève après chaque tentative</p>
+        </div>
+        <input type="checkbox" id="sess-show-correction" onchange="toggleShowCorrection(this.checked)"
+          class="w-5 h-5 flex-none rounded border-2 border-slate-200 text-indigo-600 focus:ring-indigo-500 cursor-pointer">
+      </label>
+    </div>
+
     <!-- Barème session -->
     <div id="sess-bareme" class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 mb-6 fade-up">
       <!-- injecté par JS -->
@@ -1571,10 +1584,20 @@ async function openSession(id) {
   document.getElementById('sess-code').textContent = session.code;
 
   document.getElementById('sess-link').value = makeSessionLink(session);
+  document.getElementById('sess-show-correction').checked = !!session.showCorrection;
   renderBareme(session);
   showScreen('session');
   startResultsAutoRefresh();
   loadSessionResults();
+}
+
+async function toggleShowCorrection(value) {
+  if (!state.currentSession) return;
+  state.currentSession.showCorrection = value;
+  try {
+    await storage({ action: 'writeSession', session: state.currentSession });
+    document.getElementById('sess-link').value = makeSessionLink(state.currentSession);
+  } catch(e) { alert('Erreur sauvegarde : ' + e.message); }
 }
 
 function renderBareme(session) {

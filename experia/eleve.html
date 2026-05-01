@@ -989,8 +989,13 @@ function savePartialScore() {
   let rawScore = E.gameScore;
   let rawMax = E.gameData.length;
   if (id === 'paires') {
-    rawScore = pairesState.matched.length;
+    const penalty = Math.floor((pairesState.wrongAttempts || 0) * 0.5);
+    rawScore = Math.max(0, (pairesState.matched?.length || 0) - penalty);
     rawMax = pairesState.total || E.gameData.length;
+  } else if (id === 'motsmeles') {
+    rawMax = mmState.words?.length || E.gameData.length;
+  } else if (id === 'motscroises') {
+    rawMax = mcState.placements?.length || E.gameData.length;
   } else if (id === 'rapidite' || id === 'questions_ia') {
     rawMax = E.gameData.length * 10;
   }
@@ -2154,11 +2159,12 @@ function showFinalSummary() {
   const notDoneCount = allSessionActivities.filter(a => !E.scores[a.id] && !E.partialScores[a.id]).length;
 
   // Afficher "X / Y pts"
-  document.getElementById('final-global').textContent = `${totalPts} / ${maxPts}`;
+  const globalPctDisplay = maxPts > 0 ? Math.round((totalPts / maxPts) * 100) : 0;
+  document.getElementById('final-global').textContent = `${totalPts} / ${maxPts} pts`;
   document.getElementById('final-global-sub').textContent =
     withScore.length < allSessionActivities.length
-      ? `points · ${notDoneCount} activité(s) non commencée(s) = 0 pt`
-      : `points sur ${maxPts} au barème`;
+      ? `${globalPctDisplay}% · ${notDoneCount} activité(s) non commencée(s) = 0 pt`
+      : `${globalPctDisplay}% du barème total`;
 
   // Détail : activités terminées + partielles + non faites
   document.getElementById('final-details').innerHTML = [
@@ -2295,7 +2301,8 @@ async function submitResults() {
 
     // Rediriger vers l'écran de confirmation de rendu
     document.getElementById('submitted-student').textContent = E.studentId + ' — ' + E.session.title;
-    document.getElementById('submitted-score').textContent = `${totalPtsR} / ${maxPtsR} pts`;
+    const submittedPct = maxPtsR > 0 ? Math.round((totalPtsR / maxPtsR) * 100) : 0;
+    document.getElementById('submitted-score').textContent = `${totalPtsR} / ${maxPtsR} pts — ${submittedPct}%`;
     document.getElementById('submitted-score-sub').textContent =
       withScore.length < allActs.length
         ? `(${withScore.length}/${allActs.length} activités avec points)`
