@@ -676,7 +676,7 @@
 // ─── ÉTAT GLOBAL ──────────────────────────────────────────────────────────────
 const E = {
   config: null, session: null, studentId: '',
-  scores: {}, completions: {}, partialScores: {},
+  scores: {}, completions: {}, partialScores: {}, activityStates: {},
   gameIdx: 0, gameData: [], gameScore: 0,
   currentActivity: null
 };
@@ -898,6 +898,9 @@ async function doConnect() {
           E.partialScores = prev.content.partialScores;
           E._resuming = true;
         }
+        if (prev.content.activityStates) {
+          E.activityStates = prev.content.activityStates;
+        }
       } else {
         E._resuming = false;
       }
@@ -1006,7 +1009,50 @@ function savePartialScore() {
   E.partialScores[id] = { score: profScore, max: profMax, rawScore, rawMax, partial: true };
 }
 
+function saveActivityState() {
+  const id = E.currentActivity;
+  if (!id || E.scores[id] || E.completions[id]?.done) return;
+
+  if (id === 'motsmeles') {
+    E.activityStates[id] = {
+      grid: mmState.grid, words: mmState.words,
+      found: [...mmState.found], foundCells: [...mmState.foundCells],
+      size: mmState.size, gameScore: E.gameScore
+    };
+  } else if (id === 'paires') {
+    E.activityStates[id] = {
+      termsData: window._pairesTermsData ? [...window._pairesTermsData] : null,
+      defsData:  window._pairesDefsData  ? [...window._pairesDefsData]  : null,
+      matched: [...pairesState.matched], wrongAttempts: pairesState.wrongAttempts || 0,
+      total: pairesState.total
+    };
+  } else if (id === 'motscroises') {
+    const inputs = {};
+    for (let r = 0; r < mcState.height; r++) {
+      for (let c = 0; c < mcState.width; c++) {
+        const el = document.getElementById(`mc-input-${r}-${c}`);
+        if (el && el.value) inputs[`${r}-${c}`] = el.value;
+      }
+    }
+    E.activityStates[id] = {
+      grid: mcState.grid, placements: mcState.placements.map(p => ({...p})),
+      width: mcState.width, height: mcState.height,
+      foundCount: mcState.foundCount, inputs, gameScore: E.gameScore
+    };
+  } else if (id === 'questions_ia') {
+    E.activityStates[id] = {
+      gameData: [...E.gameData], gameIdx: E.gameIdx,
+      gameScore: E.gameScore, iaScores: [...iaScores]
+    };
+  } else if (E.gameIdx > 0 || E.gameScore > 0) {
+    E.activityStates[id] = {
+      gameData: [...E.gameData], gameIdx: E.gameIdx, gameScore: E.gameScore
+    };
+  }
+}
+
 function backToDashboard() {
+  saveActivityState();
   savePartialScore();
   autoSaveProgress().catch(() => {});
   setupDashboard();
@@ -1032,6 +1078,7 @@ async function terminateActivity() {
 
   const sc = E.scores[id];
   E.completions[id] = { done: true, score: sc.score, max: sc.max, doneAt: Date.now() };
+  delete E.activityStates[id];
   storage({ action: 'setCompletion', sessionId: E.session.id, studentId: E.studentId,
     activityId: id, score: sc.score, max: sc.max }).catch(() => {});
   backToDashboard();
@@ -1051,9 +1098,16 @@ function showCompletedActivity(id) {
 function startActivity(id) {
   if (E.completions[id]?.done) { showCompletedActivity(id); return; }
   E.currentActivity = id;
-  E.gameIdx = 0;
-  E.gameScore = 0;
-  E.gameData = [...(E.session.questions[id] || [])].sort(() => Math.random() - 0.5);
+  const savedState = E.activityStates?.[id];
+  if (savedState) {
+    E.gameData = savedState.gameData || [...(E.session.questions[id] || [])].sort(() => Math.random() - 0.5);
+    E.gameIdx  = savedState.gameIdx  || 0;
+    E.gameScore = savedState.gameScore || 0;
+  } else {
+    E.gameIdx = 0;
+    E.gameScore = 0;
+    E.gameData = [...(E.session.questions[id] || [])].sort(() => Math.random() - 0.5);
+  }
 
   const launchers = {
     qcm: initQCM, paires: initPaires, motsmeles: initMotsMeles, motscroises: initMotsCroises, rapidite: initRapidite,
@@ -1068,7 +1122,7 @@ function startActivity(id) {
 // ══════════════════════════════════════════════
 function initQCM() {
   document.getElementById('qcm-end').classList.add('hidden');
-  document.getElementById('qcm-score').textContent = '0';
+  document.getElementById('qcm-score').textContent = E.gameScore;
   renderQCM();
 }
 
@@ -1169,9 +1223,36 @@ function qcmNext() {
 let pairesState = { selectedTerm: null, selectedDef: null, matched: [], wrongAttempts: 0, total: 0 };
 
 function initPaires() {
-  pairesState = { selectedTerm: null, selectedDef: null, matched: [], wrongAttempts: 0, total: E.gameData.length };
   document.getElementById('paires-end').classList.add('hidden');
   document.getElementById('paires-feedback').classList.add('hidden');
+
+  const saved = E.activityStates?.paires;
+  if (saved && saved.termsData && saved.defsData) {
+    pairesState = {
+      selectedTerm: null, selectedDef: null,
+      matched: [...saved.matched], wrongAttempts: saved.wrongAttempts || 0,
+      total: saved.total || E.gameData.length
+    };
+    document.getElementById('paires-score').textContent = String(saved.matched.length);
+    window._pairesTermsData = saved.termsData;
+    window._pairesDefsData  = saved.defsData;
+    document.getElementById('paires-terms').innerHTML = saved.termsData.map((p, i) => {
+      const isMatched = saved.matched.includes(p.term);
+      return `<div id="term-${i}" onclick="selectPairItem('term',${i},'${escHtml(p.term)}')"
+        class="pair-card bg-white border-2 border-slate-100 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 text-center${isMatched ? ' matched' : ''}">
+        ${escHtml(p.term)}</div>`;
+    }).join('');
+    document.getElementById('paires-defs').innerHTML = saved.defsData.map((p, i) => {
+      const isMatched = saved.matched.includes(p.term);
+      return `<div id="def-${i}" onclick="selectPairItem('def',${i},'${escHtml(p.def)}')"
+        class="pair-card bg-white border-2 border-slate-100 rounded-xl px-4 py-3 text-sm font-medium text-slate-600 text-center${isMatched ? ' matched' : ''}">
+        ${escHtml(p.def)}</div>`;
+    }).join('');
+    lucide.createIcons();
+    return;
+  }
+
+  pairesState = { selectedTerm: null, selectedDef: null, matched: [], wrongAttempts: 0, total: E.gameData.length };
   document.getElementById('paires-score').textContent = '0';
   renderPaires();
 }
@@ -1231,7 +1312,7 @@ function checkPair() {
   const termEl = document.getElementById(`term-${selectedTerm.idx}`);
   const defEl  = document.getElementById(`def-${selectedDef.idx}`);
 
-  const correct = termData === defData; // même objet = même paire (évite les faux positifs sur termes identiques)
+  const correct = termData.term === defData.term;
 
   if (correct) {
     termEl.classList.remove('selected'); termEl.classList.add('matched');
@@ -1300,18 +1381,33 @@ let mmState = { grid: [], words: [], found: [], foundCells: [], startCell: null,
 
 function initMotsMeles() {
   document.getElementById('mm-end').classList.add('hidden');
-  document.getElementById('mm-score').textContent = '0';
   document.getElementById('mm-feedback').classList.add('hidden');
+
+  const saved = E.activityStates?.motsmeles;
+  if (saved && saved.grid && saved.words) {
+    mmState.grid = saved.grid;
+    mmState.words = saved.words;
+    mmState.found = [...saved.found];
+    mmState.foundCells = [...saved.foundCells];
+    mmState.size = saved.size;
+    mmState.startCell = null;
+    E.gameScore = saved.gameScore || saved.found.length;
+    document.getElementById('mm-score').textContent = E.gameScore;
+    renderMotsMeles();
+    return;
+  }
+
+  document.getElementById('mm-score').textContent = '0';
   mmState.found = [];
   mmState.foundCells = [];
   mmState.startCell = null;
   E.gameScore = 0;
-  
+
   let rawWords = E.gameData.map(d => (d.word || '').toUpperCase().replace(/[^A-Z]/g, ''));
   mmState.words = rawWords.filter(w => w.length >= 3 && w.length <= 12).slice(0, 10);
   if (mmState.words.length === 0) mmState.words = ["ERREUR"];
   mmState.size = Math.max(10, Math.max(...mmState.words.map(w => w.length)) + 2);
-  
+
   generateGrid();
   renderMotsMeles();
 }
@@ -1451,12 +1547,45 @@ let mcState = { grid: [], words: [], placements: [], width: 0, height: 0, active
 function initMotsCroises() {
   document.getElementById('mc-end').classList.add('hidden');
   document.getElementById('mc-feedback').classList.add('hidden');
-  document.getElementById('mc-score').textContent = '0';
   document.getElementById('mc-def-text').textContent = "Sélectionnez une case pour voir la définition.";
   mcState.activeCell = null;
+
+  const saved = E.activityStates?.motscroises;
+  if (saved && saved.placements && saved.grid) {
+    mcState.grid = saved.grid;
+    mcState.placements = saved.placements;
+    mcState.width = saved.width;
+    mcState.height = saved.height;
+    mcState.foundCount = saved.foundCount || 0;
+    E.gameScore = saved.gameScore || mcState.foundCount;
+    document.getElementById('mc-score').textContent = mcState.foundCount;
+    renderMotsCroises();
+    if (saved.inputs) {
+      for (const [key, val] of Object.entries(saved.inputs)) {
+        const el = document.getElementById(`mc-input-${key}`);
+        if (el) el.value = val;
+      }
+    }
+    for (const p of mcState.placements) {
+      if (p.found) {
+        for (let i = 0; i < p.word.length; i++) {
+          const cr = p.r + (p.dir === 'V' ? i : 0);
+          const cc = p.c + (p.dir === 'H' ? i : 0);
+          const el = document.getElementById(`mc-input-${cr}-${cc}`);
+          if (el) {
+            el.classList.add('text-emerald-700', 'bg-emerald-100', 'border-emerald-400');
+            el.readOnly = true;
+          }
+        }
+      }
+    }
+    return;
+  }
+
+  document.getElementById('mc-score').textContent = '0';
   mcState.foundCount = 0;
   E.gameScore = 0;
-  
+
   generateCrosswordGrid();
   renderMotsCroises();
 }
@@ -1715,8 +1844,7 @@ let rapTimeLeft = 10;
 
 function initRapidite() {
   document.getElementById('rap-end').classList.add('hidden');
-  document.getElementById('rap-score').textContent = '0';
-  E.gameScore = 0; E.gameIdx = 0;
+  document.getElementById('rap-score').textContent = E.gameScore;
   renderRapidite();
 }
 
@@ -1812,8 +1940,7 @@ function rapNext() {
 // ══════════════════════════════════════════════
 function initCompleter() {
   document.getElementById('comp-end').classList.add('hidden');
-  document.getElementById('comp-score').textContent = '0';
-  E.gameScore = 0; E.gameIdx = 0;
+  document.getElementById('comp-score').textContent = E.gameScore;
   renderCompleter();
 }
 
@@ -1880,8 +2007,7 @@ function completerNext() {
 // ══════════════════════════════════════════════
 function initIntrus() {
   document.getElementById('int-end').classList.add('hidden');
-  document.getElementById('int-score').textContent = '0';
-  E.gameScore = 0; E.gameIdx = 0;
+  document.getElementById('int-score').textContent = E.gameScore;
   renderIntrus();
 }
 
@@ -1983,7 +2109,8 @@ function initIA() {
   document.getElementById('ia-result').classList.add('hidden');
   document.getElementById('ia-next').classList.add('hidden');
   document.getElementById('ia-validate-btn').classList.remove('hidden');
-  E.gameScore = 0; E.gameIdx = 0; iaScores = [];
+  const savedIA = E.activityStates?.questions_ia;
+  iaScores = savedIA ? [...(savedIA.iaScores || [])] : [];
   renderIA();
 }
 
@@ -2099,6 +2226,7 @@ function saveScore(activity, score, max) {
   const finalScore = prevPartial ? Math.max(profScore, prevPartial.score) : profScore;
   E.scores[activity] = { score: finalScore, max: profMax, rawScore: score, rawMax: max };
   if (prevPartial) delete E.partialScores[activity];
+  delete E.activityStates[activity];
   autoSaveProgress();
   const available = ACTIVITIES.filter(a => E.session.questions?.[a.id]?.length > 0);
   if (Object.keys(E.scores).length >= available.length) {
@@ -2129,7 +2257,7 @@ async function autoSaveProgress() {
     const result = {
       sessionId: E.session.id, sessionTitle: E.session.title,
       studentId: E.studentId, completedAt: new Date().toISOString(),
-      scores: E.scores, partialScores: E.partialScores, globalPct,
+      scores: E.scores, partialScores: E.partialScores, activityStates: E.activityStates, globalPct,
       partial: done < total, activitiesDone: done, activitiesTotal: total
     };
     const writeRes = await storage({ action: 'writeResult', sessionId: E.session.id, studentId: E.studentId, data: result });
