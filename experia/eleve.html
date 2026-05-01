@@ -894,8 +894,9 @@ async function doConnect() {
         } else {
           E._resuming = false;
         }
-        if (prev.content.partialScores) {
+        if (prev.content.partialScores && Object.keys(prev.content.partialScores).length > 0) {
           E.partialScores = prev.content.partialScores;
+          E._resuming = true;
         }
       } else {
         E._resuming = false;
@@ -1015,11 +1016,28 @@ function backToDashboard() {
 async function terminateActivity() {
   if (!confirm('Terminer cette activité ?\n\nTu pourras voir ton score mais tu ne pourras plus recommencer.\nSi tu veux y accéder à nouveau, demande à ton professeur.')) return;
   const id = E.currentActivity;
+
+  // S'assurer que E.scores[id] est renseigné — il est utilisé par autoSaveProgress()
+  // pour compter les activités faites (affiché côté prof)
+  if (!E.scores[id]) {
+    if (E.partialScores[id]) {
+      // Promouvoir le score partiel en score définitif
+      E.scores[id] = { ...E.partialScores[id], partial: false };
+      delete E.partialScores[id];
+    } else {
+      // Calculer depuis l'état courant du jeu (peut valoir 0)
+      const rawScore = E.gameScore || 0;
+      const rawMax   = E.gameData?.length || 1;
+      const profMax  = E.session.scoring?.[id] ?? rawMax;
+      const profScore = rawMax > 0 ? Math.round((rawScore / rawMax) * profMax * 10) / 10 : 0;
+      E.scores[id] = { score: profScore, max: profMax, rawScore, rawMax };
+    }
+  }
+
   const sc = E.scores[id];
-  const score = sc ? sc.score : E.gameScore;
-  const max = sc ? sc.max : (E.session.scoring?.[id] || E.gameData.length || 1);
-  E.completions[id] = { done: true, score, max, doneAt: Date.now() };
-  storage({ action: 'setCompletion', sessionId: E.session.id, studentId: E.studentId, activityId: id, score, max }).catch(() => {});
+  E.completions[id] = { done: true, score: sc.score, max: sc.max, doneAt: Date.now() };
+  storage({ action: 'setCompletion', sessionId: E.session.id, studentId: E.studentId,
+    activityId: id, score: sc.score, max: sc.max }).catch(() => {});
   backToDashboard();
 }
 
