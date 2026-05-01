@@ -1017,21 +1017,17 @@ async function terminateActivity() {
   if (!confirm('Terminer cette activité ?\n\nTu pourras voir ton score mais tu ne pourras plus recommencer.\nSi tu veux y accéder à nouveau, demande à ton professeur.')) return;
   const id = E.currentActivity;
 
-  // S'assurer que E.scores[id] est renseigné — il est utilisé par autoSaveProgress()
-  // pour compter les activités faites (affiché côté prof)
+  // S'assurer que E.scores[id] est renseigné (compté par le prof dans activitiesDone)
+  // et conserver le meilleur score entre la session courante et un éventuel partiel précédent
   if (!E.scores[id]) {
-    if (E.partialScores[id]) {
-      // Promouvoir le score partiel en score définitif
-      E.scores[id] = { ...E.partialScores[id], partial: false };
-      delete E.partialScores[id];
-    } else {
-      // Calculer depuis l'état courant du jeu (peut valoir 0)
-      const rawScore = E.gameScore || 0;
-      const rawMax   = E.gameData?.length || 1;
-      const profMax  = E.session.scoring?.[id] ?? rawMax;
-      const profScore = rawMax > 0 ? Math.round((rawScore / rawMax) * profMax * 10) / 10 : 0;
-      E.scores[id] = { score: profScore, max: profMax, rawScore, rawMax };
-    }
+    const rawScore = E.gameScore || 0;
+    const rawMax   = E.gameData?.length || 1;
+    const profMax  = E.session.scoring?.[id] ?? rawMax;
+    const currScore = rawMax > 0 ? Math.round((rawScore / rawMax) * profMax * 10) / 10 : 0;
+    const prevPartial = E.partialScores[id];
+    const finalScore = prevPartial ? Math.max(currScore, prevPartial.score) : currScore;
+    E.scores[id] = { score: finalScore, max: profMax, rawScore, rawMax };
+    if (prevPartial) delete E.partialScores[id];
   }
 
   const sc = E.scores[id];
@@ -2098,7 +2094,11 @@ function iaNext() {
 function saveScore(activity, score, max) {
   const profMax = E.session.scoring?.[activity] ?? max;
   const profScore = max > 0 ? Math.round((score / max) * profMax * 10) / 10 : 0;
-  E.scores[activity] = { score: profScore, max: profMax, rawScore: score, rawMax: max };
+  // Conserver le meilleur score entre cette session et un éventuel score partiel précédent
+  const prevPartial = E.partialScores[activity];
+  const finalScore = prevPartial ? Math.max(profScore, prevPartial.score) : profScore;
+  E.scores[activity] = { score: finalScore, max: profMax, rawScore: score, rawMax: max };
+  if (prevPartial) delete E.partialScores[activity];
   autoSaveProgress();
   const available = ACTIVITIES.filter(a => E.session.questions?.[a.id]?.length > 0);
   if (Object.keys(E.scores).length >= available.length) {
