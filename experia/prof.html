@@ -680,9 +680,10 @@
 
     <!-- Score global -->
     <div class="bg-indigo-600 text-white rounded-3xl p-6 mb-5 text-center">
-      <p class="text-indigo-200 text-sm font-bold uppercase tracking-wider mb-1">Score global</p>
-      <div id="result-global" class="text-6xl font-black">—</div>
-      <p class="text-indigo-200 text-sm font-medium mt-1">auto-corrigé par l'IA</p>
+      <p class="text-indigo-200 text-sm font-bold uppercase tracking-wider mb-2">Score global</p>
+      <div id="result-global-pts" class="text-3xl font-black">—</div>
+      <div id="result-global-pct" class="text-5xl font-black mt-1">—%</div>
+      <p class="text-indigo-200 text-sm font-medium mt-2">activités faites + partielles / total session</p>
     </div>
 
     <!-- Détail par activité -->
@@ -1752,22 +1753,35 @@ async function loadSessionResults() {
         </div>
       </div>`).join('');
 
+    // Calcul du score réel (pts obtenus / pts totaux session) pour chaque élève
+    const sessionActsForList = ACTIVITIES.filter(a => state.currentSession.questions?.[a.id]?.length > 0);
+    const sessionMaxTotal = sessionActsForList.reduce((s, a) => s + (state.currentSession.scoring?.[a.id] || 0), 0);
+
     container.innerHTML = connectedCards + results.map(r => {
-      const pct = Math.round(r.globalPct || 0);
-      const color = pct >= 70 ? 'emerald' : pct >= 50 ? 'amber' : 'red';
+      let rPts = 0;
+      sessionActsForList.forEach(a => {
+        const sc = r.scores?.[a.id] || r.partialScores?.[a.id];
+        if (sc) rPts += sc.score;
+      });
+      rPts = Math.round(rPts * 10) / 10;
+      const rPct = sessionMaxTotal > 0 ? Math.round((rPts / sessionMaxTotal) * 100) : 0;
+      const color = rPct >= 70 ? 'emerald' : rPct >= 50 ? 'amber' : 'red';
       const date = new Date(r.completedAt).toLocaleDateString('fr-FR', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' });
-      const partialBadge = r.partial ? `<span class="text-xs font-bold text-amber-600 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full ml-2">${r.activitiesDone}/${r.activitiesTotal} activités</span>` : '';
-      return `<div onclick="openResult('${r.studentId}')" class="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 hover:border-indigo-200 transition-all cursor-pointer flex items-center gap-4">
-        <div class="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center flex-none">
-          <i data-lucide="${r.partial ? 'clock' : 'user'}" class="w-5 h-5 text-slate-500"></i>
+      const statusIcon = r.submitted ? 'check-circle' : r.partial ? 'clock' : 'user';
+      const statusBadge = r.submitted
+        ? `<span class="text-xs font-bold text-emerald-600 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full ml-2">rendu</span>`
+        : r.partial ? `<span class="text-xs font-bold text-amber-600 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full ml-2">en cours</span>` : '';
+      return `<div onclick="openResult('${r.studentId}')" class="bg-white rounded-2xl p-4 shadow-sm border ${r.submitted ? 'border-emerald-200' : 'border-slate-100'} hover:border-indigo-200 transition-all cursor-pointer flex items-center gap-4">
+        <div class="w-10 h-10 ${r.submitted ? 'bg-emerald-50' : 'bg-slate-100'} rounded-xl flex items-center justify-center flex-none">
+          <i data-lucide="${statusIcon}" class="w-5 h-5 ${r.submitted ? 'text-emerald-500' : 'text-slate-500'}"></i>
         </div>
         <div class="flex-1 min-w-0">
-          <h4 class="font-black text-slate-800">${r.studentId}${partialBadge}</h4>
+          <h4 class="font-black text-slate-800">${r.studentId}${statusBadge}</h4>
           <p class="text-xs text-slate-400 font-medium">${date}</p>
         </div>
         <div class="text-right flex-none">
-          <div class="text-xl font-black text-${color}-600">${pct}%</div>
-          <p class="text-xs text-slate-400 font-medium">score global</p>
+          <div class="text-xl font-black text-${color}-600">${rPts} / ${sessionMaxTotal} pts</div>
+          <p class="text-xs font-bold text-${color}-400">${rPct}%</p>
         </div>
         <i data-lucide="chevron-right" class="w-5 h-5 text-slate-300 flex-none"></i>
       </div>`;
@@ -1825,7 +1839,8 @@ async function openResult(studentId) {
   });
   totalPts = Math.round(totalPts * 10) / 10;
   const realPct = totalMax > 0 ? Math.round((totalPts / totalMax) * 100) : 0;
-  document.getElementById('result-global').textContent = `${totalPts} / ${totalMax} pts — ${realPct}%`;
+  document.getElementById('result-global-pts').textContent = `${totalPts} / ${totalMax} pts`;
+  document.getElementById('result-global-pct').textContent = `${realPct}%`;
 
   // Charger les completions de cet élève
   let completions = {};
