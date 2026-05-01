@@ -1824,23 +1824,33 @@ async function openResult(studentId) {
   } catch(e) {}
 
   const details = document.getElementById('result-details');
-  details.innerHTML = ACTIVITIES.filter(a => r.scores?.[a.id] || completions[a.id]).map(a => {
-    const sc = r.scores?.[a.id];
+  const sessionActivities = ACTIVITIES.filter(a => state.currentSession.questions?.[a.id]?.length > 0);
+  details.innerHTML = sessionActivities.map(a => {
+    const sc   = r.scores?.[a.id];
+    const psc  = r.partialScores?.[a.id];
     const comp = completions[a.id];
-    const locked = comp?.done;
-    const pct = sc ? Math.round((sc.score / sc.max) * 100) : 0;
+    const locked  = !!comp?.done;
+    const partial = !locked && !sc && !!psc;
+    const notDone = !locked && !sc && !psc;
+    const displayed = sc || psc;
+    const pct = displayed ? Math.round((displayed.score / displayed.max) * 100) : 0;
     const bar = Math.max(0, Math.min(100, pct));
-    return `<div class="bg-white rounded-2xl p-4 shadow-sm border ${locked ? 'border-emerald-200' : 'border-slate-100'}">
+    const maxPts = state.currentSession.scoring?.[a.id] || displayed?.max || 0;
+    return `<div class="rounded-2xl p-4 shadow-sm border ${locked ? 'bg-white border-emerald-200' : partial ? 'bg-amber-50 border-amber-200' : 'bg-slate-50 border-dashed border-slate-200'}">
       <div class="flex items-center gap-3 mb-2">
-        <div class="w-8 h-8 rounded-lg flex items-center justify-center ${COLOR_MAP[a.color]}">
-          <i data-lucide="${a.icon}" class="w-4 h-4"></i>
+        <div class="w-8 h-8 rounded-lg flex items-center justify-center ${notDone ? 'bg-slate-100' : COLOR_MAP[a.color]}">
+          <i data-lucide="${a.icon}" class="w-4 h-4 ${notDone ? 'text-slate-400' : ''}"></i>
         </div>
-        <span class="font-bold text-slate-700 flex-1">${a.label}</span>
-        ${locked ? '<span class="text-xs font-bold text-emerald-600 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">✓ terminé</span>' : ''}
-        ${sc ? `<span class="font-black text-slate-800">${sc.score}/${sc.max}</span><span class="text-sm font-bold text-slate-400 ml-1">(${pct}%)</span>` : ''}
+        <span class="font-bold flex-1 ${notDone ? 'text-slate-400' : 'text-slate-700'}">${a.label}</span>
+        ${locked  ? '<span class="text-xs font-bold text-emerald-600 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">✓ terminé</span>' : ''}
+        ${partial ? '<span class="text-xs font-bold text-amber-600 bg-amber-100 border border-amber-200 px-2 py-0.5 rounded-full">~ partiel</span>' : ''}
+        ${notDone ? '<span class="text-xs font-bold text-slate-400 px-2 py-0.5">non fait</span>' : ''}
+        ${displayed
+          ? `<span class="font-black ${partial ? 'text-amber-600' : 'text-slate-800'}">${displayed.score}/${displayed.max}</span><span class="text-sm font-bold text-slate-400 ml-1">(${pct}%)</span>`
+          : `<span class="font-black text-slate-400">0 / ${maxPts}</span>`}
         ${locked ? `<button onclick="resetStudentActivity('${studentId}','${a.id}')" class="ml-2 text-xs px-2 py-1 bg-amber-50 border border-amber-300 text-amber-700 rounded-lg hover:bg-amber-100 font-bold transition-all">Réactiver</button>` : ''}
       </div>
-      ${sc ? `<div class="bg-slate-100 rounded-full h-1.5 overflow-hidden"><div class="bg-indigo-500 h-1.5 rounded-full" style="width:${bar}%"></div></div>` : ''}
+      ${displayed ? `<div class="bg-slate-100 rounded-full h-1.5 overflow-hidden"><div class="${partial ? 'bg-amber-400' : 'bg-indigo-500'} h-1.5 rounded-full" style="width:${bar}%"></div></div>` : ''}
     </div>`;
   }).join('');
 
