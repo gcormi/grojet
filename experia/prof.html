@@ -1814,7 +1814,18 @@ async function openResult(studentId) {
 
   document.getElementById('result-student').textContent = studentId;
   document.getElementById('result-date').textContent = new Date(r.completedAt).toLocaleDateString('fr-FR', { weekday:'long', day:'numeric', month:'long', hour:'2-digit', minute:'2-digit' });
-  document.getElementById('result-global').textContent = Math.round(r.globalPct || 0) + '%';
+
+  // Score global = pts obtenus / pts max de TOUTES les activités de la session
+  const sessionActs = ACTIVITIES.filter(a => state.currentSession.questions?.[a.id]?.length > 0);
+  let totalPts = 0, totalMax = 0;
+  sessionActs.forEach(a => {
+    const sc = r.scores?.[a.id] || r.partialScores?.[a.id];
+    if (sc) totalPts += sc.score;
+    totalMax += state.currentSession.scoring?.[a.id] || sc?.max || 0;
+  });
+  totalPts = Math.round(totalPts * 10) / 10;
+  const realPct = totalMax > 0 ? Math.round((totalPts / totalMax) * 100) : 0;
+  document.getElementById('result-global').textContent = `${totalPts} / ${totalMax} pts — ${realPct}%`;
 
   // Charger les completions de cet élève
   let completions = {};
